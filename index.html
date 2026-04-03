@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Tags at Friday Harbour</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        .hidden { display: none; }
+        .win-bg { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
+        .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
+        .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
+        select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
+
+    <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight">
+                    <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
+                </h1>
+                <p class="text-emerald-200 text-xs font-bold uppercase tracking-widest opacity-80">Friday Harbour • 2026 Season</p>
+            </div>
+            <nav class="flex bg-emerald-950/50 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800">
+                <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all">
+                    <i data-lucide="trophy" class="w-4 h-4"></i> Standings
+                </button>
+                <button onclick="switchView('slicer')" id="btn-slicer" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all">
+                    <i data-lucide="users" class="w-4 h-4"></i> My Status
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto p-4 md:p-8">
+        <div id="setup-error-banner" class="hidden mb-10 p-6 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-2xl shadow-sm">
+            <div class="flex items-start gap-4">
+                <i data-lucide="database-zap" class="w-8 h-8 text-rose-500 shrink-0"></i>
+                <div>
+                    <h4 class="font-black text-lg">Database Initialization Required</h4>
+                    <p class="text-sm mt-1 leading-relaxed">The connection is active, but the Firestore "default" database hasn't been started in your console yet. Visit the Firestore tab in Firebase and click "Create Database".</p>
+                </div>
+            </div>
+        </div>
+
+        <section id="view-leaderboard" class="space-y-10">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
+                <div class="mb-6">
+                    <h3 class="text-xl font-black text-slate-800">Log a Result</h3>
+                    <p class="text-slate-500 text-sm">Battle Tags at Friday Harbour</p>
+                </div>
+                <form id="match-form" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="relative">
+                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Reporter</label>
+                            <select id="report-player" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700"></select>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Opponent</label>
+                            <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700">
+                                <option value="">Choose Opponent...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row gap-5 items-end">
+                        <div class="flex-1 w-full">
+                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Outcome</label>
+                            <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl w-full">
+                                <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest">Captured Tag</button>
+                                <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest">Lost Tag</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Match Date</label>
+                            <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-[0.98]">
+                        Submit Match Result
+                    </button>
+                </form>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">The Leaderboard</h2>
+                    <span id="match-total" class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200 uppercase tracking-widest">Syncing...</span>
+                </div>
+                <div id="leaderboard-list" class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    <div class="p-12 text-center text-slate-400 font-medium tracking-wide">Retrieving scores...</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-slicer" class="hidden space-y-8">
+            <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
+                    <p class="text-slate-500 mt-2">See your status against every other player.</p>
+                </div>
+                <div class="relative min-w-[320px]">
+                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none"></select>
+                </div>
+            </div>
+            <div id="slicer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+    </main>
+
+    <script>
+        // --- 1. CONFIGURATION (PLUGGED IN FROM YOUR SNIPPET) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf_1RE4hscqVVbHoN7Vvqoylj8elWLUn4",
+            authDomain: "battletags-27390.firebaseapp.com",
+            projectId: "battletags-27390",
+            storageBucket: "battletags-27390.firebasestorage.app",
+            messagingSenderId: "930795580018",
+            appId: "1:930795580018:web:b82b95d64572483f85f0eb"
+        };
+
+        const PLAYERS = [
+            "Craig Flannagan", "Rick DesForges", "Nick Leigh", "Corey Pellerin", 
+            "Shane Quinlan", "Jesse Rabishaw", "Dave Ashwood", "Jeff Ash", 
+            "Dave McCharles", "Jordan Baker", "Lou Soriano", "Tyler Risdon", 
+            "Charlie McKinlay", "Jordan Horowitz", "Rob Nichols", "Luke Coles", 
+            "Sean McBurney", "Keith Palmer", "Nick Coulson", "Ryan Fedrigo", 
+            "Mike Van Berkel", "Mike Brigden", "Alex Samson", "Brandon Benn", 
+            "Shea Burton", "Rick Kubas", "Colton Kalkanis"
+        ].sort();
+
+        // --- 2. INITIALIZATION ---
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const appId = 'golf-battle-tags-2026';
+
+        let matches = [];
+        let currentOutcome = 'win';
+
+        const getMatchesCollection = () => db.collection('artifacts').doc(appId).collection('public').doc('data').collection('matches');
+
+        function switchView(view) {
+            document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
+            document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
+            const btnLead = document.getElementById('btn-leaderboard');
+            const btnSlice = document.getElementById('btn-slicer');
+            
+            if (view === 'leaderboard') {
+                btnLead.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all";
+                btnSlice.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all";
+            } else {
+                btnSlice.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all";
+                btnLead.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all";
+                renderSlicer();
+            }
+        }
+
+        function setOutcome(val) {
+            currentOutcome = val;
+            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase";
+            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-rose-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase";
+        }
+
+        function calculateLeaderboard() {
+            const scores = {};
+            PLAYERS.forEach(p => scores[p] = 0);
+            const latestPairs = {};
+            matches.forEach(m => {
+                const pairId = [m.player1, m.player2].sort().join('_').replace(/\s+/g, '');
+                if (!latestPairs[pairId] || new Date(m.date) >= new Date(latestPairs[pairId].date)) {
+                    latestPairs[pairId] = m;
+                }
+            });
+            Object.values(latestPairs).forEach(m => { if (m.winner) scores[m.winner]++; });
+            
+            const sorted = Object.entries(scores)
+                .map(([name, points]) => ({ name, points }))
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
+            document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
+                <div class="flex items-center justify-between p-6 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-5">
+                        <span class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
+                        <span class="font-bold text-slate-800 text-lg tracking-tight">${p.name}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-black text-emerald-700 leading-none">${p.points}</div>
+                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
+                    </div>
+                </div>`).join('');
+            document.getElementById('match-total').innerText = `${Object.keys(latestPairs).length} Matches Recorded`;
+        }
+
+        function renderSlicer() {
+            const selected = document.getElementById('slicer-select').value;
+            const grid = document.getElementById('slicer-grid');
+            const playerMatches = {};
+            matches.forEach(m => {
+                if (m.player1 === selected || m.player2 === selected) {
+                    const opp = m.player1 === selected ? m.player2 : m.player1;
+                    if (!playerMatches[opp] || new Date(m.date) >= new Date(playerMatches[opp].date)) playerMatches[opp] = m;
+                }
+            });
+            grid.innerHTML = PLAYERS.filter(p => p !== selected).map(opp => {
+                const match = playerMatches[opp];
+                const isWin = match && match.winner === selected;
+                const status = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
+                const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
+                return `
+                    <div class="p-6 rounded-3xl border-2 flex items-center justify-between shadow-sm transition-all ${style}">
+                        <div><h4 class="font-black text-base text-slate-800">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${status}</p></div>
+                        <i data-lucide="${!match ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
+                    </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        document.getElementById('match-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const p1 = document.getElementById('report-player').value;
+            const p2 = document.getElementById('report-opponent').value;
+            const date = document.getElementById('match-date').value;
+            if (p1 === p2) return;
+            btn.disabled = true; btn.innerText = "Syncing...";
+            try {
+                const winner = currentOutcome === 'win' ? p1 : p2;
+                const pairId = [p1, p2].sort().join('_').replace(/\s+/g, '');
+                await getMatchesCollection().doc(pairId).set({
+                    player1: p1, player2: p2, winner: winner, loser: currentOutcome === 'win' ? p2 : p1, date: date, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                document.getElementById('report-opponent').value = "";
+            } catch (err) { 
+                console.error(err); 
+                alert("Save failed. Make sure you clicked 'Create Database' in Firestore."); 
+            }
+            finally { btn.disabled = false; btn.innerText = "Submit Match Result"; }
+        };
+
+        window.onload = async () => {
+            const reportP = document.getElementById('report-player');
+            const reportO = document.getElementById('report-opponent');
+            const sliceP = document.getElementById('slicer-select');
+            PLAYERS.forEach(name => {
+                reportP.add(new Option(name, name));
+                reportO.add(new Option(name, name));
+                sliceP.add(new Option(name, name));
+            });
+            document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+            lucide.createIcons();
+
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    getMatchesCollection().onSnapshot(snap => {
+                        document.getElementById('setup-error-banner').classList.add('hidden');
+                        matches = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
+                        calculateLeaderboard();
+                    }, err => {
+                        if (err.code === 'not-found' || err.message.includes('does not exist')) {
+                            document.getElementById('setup-error-banner').classList.remove('hidden');
+                            lucide.createIcons();
+                        }
+                    });
+                }
+            });
+
+            auth.signInAnonymously().catch(e => console.error("Auth config required in console."));
+        };
+    </script>
+</body>
+</html>
