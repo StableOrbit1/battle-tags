@@ -6,6 +6,7 @@
     <title>Battle Tags at Friday Harbour</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase Compat Libraries -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -16,9 +17,35 @@
         .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        
+        /* Smooth fade for the lock screen */
+        #lock-screen {
+            backdrop-filter: blur(8px);
+            transition: opacity 0.5s ease-out;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
+
+    <!-- Passcode Overlay -->
+    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-900/90 flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-slate-800">Private Access</h2>
+                <p class="text-slate-500 text-sm mt-1">Please enter the Friday Harbour Battle Tag access code.</p>
+            </div>
+            <form id="lock-form" class="space-y-4">
+                <input type="password" id="access-code-input" placeholder="Enter Code" class="w-full p-4 bg-slate-100 border-2 border-transparent focus:border-emerald-500 rounded-2xl text-center font-bold text-xl outline-none transition-all">
+                <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg active:scale-95">
+                    Unlock App
+                </button>
+                <p id="lock-error" class="text-rose-500 text-xs font-bold hidden">Invalid Access Code</p>
+            </form>
+        </div>
+    </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -45,7 +72,7 @@
                 <i data-lucide="database-zap" class="w-8 h-8 text-rose-500 shrink-0"></i>
                 <div>
                     <h4 class="font-black text-lg">Database Initialization Required</h4>
-                    <p class="text-sm mt-1 leading-relaxed">The connection is active, but the Firestore "default" database hasn't been started in your console yet. Visit the Firestore tab in Firebase and click "Create Database".</p>
+                    <p class="text-sm mt-1 leading-relaxed">Visit the Firestore tab in Firebase and click "Create Database".</p>
                 </div>
             </div>
         </div>
@@ -116,7 +143,7 @@
     </main>
 
     <script>
-        // --- 1. CONFIGURATION (PLUGGED IN FROM YOUR SNIPPET) ---
+        // --- 1. CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyDf_1RE4hscqVVbHoN7Vvqoylj8elWLUn4",
             authDomain: "battletags-27390.firebaseapp.com",
@@ -223,6 +250,60 @@
             lucide.createIcons();
         }
 
+        // --- PASSWORD PROTECTION LOGIC ---
+        async function attemptUnlock(enteredCode) {
+            if (!enteredCode) return;
+            const unlockBtn = document.getElementById('unlock-btn');
+            const errorText = document.getElementById('lock-error');
+            
+            unlockBtn.disabled = true;
+            unlockBtn.innerText = "Checking...";
+            errorText.classList.add('hidden');
+
+            try {
+                // We try to fetch a document where the ID IS THE PASSCODE.
+                // If it exists, the passcode is correct.
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('access').collection('codes').doc(enteredCode);
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    localStorage.setItem('golf_access_token', enteredCode);
+                    document.getElementById('lock-screen').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('lock-screen').classList.add('hidden');
+                        startAppSync();
+                    }, 500);
+                } else {
+                    errorText.classList.remove('hidden');
+                    unlockBtn.innerText = "Unlock App";
+                    unlockBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error("Unlock error:", err);
+                errorText.innerText = "Error connecting to server.";
+                errorText.classList.remove('hidden');
+                unlockBtn.innerText = "Unlock App";
+                unlockBtn.disabled = false;
+            }
+        }
+
+        function startAppSync() {
+            getMatchesCollection().onSnapshot(snap => {
+                document.getElementById('setup-error-banner').classList.add('hidden');
+                matches = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
+                calculateLeaderboard();
+            }, err => {
+                if (err.code === 'not-found' || err.message.includes('does not exist')) {
+                    document.getElementById('setup-error-banner').classList.remove('hidden');
+                }
+            });
+        }
+
+        document.getElementById('lock-form').onsubmit = (e) => {
+            e.preventDefault();
+            attemptUnlock(document.getElementById('access-code-input').value);
+        };
+
         document.getElementById('match-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
@@ -259,20 +340,17 @@
 
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    getMatchesCollection().onSnapshot(snap => {
-                        document.getElementById('setup-error-banner').classList.add('hidden');
-                        matches = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-                        calculateLeaderboard();
-                    }, err => {
-                        if (err.code === 'not-found' || err.message.includes('does not exist')) {
-                            document.getElementById('setup-error-banner').classList.remove('hidden');
-                            lucide.createIcons();
-                        }
-                    });
+                    // Check if we already have a saved code in this browser
+                    const savedCode = localStorage.getItem('golf_access_token');
+                    if (savedCode) {
+                        // Silently verify or just unlock
+                        document.getElementById('lock-screen').classList.add('hidden');
+                        startAppSync();
+                    }
                 }
             });
 
-            auth.signInAnonymously().catch(e => console.error("Auth config required in console."));
+            auth.signInAnonymously();
         };
     </script>
 </body>
