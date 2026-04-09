@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,54 +7,44 @@
     <title>Battle Tags at Friday Harbour</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Firebase Compat Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
     <style>
         .hidden { display: none; }
         .win-bg { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
         .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-        
-        /* Smooth fade for the lock screen */
-        #lock-screen {
-            backdrop-filter: blur(8px);
-            transition: opacity 0.5s ease-out;
-        }
+        #lock-screen { backdrop-filter: blur(12px); transition: opacity 0.5s ease-out; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
     <!-- Passcode Overlay -->
-    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-900/90 flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto">
-                <i data-lucide="lock" class="w-8 h-8"></i>
+    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="lighthouse" class="w-10 h-10"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-black text-slate-800">Private Access</h2>
-                <p class="text-slate-500 text-sm mt-1">Please enter the Friday Harbour Battle Tag access code.</p>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Access Locked</h2>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Enter the passcode <span class="font-bold text-slate-700">FH2026</span> to continue.</p>
             </div>
             <form id="lock-form" class="space-y-4">
-                <input type="password" id="access-code-input" placeholder="Enter Code" class="w-full p-4 bg-slate-100 border-2 border-transparent focus:border-emerald-500 rounded-2xl text-center font-bold text-xl outline-none transition-all">
-                <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg active:scale-95">
-                    Unlock App
+                <input type="password" id="access-code-input" placeholder="Passcode" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none transition-all">
+                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="unlock" class="w-5 h-5"></i> Unlock App
                 </button>
-                <p id="lock-error" class="text-rose-500 text-xs font-bold hidden">Invalid Access Code</p>
+                <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
+            <div class="flex flex-col items-center md:items-start">
                 <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight">
                     <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
                 </h1>
-                <p class="text-emerald-200 text-xs font-bold uppercase tracking-widest opacity-80">Friday Harbour • 2026 Season</p>
+                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Friday Harbour • Google Sheets Sync</p>
             </div>
             <nav class="flex bg-emerald-950/50 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800">
                 <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all">
@@ -67,73 +58,51 @@
     </header>
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
-        <div id="setup-error-banner" class="hidden mb-10 p-6 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-2xl shadow-sm">
-            <div class="flex items-start gap-4">
-                <i data-lucide="database-zap" class="w-8 h-8 text-rose-500 shrink-0"></i>
-                <div>
-                    <h4 class="font-black text-lg">Database Initialization Required</h4>
-                    <p class="text-sm mt-1 leading-relaxed">Visit the Firestore tab in Firebase and click "Create Database".</p>
+        <section id="view-leaderboard" class="space-y-12">
+            <!-- Result Entry Form -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
+                <div class="mb-8">
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Battle Tags at Friday Harbour</h3>
+                    <p class="text-slate-500 text-sm font-medium">Submit results directly to the Google Sheet.</p>
                 </div>
-            </div>
-        </div>
-
-        <section id="view-leaderboard" class="space-y-10">
-            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
-                <div class="mb-6">
-                    <h3 class="text-xl font-black text-slate-800">Log a Result</h3>
-                    <p class="text-slate-500 text-sm">Battle Tags at Friday Harbour</p>
-                </div>
-                <form id="match-form" class="space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="relative">
-                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Reporter</label>
-                            <select id="report-player" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700"></select>
-                        </div>
-                        <div class="relative">
-                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Opponent</label>
-                            <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700">
-                                <option value="">Choose Opponent...</option>
-                            </select>
-                        </div>
+                <form id="match-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <select id="report-player" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
+                        <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                            <option value="">Choose Opponent...</option>
+                        </select>
                     </div>
-                    
-                    <div class="flex flex-col md:flex-row gap-5 items-end">
-                        <div class="flex-1 w-full">
-                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Outcome</label>
-                            <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl w-full">
-                                <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest">Captured Tag</button>
-                                <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest">Lost Tag</button>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl">
+                            <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest">Captured Tag</button>
+                            <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest">Lost Tag</button>
                         </div>
-                        <div class="flex-1 w-full">
-                            <label class="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest">Match Date</label>
-                            <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700">
-                        </div>
+                        <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
                     </div>
-
-                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-[0.98]">
-                        Submit Match Result
+                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active:scale-[0.98]">
+                        Submit to Spreadsheet
                     </button>
                 </form>
             </div>
 
-            <div class="space-y-4">
-                <div class="flex items-center justify-between px-2">
-                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">The Leaderboard</h2>
-                    <span id="match-total" class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200 uppercase tracking-widest">Syncing...</span>
+            <!-- Standings -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between px-4">
+                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Live Standings</h2>
+                    <button onclick="fetchData()" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-full transition-all">
+                        <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
+                    </button>
                 </div>
-                <div id="leaderboard-list" class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                    <div class="p-12 text-center text-slate-400 font-medium tracking-wide">Retrieving scores...</div>
+                <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50">
+                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest">Syncing with Sheet...</div>
                 </div>
             </div>
         </section>
 
+        <!-- Slicer View -->
         <section id="view-slicer" class="hidden space-y-8">
-            <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
-                    <p class="text-slate-500 mt-2">See your status against every other player.</p>
-                </div>
+            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div><h2 class="text-3xl font-black text-slate-800">Point Slicer</h2></div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none"></select>
                 </div>
@@ -143,15 +112,12 @@
     </main>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDf_1RE4hscqVVbHoN7Vvqoylj8elWLUn4",
-            authDomain: "battletags-27390.firebaseapp.com",
-            projectId: "battletags-27390",
-            storageBucket: "battletags-27390.firebasestorage.app",
-            messagingSenderId: "930795580018",
-            appId: "1:930795580018:web:b82b95d64572483f85f0eb"
-        };
+        // --- 1. CONFIGURATION (REPLACE THESE) ---
+        // Get this from "Publish to Web" (CSV)
+        const CSV_URL = "PASTE_YOUR_CSV_PUBLISHED_LINK_HERE"; 
+        // Get this from "Deploy as Web App"
+        const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; 
+        const PASSCODE = "FH2026";
 
         const PLAYERS = [
             "Craig Flannagan", "Rick DesForges", "Nick Leigh", "Corey Pellerin", 
@@ -163,59 +129,63 @@
             "Shea Burton", "Rick Kubas", "Colton Kalkanis"
         ].sort();
 
-        // --- 2. INITIALIZATION ---
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        const appId = 'golf-battle-tags-2026';
-
         let matches = [];
         let currentOutcome = 'win';
 
-        const getMatchesCollection = () => db.collection('artifacts').doc(appId).collection('public').doc('data').collection('matches');
-
-        function switchView(view) {
-            document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
-            document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
-            const btnLead = document.getElementById('btn-leaderboard');
-            const btnSlice = document.getElementById('btn-slicer');
+        async function fetchData() {
+            const icon = document.getElementById('refresh-icon');
+            if (icon) icon.classList.add('animate-spin');
             
-            if (view === 'leaderboard') {
-                btnLead.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all";
-                btnSlice.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all";
-            } else {
-                btnSlice.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all";
-                btnLead.className = "flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all";
-                renderSlicer();
+            try {
+                const response = await fetch(CSV_URL + "?t=" + new Date().getTime());
+                const text = await response.text();
+                parseCSV(text);
+            } catch (err) {
+                console.error("Fetch error:", err);
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
             }
         }
 
-        function setOutcome(val) {
-            currentOutcome = val;
-            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase";
-            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-rose-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase";
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== "");
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            matches = lines.slice(1).map(line => {
+                const values = line.split(',');
+                return {
+                    date: values[1],
+                    reporter: values[2],
+                    opponent: values[3],
+                    winner: values[4],
+                    loser: values[5]
+                };
+            });
+            calculateLeaderboard();
         }
 
         function calculateLeaderboard() {
             const scores = {};
             PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
+
             matches.forEach(m => {
-                const pairId = [m.player1, m.player2].sort().join('_').replace(/\s+/g, '');
+                const pairId = [m.reporter, m.opponent].sort().join('_');
                 if (!latestPairs[pairId] || new Date(m.date) >= new Date(latestPairs[pairId].date)) {
                     latestPairs[pairId] = m;
                 }
             });
+
             Object.values(latestPairs).forEach(m => { if (m.winner) scores[m.winner]++; });
             
             const sorted = Object.entries(scores)
                 .map(([name, points]) => ({ name, points }))
-                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(name));
 
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
-                <div class="flex items-center justify-between p-6 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
-                    <div class="flex items-center gap-5">
-                        <span class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
+                <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-6">
+                        <span class="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <span class="font-bold text-slate-800 text-lg tracking-tight">${p.name}</span>
                     </div>
                     <div class="text-right">
@@ -223,7 +193,51 @@
                         <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
                     </div>
                 </div>`).join('');
-            document.getElementById('match-total').innerText = `${Object.keys(latestPairs).length} Matches Recorded`;
+        }
+
+        document.getElementById('match-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const p1 = document.getElementById('report-player').value;
+            const p2 = document.getElementById('report-opponent').value;
+            const date = document.getElementById('match-date').value;
+
+            if (p1 === p2) return;
+            btn.disabled = true; btn.innerText = "Writing to Sheet...";
+
+            const winner = currentOutcome === 'win' ? p1 : p2;
+            const loser = currentOutcome === 'win' ? p2 : p1;
+
+            try {
+                // Using NO-CORS mode because Apps Script doesn't return CORS headers on POST
+                // This will say "Success" even though we can't read the response.
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser })
+                });
+
+                document.getElementById('report-opponent').value = "";
+                setTimeout(fetchData, 2000); // Wait for Sheet to update
+            } catch (err) {
+                alert("Submission error. Check script URL.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Submit to Spreadsheet";
+            }
+        };
+
+        function switchView(view) {
+            document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
+            document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
+            renderSlicer();
+        }
+
+        function setOutcome(val) {
+            currentOutcome = val;
+            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-emerald-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase";
+            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-rose-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase";
         }
 
         function renderSlicer() {
@@ -231,8 +245,8 @@
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
             matches.forEach(m => {
-                if (m.player1 === selected || m.player2 === selected) {
-                    const opp = m.player1 === selected ? m.player2 : m.player1;
+                if (m.reporter === selected || m.opponent === selected) {
+                    const opp = m.reporter === selected ? m.opponent : m.reporter;
                     if (!playerMatches[opp] || new Date(m.date) >= new Date(playerMatches[opp].date)) playerMatches[opp] = m;
                 }
             });
@@ -241,117 +255,39 @@
                 const isWin = match && match.winner === selected;
                 const status = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
                 const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                return `
-                    <div class="p-6 rounded-3xl border-2 flex items-center justify-between shadow-sm transition-all ${style}">
-                        <div><h4 class="font-black text-base text-slate-800">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${status}</p></div>
-                        <i data-lucide="${!match ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
-                    </div>`;
+                return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between ${style}">
+                    <div><h4 class="font-black text-base">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60">${status}</p></div>
+                    <i data-lucide="${!match ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
+                </div>`;
             }).join('');
             lucide.createIcons();
         }
 
-        // --- PASSWORD PROTECTION LOGIC ---
-        async function attemptUnlock(enteredCode) {
-            if (!enteredCode) return;
-            const unlockBtn = document.getElementById('unlock-btn');
-            const errorText = document.getElementById('lock-error');
-            
-            unlockBtn.disabled = true;
-            unlockBtn.innerText = "Checking...";
-            errorText.classList.add('hidden');
-
-            try {
-                // We try to fetch a document where the ID IS THE PASSCODE.
-                // If it exists, the passcode is correct.
-                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('access').collection('codes').doc(enteredCode);
-                const docSnap = await docRef.get();
-
-                if (docSnap.exists) {
-                    localStorage.setItem('golf_access_token', enteredCode);
-                    document.getElementById('lock-screen').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('lock-screen').classList.add('hidden');
-                        startAppSync();
-                    }, 500);
-                } else {
-                    errorText.classList.remove('hidden');
-                    unlockBtn.innerText = "Unlock App";
-                    unlockBtn.disabled = false;
-                }
-            } catch (err) {
-                console.error("Unlock error:", err);
-                errorText.innerText = "Error connecting to server.";
-                errorText.classList.remove('hidden');
-                unlockBtn.innerText = "Unlock App";
-                unlockBtn.disabled = false;
-            }
-        }
-
-        function startAppSync() {
-            getMatchesCollection().onSnapshot(snap => {
-                document.getElementById('setup-error-banner').classList.add('hidden');
-                matches = snap.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-                calculateLeaderboard();
-            }, err => {
-                if (err.code === 'not-found' || err.message.includes('does not exist')) {
-                    document.getElementById('setup-error-banner').classList.remove('hidden');
-                }
-            });
-        }
-
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
-            attemptUnlock(document.getElementById('access-code-input').value);
-        };
-
-        document.getElementById('match-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            const p1 = document.getElementById('report-player').value;
-            const p2 = document.getElementById('report-opponent').value;
-            const date = document.getElementById('match-date').value;
-            if (p1 === p2) return;
-            btn.disabled = true; btn.innerText = "Syncing...";
-            try {
-                const winner = currentOutcome === 'win' ? p1 : p2;
-                const pairId = [p1, p2].sort().join('_').replace(/\s+/g, '');
-                await getMatchesCollection().doc(pairId).set({
-                    player1: p1, player2: p2, winner: winner, loser: currentOutcome === 'win' ? p2 : p1, date: date, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                document.getElementById('report-opponent').value = "";
-            } catch (err) { 
-                console.error(err); 
-                alert("Save failed. Make sure you clicked 'Create Database' in Firestore."); 
+            if (document.getElementById('access-code-input').value === PASSCODE) {
+                document.getElementById('lock-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('lock-screen').classList.add('hidden');
+                    fetchData();
+                }, 500);
+            } else {
+                document.getElementById('lock-error').classList.remove('hidden');
             }
-            finally { btn.disabled = false; btn.innerText = "Submit Match Result"; }
         };
 
-        window.onload = async () => {
-            const reportP = document.getElementById('report-player');
-            const reportO = document.getElementById('report-opponent');
-            const sliceP = document.getElementById('slicer-select');
-            PLAYERS.forEach(name => {
-                reportP.add(new Option(name, name));
-                reportO.add(new Option(name, name));
-                sliceP.add(new Option(name, name));
+        window.onload = () => {
+            const rP = document.getElementById('report-player');
+            const rO = document.getElementById('report-opponent');
+            const sP = document.getElementById('slicer-select');
+            PLAYERS.forEach(n => {
+                rP.add(new Option(n, n)); rO.add(new Option(n, n)); sP.add(new Option(n, n));
             });
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
             lucide.createIcons();
-
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    // Check if we already have a saved code in this browser
-                    const savedCode = localStorage.getItem('golf_access_token');
-                    if (savedCode) {
-                        // Silently verify or just unlock
-                        document.getElementById('lock-screen').classList.add('hidden');
-                        startAppSync();
-                    }
-                }
-            });
-
-            auth.signInAnonymously();
         };
     </script>
 </body>
 </html>
+
+```
