@@ -12,32 +12,43 @@
         .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-        #lock-screen { backdrop-filter: blur(12px); transition: opacity 0.5s ease-out; }
+        #lock-screen { backdrop-filter: blur(16px); transition: opacity 0.5s ease-out; }
         .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .active-scale:active { transform: scale(0.96); }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
-    <!-- Passcode Overlay -->
+    <!-- Identity Selection Overlay (No Passcode) -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20 z-10">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
-                <i data-lucide="lighthouse" class="w-10 h-10"></i>
+                <i data-lucide="user-check" class="w-10 h-10"></i>
             </div>
             <div>
-                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Access Locked</h2>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Enter your personal passcode to log in and report matches.</p>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Identify Yourself</h2>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Select your name from the roster to access the scorecard.</p>
             </div>
-            <form id="lock-form" class="space-y-4">
-                <input type="password" id="access-code-input" placeholder="Passcode" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none transition-all">
+            <form id="lock-form" class="space-y-4 text-left">
+                <div class="relative">
+                    <select id="player-identity-select" required class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-bold text-xl outline-none transition-all cursor-pointer appearance-none">
+                        <option value="">Select Your Name...</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-400">
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                </div>
                 <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2">
-                    <i data-lucide="unlock" class="w-5 h-5"></i> Unlock App
+                    <i data-lucide="check" class="w-5 h-5"></i> Confirm Identity
                 </button>
-                <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.0.2 • Sync Optimized</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.1.0 • Identity Mode</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -60,15 +71,16 @@
     </header>
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
+        <!-- STANDINGS VIEW -->
         <section id="view-leaderboard" class="space-y-12">
-            <!-- Result Entry Form -->
+            <!-- Log Result Form -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8 flex justify-between items-start">
                     <div>
                         <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
-                        <p class="text-slate-500 text-sm font-medium">Logged in as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase">...</span></p>
+                        <p class="text-slate-500 text-sm font-medium">Reporting as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase">...</span></p>
                     </div>
-                    <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Sign Out</button>
+                    <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Switch User</button>
                 </div>
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -76,11 +88,16 @@
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reporting Player</label>
                             <div id="locked-reporter-name" class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400 cursor-not-allowed uppercase tracking-tight">Loading...</div>
                         </div>
-                        <div class="space-y-2">
+                        <div class="space-y-2 text-left">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Opponent</label>
-                            <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
-                                <option value="">Choose Opponent...</option>
-                            </select>
+                            <div class="relative">
+                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 appearance-none">
+                                    <option value="">Choose Opponent...</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -126,7 +143,7 @@
                 </form>
             </div>
 
-            <!-- Standings -->
+            <!-- Standings Table -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
                     <div>
@@ -138,12 +155,12 @@
                     </button>
                 </div>
                 <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50">
-                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest">Syncing with Sheet...</div>
+                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing...</div>
                 </div>
             </div>
         </section>
 
-        <!-- Slicer View -->
+        <!-- MY STATUS VIEW -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div>
@@ -151,7 +168,10 @@
                     <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Syncing...</p>
                 </div>
                 <div class="relative min-w-[320px]">
-                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all"></select>
+                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none"></select>
+                    <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-emerald-600">
+                        <i data-lucide="chevron-down" class="w-6 h-6"></i>
+                    </div>
                 </div>
             </div>
             <div id="slicer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -161,12 +181,7 @@
     <script>
         // --- 1. CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
-        
-        // --- UPDATED SCRIPT URL ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5L7yF3EevCZ2NHCUH3adZID6914aa54bAX8DZnNsd6HoqxWrFHIqJvyN4vg8OltDG/exec"; 
-        
-        const AUTH_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
-        const SHARED_PASSCODE = "FH2026";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzinC_HgTTRqqCdYnsWL-AqR93fW5Fhc8C8pxqYJapDocT-GL2DxRdv_yxDow-5afyOJw/exec"; 
 
         const PLAYERS = [
             "Alex Samson", "Brandon Benn", "Charlie McKinlay", "Colton Kalkanis",
@@ -181,7 +196,6 @@
         let matches = [];
         let currentOutcome = 'win';
         let currentUser = null;
-        let passwordMap = {};
 
         function parseCSVLine(str) {
             const result = [];
@@ -194,23 +208,6 @@
             }
             result.push(current);
             return result.map(v => v.replace(/^"|"$/g, '').trim());
-        }
-
-        async function fetchAuthData() {
-            if (!AUTH_CSV_URL) return;
-            try {
-                const res = await fetch(AUTH_CSV_URL + (AUTH_CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now());
-                const text = await res.text();
-                const lines = text.split('\n').filter(l => l.trim() !== "");
-                lines.slice(1).forEach(line => {
-                    const values = parseCSVLine(line);
-                    if (values.length >= 2) {
-                        const name = values[0].trim();
-                        const pass = values[1].trim();
-                        if (name && pass) passwordMap[pass] = name;
-                    }
-                });
-            } catch (e) { console.error("Auth fetch failed", e); }
         }
 
         async function fetchData() {
@@ -268,14 +265,15 @@
             const scores = {};
             PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
-            matches.forEach(m => {
+            
+            matches.sort((a,b) => a.timestampVal - b.timestampVal).forEach(m => {
                 const pairId = [m.reporter, m.opponent].sort().join('_');
-                const mTime = m.timestampVal || 0;
-                const existingTime = latestPairs[pairId] ? (latestPairs[pairId].timestampVal || 0) : -1;
-                if (mTime > existingTime) latestPairs[pairId] = m;
+                latestPairs[pairId] = m;
             });
+
             Object.values(latestPairs).forEach(m => { if (m.winner && scores[m.winner] !== undefined) scores[m.winner]++; });
             const sorted = Object.entries(scores).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+            
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-6">
@@ -284,7 +282,7 @@
                     </div>
                     <div class="text-right">
                         <div class="text-2xl font-black text-emerald-700 leading-none">${p.points}</div>
-                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
+                        <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
                     </div>
                 </div>`).join('');
         }
@@ -347,14 +345,22 @@
             btn.innerText = "Uploading to Sheet...";
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ 
                         date, reporter: p1, opponent: p2, winner, loser, score: finalScore,
                         image: imageData, imageName: imageName
                     })
                 });
+
+                const resultText = await response.text();
+                
+                if (resultText.includes("Error") || resultText.includes("Critical")) {
+                    alert("Sheet Error: " + resultText);
+                    btn.disabled = false; btn.innerText = "Submit Match";
+                    return;
+                }
 
                 document.getElementById('report-opponent').value = "";
                 document.getElementById('holes-up').value = "";
@@ -366,7 +372,7 @@
                 btn.innerText = "Success!";
                 setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Match"; }, 2000); 
             } catch (err) {
-                alert("Upload failed. Try a smaller photo or check connection.");
+                alert("Upload failed. Ensure script is correctly deployed and connected.");
                 btn.disabled = false; btn.innerText = "Submit Match";
             }
         };
@@ -396,6 +402,7 @@
             const selected = document.getElementById('slicer-select').value;
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
+            
             matches.forEach(m => {
                 if (m.reporter === selected || m.opponent === selected) {
                     const opp = m.reporter === selected ? m.opponent : m.reporter;
@@ -428,39 +435,51 @@
         }
 
         function unlock(userName) {
-            currentUser = userName; localStorage.setItem('fh_user', userName);
+            currentUser = userName; 
+            localStorage.setItem('fh_battle_tags_user', userName);
             document.getElementById('display-user-name').innerText = userName;
             document.getElementById('locked-reporter-name').innerText = userName;
             document.getElementById('slicer-select').value = userName;
+            
             const oppSelect = document.getElementById('report-opponent');
             oppSelect.innerHTML = '<option value="">Choose Opponent...</option>';
             PLAYERS.filter(p => p !== userName).forEach(n => oppSelect.add(new Option(n, n)));
+            
             document.getElementById('lock-screen').style.opacity = '0';
             setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
         }
 
-        function logout() { localStorage.removeItem('fh_user'); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('fh_battle_tags_user'); 
+            location.reload(); 
+        }
 
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('access-code-input').value.trim();
-            if (passwordMap[input]) { unlock(passwordMap[input]); return; }
-            if (input === SHARED_PASSCODE) {
-                const name = prompt("Enter your name as it appears on the leaderboard:");
-                if (PLAYERS.includes(name)) unlock(name);
-                else alert("Name not found on the roster.");
-                return;
+            const selectedName = document.getElementById('player-identity-select').value;
+            if (selectedName) {
+                unlock(selectedName);
             }
-            document.getElementById('lock-error').classList.remove('hidden');
         };
 
         window.onload = () => {
-            const sP = document.getElementById('slicer-select');
-            PLAYERS.forEach(n => sP.add(new Option(n, n)));
+            const identitySelect = document.getElementById('player-identity-select');
+            const slicerSelect = document.getElementById('slicer-select');
+            
+            PLAYERS.forEach(n => {
+                identitySelect.add(new Option(n, n));
+                slicerSelect.add(new Option(n, n));
+            });
+
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
-            fetchAuthData(); fetchData();
-            const savedUser = localStorage.getItem('fh_user');
-            if (savedUser && PLAYERS.includes(savedUser)) unlock(savedUser);
+            
+            fetchData();
+            
+            const savedUser = localStorage.getItem('fh_battle_tags_user');
+            if (savedUser && PLAYERS.includes(savedUser)) {
+                unlock(savedUser);
+            }
+            
             lucide.createIcons();
         };
     </script>
