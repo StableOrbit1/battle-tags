@@ -18,8 +18,8 @@
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
     <!-- Passcode Overlay -->
-    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex items-center justify-center p-6">
-        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20">
+    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6 relative">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20 z-10">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
                 <i data-lucide="lighthouse" class="w-10 h-10"></i>
             </div>
@@ -35,6 +35,7 @@
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -87,7 +88,10 @@
             <!-- Standings -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
-                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Live Standings</h2>
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Live Standings</h2>
+                        <p id="last-updated-leaderboard" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Last entry: Syncing...</p>
+                    </div>
                     <button onclick="fetchData()" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-full transition-all">
                         <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
                     </button>
@@ -101,7 +105,10 @@
         <!-- Slicer View -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div><h2 class="text-3xl font-black text-slate-800">Point Slicer</h2></div>
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800">Point Slicer</h2>
+                    <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Last entry: Syncing...</p>
+                </div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none"></select>
                 </div>
@@ -112,9 +119,7 @@
 
     <script>
         // --- 1. CONFIGURATION (REPLACE THESE) ---
-        // Get this from "Publish to Web" (CSV)
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
-        // Get this from "Deploy as Web App"
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1ScvOcrgOQ4_D7gbcbXDs7OsZgXoXK8RC_GS9xnjfE7JHbVPHOz_CDxqo43nl6yw2/exec"; 
         const PASSCODE = "FH2026";
 
@@ -131,12 +136,33 @@
         let matches = [];
         let currentOutcome = 'win';
 
+        // Custom parser to safely handle commas inside dates or quotes
+        function parseCSVLine(str) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < str.length; i++) {
+                if (str[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if (str[i] === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += str[i];
+                }
+            }
+            result.push(current);
+            return result.map(v => v.replace(/^"|"$/g, '').trim());
+        }
+
         async function fetchData() {
             const icon = document.getElementById('refresh-icon');
             if (icon) icon.classList.add('animate-spin');
             
             try {
-                const response = await fetch(CSV_URL + "?t=" + new Date().getTime());
+                // Fix cache-busting URL to force the newest version possible
+                const urlToFetch = CSV_URL.includes('?') ? CSV_URL + "&t=" + Date.now() : CSV_URL + "?t=" + Date.now();
+                const response = await fetch(urlToFetch);
                 const text = await response.text();
                 parseCSV(text);
             } catch (err) {
@@ -147,20 +173,60 @@
         }
 
         function parseCSV(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim() !== "");
-            const headers = lines[0].split(',').map(h => h.trim());
+            // Strip hidden return characters to prevent name matching bugs
+            const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
+            if (lines.length === 0) return;
             
-            matches = lines.slice(1).map(line => {
-                const values = line.split(',');
-                return {
-                    date: values[1],
-                    reporter: values[2],
-                    opponent: values[3],
-                    winner: values[4],
-                    loser: values[5]
-                };
-            });
+            // Check if the first row is a header row, so we don't accidentally delete match #1
+            let startIndex = 0;
+            if (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) {
+                startIndex = 1;
+            }
+            
+            const parsedMatches = [];
+            let latestTimestampStr = "";
+            let latestTimestampVal = 0;
+
+            for (let i = startIndex; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= 6) {
+                    const tsRaw = values[0].trim();
+                    const matchTime = new Date(tsRaw).getTime() || new Date(values[1].trim()).getTime() || 0;
+                    
+                    if (matchTime > latestTimestampVal) {
+                        latestTimestampVal = matchTime;
+                        latestTimestampStr = tsRaw;
+                    }
+
+                    parsedMatches.push({
+                        timestampRaw: tsRaw,
+                        timestampVal: matchTime,
+                        date: values[1].trim(),
+                        reporter: values[2].trim(),
+                        opponent: values[3].trim(),
+                        winner: values[4].trim(),
+                        loser: values[5].trim()
+                    });
+                }
+            }
+
+            // Restore "pending" matches to bridge the 5-minute cache gap
+            // Only keeps matches if they were added AFTER the latest sheet timestamp
+            const pending = JSON.parse(localStorage.getItem('fh_pending_matches') || '[]');
+            const validPending = pending.filter(p => p.timestampVal > latestTimestampVal);
+            localStorage.setItem('fh_pending_matches', JSON.stringify(validPending));
+
+            matches = [...parsedMatches, ...validPending];
+            
+            // Update the UI
+            const timeDisplay = latestTimestampStr ? `Last entry: ${latestTimestampStr}` : 'No entries yet';
+            document.getElementById('last-updated-leaderboard').innerText = timeDisplay;
+            document.getElementById('last-updated-slicer').innerText = timeDisplay;
+
             calculateLeaderboard();
+            if (!document.getElementById('view-slicer').classList.contains('hidden')) {
+                renderSlicer();
+            }
         }
 
         function calculateLeaderboard() {
@@ -168,18 +234,27 @@
             PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
 
+            // Group by the newest timestamp for any specific pairing
             matches.forEach(m => {
                 const pairId = [m.reporter, m.opponent].sort().join('_');
-                if (!latestPairs[pairId] || new Date(m.date) >= new Date(latestPairs[pairId].date)) {
+                const mTime = m.timestampVal || 0;
+                const existingTime = latestPairs[pairId] ? (latestPairs[pairId].timestampVal || 0) : -1;
+
+                if (mTime > existingTime) {
                     latestPairs[pairId] = m;
                 }
             });
 
-            Object.values(latestPairs).forEach(m => { if (m.winner) scores[m.winner]++; });
+            // Calculate points
+            Object.values(latestPairs).forEach(m => { 
+                if (m.winner && scores[m.winner] !== undefined) {
+                    scores[m.winner]++; 
+                }
+            });
             
             const sorted = Object.entries(scores)
                 .map(([name, points]) => ({ name, points }))
-                .sort((a, b) => b.points - a.points || a.name.localeCompare(name));
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
 
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
@@ -213,16 +288,26 @@
             const loser = currentOutcome === 'win' ? p2 : p1;
 
             // --- OPTIMISTIC UI UPDATE ---
-            // Update the browser's memory immediately so the UI responds instantly
-            matches.push({
+            const newMatch = {
+                timestampRaw: new Date().toLocaleString(),
+                timestampVal: Date.now(),
                 date: date,
                 reporter: p1,
                 opponent: p2,
                 winner: winner,
                 loser: loser
-            });
+            };
             
-            // Re-render both views with the newly added match
+            matches.push(newMatch);
+            
+            // Cache locally to survive the Google refresh delay
+            const pending = JSON.parse(localStorage.getItem('fh_pending_matches') || '[]');
+            pending.push(newMatch);
+            localStorage.setItem('fh_pending_matches', JSON.stringify(pending));
+            
+            // Re-render UI immediately
+            document.getElementById('last-updated-leaderboard').innerText = `Last entry: ${newMatch.timestampRaw} (Pending...)`;
+            document.getElementById('last-updated-slicer').innerText = `Last entry: ${newMatch.timestampRaw} (Pending...)`;
             calculateLeaderboard();
             if (!document.getElementById('view-slicer').classList.contains('hidden')) {
                 renderSlicer();
@@ -241,8 +326,6 @@
                 btn.innerText = "Saved!";
                 
                 setTimeout(() => {
-                    // Do NOT call fetchData() here! The Google CSV takes up to 5 minutes to refresh.
-                    // If we pull the data now, it will overwrite our optimistic update with the old sheet data.
                     btn.disabled = false; 
                     btn.innerText = "Submit Match";
                 }, 2000); 
@@ -256,32 +339,42 @@
         function switchView(view) {
             document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
             document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
-            renderSlicer();
+            if (view === 'slicer') {
+                renderSlicer();
+            }
         }
 
         function setOutcome(val) {
             currentOutcome = val;
-            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-emerald-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase";
-            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-rose-600 text-white shadow-lg uppercase" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase";
+            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-emerald-600 text-white shadow-lg uppercase tracking-widest" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest";
+            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-rose-600 text-white shadow-lg uppercase tracking-widest" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest";
         }
 
         function renderSlicer() {
             const selected = document.getElementById('slicer-select').value;
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
+            
+            // Get highest timestamp match per pairing based on exact Sheet data
             matches.forEach(m => {
                 if (m.reporter === selected || m.opponent === selected) {
                     const opp = m.reporter === selected ? m.opponent : m.reporter;
-                    if (!playerMatches[opp] || new Date(m.date) >= new Date(playerMatches[opp].date)) playerMatches[opp] = m;
+                    const mTime = m.timestampVal || 0;
+                    const existingTime = playerMatches[opp] ? (playerMatches[opp].timestampVal || 0) : -1;
+                    
+                    if (mTime > existingTime) {
+                        playerMatches[opp] = m;
+                    }
                 }
             });
+
             grid.innerHTML = PLAYERS.filter(p => p !== selected).map(opp => {
                 const match = playerMatches[opp];
                 const isWin = match && match.winner === selected;
                 const status = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
                 const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between ${style}">
-                    <div><h4 class="font-black text-base">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60">${status}</p></div>
+                return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style}">
+                    <div><h4 class="font-black text-base text-slate-800">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${status}</p></div>
                     <i data-lucide="${!match ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
                 </div>`;
             }).join('');
