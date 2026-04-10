@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v2.4.4</title>
+    <title>Battle Tags Friday Harbour v2.5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -23,7 +23,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
-    <!-- Identity Selection Overlay -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20 z-10">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -48,7 +47,7 @@
                 </button>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.4.4 • Stable Build</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.5.0 • Winner-Only Reporting</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -71,27 +70,28 @@
     </header>
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
-        <!-- LOG RESULT & STANDINGS SECTION -->
         <section id="view-leaderboard" class="space-y-12">
+            
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8 flex justify-between items-start">
                     <div class="text-left">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Report Tag Capture</h3>
                         <p class="text-slate-500 text-sm font-medium">Reporting as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase tracking-tight">...</span></p>
                     </div>
                     <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Switch User</button>
                 </div>
+                
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2 text-left">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reporting Player</label>
-                            <div id="locked-reporter-name" class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400 uppercase tracking-tight italic">Loading...</div>
+                            <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Winner (You)</label>
+                            <div id="locked-reporter-name" class="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-2xl font-bold text-emerald-900 uppercase tracking-tight shadow-inner">Loading...</div>
                         </div>
                         <div class="space-y-2 text-left">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Opponent</label>
+                            <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Defeated Opponent</label>
                             <div class="relative">
-                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 appearance-none cursor-pointer">
-                                    <option value="">Choose Opponent...</option>
+                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border-2 border-rose-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-rose-400 appearance-none cursor-pointer transition-all">
+                                    <option value="">Select Opponent...</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -100,21 +100,11 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end text-left">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Outcome</label>
-                            <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl">
-                                <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest active-scale">Captured Tag</button>
-                                <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest active-scale">Lost Tag</button>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left">
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match Date</label>
-                            <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                            <input type="date" id="match-date" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left">
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
                             <input type="number" id="holes-up" placeholder="3" required min="1" max="18" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
@@ -125,8 +115,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale">
-                        Submit Match
+                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale flex justify-center items-center gap-2">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win
                     </button>
                 </form>
             </div>
@@ -144,12 +134,11 @@
             </div>
         </section>
 
-        <!-- POINT SLICER SECTION -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div class="text-left">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for your match-ups</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Match History & Dates</p>
                 </div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"></select>
@@ -163,7 +152,7 @@
     </main>
 
     <script>
-        // --- 1. CONFIGURATION ---
+        // --- 1. SECURE URL CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=0&single=true&output=csv"; 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5NjiGnCT-hyFpO9iXr5gQJ4by2JWvx9qXIgrzzCznEiibtLStc0r_qa9-qkXR7x7p/exec"; 
 
@@ -178,7 +167,6 @@
         ].sort();
 
         let matches = [];
-        let currentOutcome = 'win';
         let currentUser = null;
 
         function parseCSVLine(str) {
@@ -221,8 +209,12 @@
                     const ts = v[0].trim(); const val = new Date(ts).getTime() || 0;
                     if (val > latestTsVal) { latestTsVal = val; latestTs = ts; }
                     parsed.push({
-                        tsVal: val, reporter: v[2].trim(),
-                        opponent: v[3].trim(), winner: v[4].trim(), loser: v[5].trim(),
+                        tsVal: val, 
+                        date: v[1].trim(),
+                        reporter: v[2].trim(),
+                        opponent: v[3].trim(), 
+                        winner: v[4].trim(), 
+                        loser: v[5].trim(),
                         score: v[6] ? v[6].trim() : ""
                     });
                 }
@@ -260,33 +252,49 @@
         document.getElementById('match-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const p1 = currentUser; const p2 = document.getElementById('report-opponent').value;
+            
+            const p1 = currentUser; // Reporting player is ALWAYS the winner
+            const p2 = document.getElementById('report-opponent').value; // Selected opponent is ALWAYS the loser
+            
             const date = document.getElementById('match-date').value;
             const score = `${document.getElementById('holes-up').value} & ${document.getElementById('holes-remaining').value}`;
 
-            if (!p1 || !p2 || p1 === p2) { alert("Invalid selection."); return; }
-            btn.disabled = true; btn.innerText = "Syncing...";
+            if (!p1 || !p2 || p1 === p2) { alert("Invalid Opponent selection."); return; }
+            btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...';
+            lucide.createIcons();
 
-            const winner = currentOutcome === 'win' ? p1 : p2;
-            const loser = currentOutcome === 'win' ? p2 : p1;
+            // Winner logic forced by UI redesign
+            const winner = p1; 
+            const loser = p2;
 
             try {
-                // Ensure data reaches the Google server regardless of CORS policies
+                // Submit to Google Apps Script silently
                 await fetch(SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors', cache: 'no-cache',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser, score })
                 });
 
+                // Clear Form
                 document.getElementById('report-opponent').value = "";
                 document.getElementById('holes-up').value = "";
                 document.getElementById('holes-remaining').value = "";
                 
-                btn.innerText = "Success!";
-                setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Match"; }, 2000); 
+                btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> Match Saved!';
+                lucide.createIcons();
+                
+                setTimeout(() => { 
+                    fetchData(); 
+                    btn.disabled = false; 
+                    btn.innerHTML = '<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win'; 
+                    lucide.createIcons();
+                }, 2000); 
+
             } catch (err) {
-                alert("Upload network error. Check internet connection.");
-                btn.disabled = false; btn.innerText = "Submit Match";
+                alert("Connection failed. Check your internet signal.");
+                btn.disabled = false; 
+                btn.innerHTML = '<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win';
+                lucide.createIcons();
             }
         };
 
@@ -298,16 +306,11 @@
             if (v === 'slicer') renderSlicer();
         }
 
-        function setOutcome(val) {
-            currentOutcome = val;
-            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest active-scale" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest active-scale";
-            document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-rose-600 text-white shadow-lg uppercase tracking-widest active-scale" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest active-scale";
-        }
-
         function renderSlicer() {
             const sel = document.getElementById('slicer-select').value;
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
+            
             matches.forEach(m => {
                 if (m.reporter === sel || m.opponent === sel) {
                     const opp = m.reporter === sel ? m.opponent : m.reporter;
@@ -316,12 +319,18 @@
             });
 
             grid.innerHTML = PLAYERS.filter(p => p !== sel).map(opp => {
-                const m = playerMatches[opp]; const isWin = m && m.winner === sel;
+                const m = playerMatches[opp]; 
+                const isWin = m && m.winner === sel;
                 const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200 shadow-sm' : 'loss-bg border-rose-200 shadow-sm';
+                
+                // Construct Date UI for the card
+                const dateStr = (m && m.date) ? `<span class="block text-[9px] text-slate-500 mt-1.5 font-bold"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>` : '';
+
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style} group hover:shadow-md">
                     <div class="text-left">
                         <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4>
                         <p class="text-[10px] font-black uppercase opacity-60 tracking-wider text-balance">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p>
+                        ${dateStr}
                     </div>
                     <i data-lucide="${!m ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
                 </div>`;
@@ -331,22 +340,24 @@
 
         function unlock(userName) {
             currentUser = userName; 
-            localStorage.setItem('fh_battle_tags_v6', userName);
+            localStorage.setItem('fh_battle_tags_v7', userName);
+            
             document.getElementById('display-user-name').innerText = userName;
             document.getElementById('locked-reporter-name').innerText = userName;
-            document.getElementById('locked-reporter-name').classList.remove('italic');
-            document.getElementById('locked-reporter-name').classList.add('text-slate-800');
             document.getElementById('slicer-select').value = userName;
             
             const opp = document.getElementById('report-opponent');
-            opp.innerHTML = '<option value="">Choose Opponent...</option>';
+            opp.innerHTML = '<option value="">Select Opponent...</option>';
             PLAYERS.filter(p => p !== userName).forEach(n => opp.add(new Option(n, n)));
             
             document.getElementById('lock-screen').style.opacity = '0';
             setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
         }
 
-        function logout() { localStorage.removeItem('fh_battle_tags_v6'); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('fh_battle_tags_v7'); 
+            location.reload(); 
+        }
 
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
@@ -358,10 +369,13 @@
             const idSel = document.getElementById('player-identity-select');
             const slSel = document.getElementById('slicer-select');
             PLAYERS.forEach(n => { idSel.add(new Option(n, n)); slSel.add(new Option(n, n)); });
+            
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
             fetchData();
-            const saved = localStorage.getItem('fh_battle_tags_v6');
+            
+            const saved = localStorage.getItem('fh_battle_tags_v7');
             if (saved && PLAYERS.includes(saved)) unlock(saved);
+            
             lucide.createIcons();
         };
     </script>
