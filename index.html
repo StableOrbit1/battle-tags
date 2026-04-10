@@ -13,10 +13,14 @@
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         #lock-screen { backdrop-filter: blur(12px); transition: opacity 0.5s ease-out; }
+        
+        /* Transition for nav buttons */
+        .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
+    <!-- Passcode Overlay -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20 z-10">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -34,22 +38,22 @@
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6.1</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6.2</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex flex-col items-center md:items-start">
-                <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight">
+                <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight uppercase">
                     <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
                 </h1>
-                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Friday Harbour • Google Sheets Sync</p>
+                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">The Nest at Friday Harbour</p>
             </div>
-            <nav class="flex bg-emerald-950/50 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800">
-                <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all">
+            <nav class="flex bg-emerald-950/40 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800/50 backdrop-blur-sm">
+                <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg">
                     <i data-lucide="trophy" class="w-4 h-4"></i> Standings
                 </button>
-                <button onclick="switchView('slicer')" id="btn-slicer" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-300 hover:text-white transition-all">
+                <button onclick="switchView('slicer')" id="btn-slicer" class="nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50">
                     <i data-lucide="users" class="w-4 h-4"></i> My Status
                 </button>
             </nav>
@@ -58,10 +62,11 @@
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
         <section id="view-leaderboard" class="space-y-12">
+            <!-- Result Entry Form -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8">
-                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Battle Tags at Friday Harbour</h3>
-                    <p class="text-slate-500 text-sm font-medium">Submit results directly to the Google Sheet.</p>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
+                    <p class="text-slate-500 text-sm font-medium">Results are updated across all devices automatically.</p>
                 </div>
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -83,6 +88,7 @@
                 </form>
             </div>
 
+            <!-- Standings -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
                     <div>
@@ -99,10 +105,11 @@
             </div>
         </section>
 
+        <!-- Slicer View -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div>
-                    <h2 class="text-3xl font-black text-slate-800">Point Slicer</h2>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
                     <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Syncing...</p>
                 </div>
                 <div class="relative min-w-[320px]">
@@ -120,20 +127,18 @@
         const PASSCODE = "FH2026";
 
         const PLAYERS = [
-            "Craig Flannagan", "Rick DesForges", "Nick Leigh", "Corey Pellerin", 
-            "Shane Quinlan", "Jesse Rabishaw", "Dave Ashwood", "Jeff Ash", 
-            "Dave McCharles", "Jordan Baker", "Lou Soriano", "Tyler Risdon", 
-            "Charlie McKinlay", "Jordan Horowitz", "Rob Nichols", "Luke Coles", 
-            "Sean McBurney", "Keith Palmer", "Nick Coulson", "Ryan Fedrigo", 
-            "Mike Van Berkel", "Mike Brigden", "Alex Samson", "Brandon Benn", 
-            "Shea Burton", "Rick Kubas", "Colton Kalkanis"
+            "Alex Samson", "Brandon Benn", "Charlie McKinlay", "Colton Kalkanis",
+            "Corey Pellerin", "Craig Flannagan", "Dave Ashwood", "Dave McCharles",
+            "Jeff Ash", "Jesse Rabishaw", "Jordan Baker", "Jordan Horowitz",
+            "Keith Palmer", "Lou Soriano", "Luke Coles", "Mike Brigden",
+            "Mike Van Berkel", "Nick Coulson", "Nick Leigh", "Rick DesForges",
+            "Rick Kubas", "Rob Nichols", "Ryan Fedrigo", "Sean McBurney",
+            "Shane Quinlan", "Shea Burton", "Tyler Risdon"
         ].sort();
 
         let matches = [];
         let currentOutcome = 'win';
-        let isFirstLoad = true;
 
-        // Custom parser to safely handle commas inside dates or quotes
         function parseCSVLine(str) {
             const result = [];
             let current = '';
@@ -157,19 +162,14 @@
             if (icon) icon.classList.add('animate-spin');
             
             try {
-                // Cache-busting URL
                 const urlToFetch = CSV_URL + (CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now();
                 const response = await fetch(urlToFetch);
                 const text = await response.text();
                 
-                if (!text || text.length < 10) {
-                    throw new Error("Empty response");
-                }
-                
+                if (!text || text.length < 10) throw new Error("Empty response");
                 parseCSV(text);
             } catch (err) {
-                console.warn("Fetch failed, retrying in 3s...", err);
-                // Retry loop if data is missing or connection fails
+                console.warn("Fetch failed, retrying...", err);
                 setTimeout(fetchData, 3000);
             } finally {
                 if (icon) icon.classList.remove('animate-spin');
@@ -246,7 +246,7 @@
             
             const sorted = Object.entries(scores)
                 .map(([name, points]) => ({ name, points }))
-                .sort((a, b) => b.points - a.points || a.name.localeCompare(a.name));
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
 
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
@@ -274,7 +274,7 @@
             }
             
             btn.disabled = true; 
-            btn.innerText = "Saving to Sheet...";
+            btn.innerText = "Updating Match Results...";
 
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
@@ -289,7 +289,7 @@
                 });
 
                 document.getElementById('report-opponent').value = "";
-                btn.innerText = "Saved!";
+                btn.innerText = "Match Updated!";
                 
                 setTimeout(() => {
                     fetchData(); 
@@ -306,12 +306,23 @@
         function switchView(view) {
             document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
             document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
-            if (view === 'slicer') renderSlicer();
+            
+            const btnLead = document.getElementById('btn-leaderboard');
+            const btnSlice = document.getElementById('btn-slicer');
+            
+            if (view === 'leaderboard') {
+                btnLead.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg";
+                btnSlice.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50";
+            } else {
+                btnSlice.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg";
+                btnLead.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50";
+                renderSlicer();
+            }
         }
 
         function setOutcome(val) {
             currentOutcome = val;
-            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-emerald-600 text-white shadow-lg uppercase tracking-widest" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest";
+            document.getElementById('outcome-win').className = val === 'win' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest";
             document.getElementById('outcome-loss').className = val === 'loss' ? "flex-1 py-4 px-3 rounded-xl text-xs font-black bg-rose-600 text-white shadow-lg uppercase tracking-widest" : "flex-1 py-4 px-3 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-200 uppercase tracking-widest";
         }
 
@@ -332,10 +343,11 @@
             grid.innerHTML = PLAYERS.filter(p => p !== selected).map(opp => {
                 const match = playerMatches[opp];
                 const isWin = match && match.winner === selected;
-                const status = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
+                const status = !match ? 'unplayed' : isWin ? 'captured' : 'lost';
+                const label = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
                 const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style}">
-                    <div><h4 class="font-black text-base text-slate-800">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${status}</p></div>
+                    <div><h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${label}</p></div>
                     <i data-lucide="${!match ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
                 </div>`;
             }).join('');
@@ -362,8 +374,6 @@
                 rP.add(new Option(n, n)); rO.add(new Option(n, n)); sP.add(new Option(n, n));
             });
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
-            
-            // BACKGROUND SYNC: Start fetching data immediately on page load
             fetchData();
             lucide.createIcons();
         };
