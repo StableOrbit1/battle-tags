@@ -79,7 +79,7 @@
                         <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
                     </div>
                     <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active:scale-[0.98]">
-                        Submit to Spreadsheet
+                        Submit Match
                     </button>
                 </form>
             </div>
@@ -201,29 +201,39 @@
             const p2 = document.getElementById('report-opponent').value;
             const date = document.getElementById('match-date').value;
 
-            if (p1 === p2) return;
-            btn.disabled = true; btn.innerText = "Writing to Sheet...";
+            if (p1 === p2) {
+                alert("You cannot play against yourself!");
+                return;
+            }
+            
+            btn.disabled = true; 
+            btn.innerText = "Saving to Sheet...";
 
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
 
             try {
-                // Using NO-CORS mode because Apps Script doesn't return CORS headers on POST
-                // This will say "Success" even though we can't read the response.
+                // Using text/plain to avoid browser blocking the payload in no-cors mode
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser })
                 });
 
                 document.getElementById('report-opponent').value = "";
-                setTimeout(fetchData, 2000); // Wait for Sheet to update
+                btn.innerText = "Saved!";
+                
+                setTimeout(() => {
+                    fetchData(); // Trigger a refresh
+                    btn.disabled = false; 
+                    btn.innerText = "Submit Match";
+                }, 2000); 
             } catch (err) {
                 alert("Submission error. Check script URL.");
-            } finally {
-                btn.disabled = false; btn.innerText = "Submit to Spreadsheet";
+                btn.disabled = false; 
+                btn.innerText = "Submit Match";
             }
         };
 
