@@ -35,7 +35,7 @@
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.7</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -210,13 +210,7 @@
                 }
             }
 
-            // Restore "pending" matches to bridge the 5-minute cache gap
-            // Only keeps matches if they were added AFTER the latest sheet timestamp
-            const pending = JSON.parse(localStorage.getItem('fh_pending_matches') || '[]');
-            const validPending = pending.filter(p => p.timestampVal > latestTimestampVal);
-            localStorage.setItem('fh_pending_matches', JSON.stringify(validPending));
-
-            matches = [...parsedMatches, ...validPending];
+            matches = parsedMatches;
             
             // Update the UI
             const timeDisplay = latestTimestampStr ? `Last entry: ${latestTimestampStr}` : 'No entries yet';
@@ -287,32 +281,6 @@
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
 
-            // --- OPTIMISTIC UI UPDATE ---
-            const newMatch = {
-                timestampRaw: new Date().toLocaleString(),
-                timestampVal: Date.now(),
-                date: date,
-                reporter: p1,
-                opponent: p2,
-                winner: winner,
-                loser: loser
-            };
-            
-            matches.push(newMatch);
-            
-            // Cache locally to survive the Google refresh delay
-            const pending = JSON.parse(localStorage.getItem('fh_pending_matches') || '[]');
-            pending.push(newMatch);
-            localStorage.setItem('fh_pending_matches', JSON.stringify(pending));
-            
-            // Re-render UI immediately
-            document.getElementById('last-updated-leaderboard').innerText = `Last entry: ${newMatch.timestampRaw} (Pending...)`;
-            document.getElementById('last-updated-slicer').innerText = `Last entry: ${newMatch.timestampRaw} (Pending...)`;
-            calculateLeaderboard();
-            if (!document.getElementById('view-slicer').classList.contains('hidden')) {
-                renderSlicer();
-            }
-
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -326,6 +294,7 @@
                 btn.innerText = "Saved!";
                 
                 setTimeout(() => {
+                    fetchData(); // Pull fresh data from the Google Sheet
                     btn.disabled = false; 
                     btn.innerText = "Submit Match";
                 }, 2000); 
