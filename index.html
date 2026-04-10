@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v2.4.3</title>
+    <title>Battle Tags Friday Harbour v2.4.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -12,7 +12,7 @@
         .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { appearance: none; -webkit-appearance: none; }
-        #lock-screen, #troubleshoot-modal { backdrop-filter: blur(16px); transition: opacity 0.5s ease-out; }
+        #lock-screen { backdrop-filter: blur(16px); transition: opacity 0.5s ease-out; }
         .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .active-scale:active { transform: scale(0.96); }
         
@@ -22,30 +22,6 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
-
-    <!-- Troubleshoot Modal -->
-    <div id="troubleshoot-modal" class="fixed inset-0 z-[200] bg-slate-900/90 flex flex-col items-center justify-center p-6 hidden">
-        <div class="bg-white p-8 rounded-[2rem] shadow-2xl max-w-lg w-full space-y-6 text-left border-4 border-rose-500 relative">
-            <button onclick="toggleTroubleshoot()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-            <div>
-                <h2 class="text-2xl font-black text-rose-600 flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="w-6 h-6"></i> Sync Failing?
-                </h2>
-                <p class="text-slate-600 text-sm mt-2 font-medium leading-relaxed">If the app says "Success" but the CSV is empty, your Google Script is crashing silently. Verify these 3 things in Google Sheets:</p>
-            </div>
-            <ol class="space-y-4 text-sm font-bold text-slate-700 list-decimal pl-5">
-                <li class="pl-2 border-b pb-2">Is the script attached to the sheet? You <span class="text-rose-600 uppercase">must</span> open the script editor by clicking <strong>Extensions > Apps Script</strong> from inside your specific spreadsheet.</li>
-                <li class="pl-2 border-b pb-2">Is your tab named <span class="text-emerald-600 bg-emerald-50 px-1 rounded">Matches</span>? It must be exactly that, with a capital M and no hidden spaces.</li>
-                <li class="pl-2">When you deployed, did you select <strong>Execute as: Me</strong> and <strong>Who has access: Anyone</strong>? If you chose "User accessing the web app", it will fail silently.</li>
-            </ol>
-            <div class="bg-slate-100 p-4 rounded-xl text-xs text-slate-500 font-medium">
-                <strong>Pro Tip:</strong> Open your Apps Script editor and click the "Executions" icon (the stacked lines on the left menu). It will show you exactly what line of code is crashing when you submit a match!
-            </div>
-            <button onclick="toggleTroubleshoot()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-black active-scale">I Understand</button>
-        </div>
-    </div>
 
     <!-- Identity Selection Overlay -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6 text-center">
@@ -72,7 +48,7 @@
                 </button>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.4.3 • Debug Mode Active</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.4.4 • Stable Build</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -97,10 +73,7 @@
     <main class="max-w-3xl mx-auto p-4 md:p-8">
         <!-- LOG RESULT & STANDINGS SECTION -->
         <section id="view-leaderboard" class="space-y-12">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 relative">
-                <button onclick="toggleTroubleshoot()" class="absolute -top-3 -right-3 bg-rose-100 text-rose-600 rounded-full p-2 shadow-lg hover:bg-rose-200 transition-all" title="Help / Troubleshoot">
-                    <i data-lucide="help-circle" class="w-5 h-5"></i>
-                </button>
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8 flex justify-between items-start">
                     <div class="text-left">
                         <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
@@ -207,11 +180,6 @@
         let matches = [];
         let currentOutcome = 'win';
         let currentUser = null;
-
-        function toggleTroubleshoot() {
-            const modal = document.getElementById('troubleshoot-modal');
-            modal.classList.toggle('hidden');
-        }
 
         function parseCSVLine(str) {
             const result = [];
