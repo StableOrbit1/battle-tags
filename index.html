@@ -17,7 +17,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
 
-    <!-- Passcode Overlay -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6">
         <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center space-y-8 border border-emerald-100/20 z-10">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -35,7 +34,7 @@
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.7</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6.1</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -44,7 +43,7 @@
                 <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight">
                     <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
                 </h1>
-                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">The Nest at Friday Harbour</p>
+                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Friday Harbour • Google Sheets Sync</p>
             </div>
             <nav class="flex bg-emerald-950/50 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800">
                 <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-500 text-white shadow-lg transition-all">
@@ -59,11 +58,10 @@
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
         <section id="view-leaderboard" class="space-y-12">
-            <!-- Result Entry Form -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8">
-                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Welcome to Battle Tags</h3>
-                    <p class="text-slate-500 text-sm font-medium">Submit Your Match Result.</p>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Battle Tags at Friday Harbour</h3>
+                    <p class="text-slate-500 text-sm font-medium">Submit results directly to the Google Sheet.</p>
                 </div>
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -85,12 +83,11 @@
                 </form>
             </div>
 
-            <!-- Standings -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
                     <div>
                         <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Live Standings</h2>
-                        <p id="last-updated-leaderboard" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Last entry: Syncing...</p>
+                        <p id="last-updated-leaderboard" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Syncing with Sheet...</p>
                     </div>
                     <button onclick="fetchData()" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-full transition-all">
                         <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
@@ -102,12 +99,11 @@
             </div>
         </section>
 
-        <!-- Slicer View -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div>
                     <h2 class="text-3xl font-black text-slate-800">Point Slicer</h2>
-                    <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Last entry: Syncing...</p>
+                    <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Syncing...</p>
                 </div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none"></select>
@@ -118,7 +114,7 @@
     </main>
 
     <script>
-        // --- 1. CONFIGURATION (REPLACE THESE) ---
+        // --- 1. CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1ScvOcrgOQ4_D7gbcbXDs7OsZgXoXK8RC_GS9xnjfE7JHbVPHOz_CDxqo43nl6yw2/exec"; 
         const PASSCODE = "FH2026";
@@ -135,6 +131,7 @@
 
         let matches = [];
         let currentOutcome = 'win';
+        let isFirstLoad = true;
 
         // Custom parser to safely handle commas inside dates or quotes
         function parseCSVLine(str) {
@@ -160,24 +157,29 @@
             if (icon) icon.classList.add('animate-spin');
             
             try {
-                // Fix cache-busting URL to force the newest version possible
-                const urlToFetch = CSV_URL.includes('?') ? CSV_URL + "&t=" + Date.now() : CSV_URL + "?t=" + Date.now();
+                // Cache-busting URL
+                const urlToFetch = CSV_URL + (CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now();
                 const response = await fetch(urlToFetch);
                 const text = await response.text();
+                
+                if (!text || text.length < 10) {
+                    throw new Error("Empty response");
+                }
+                
                 parseCSV(text);
             } catch (err) {
-                console.error("Fetch error:", err);
+                console.warn("Fetch failed, retrying in 3s...", err);
+                // Retry loop if data is missing or connection fails
+                setTimeout(fetchData, 3000);
             } finally {
                 if (icon) icon.classList.remove('animate-spin');
             }
         }
 
         function parseCSV(csvText) {
-            // Strip hidden return characters to prevent name matching bugs
             const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
             if (lines.length === 0) return;
             
-            // Check if the first row is a header row, so we don't accidentally delete match #1
             let startIndex = 0;
             if (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) {
                 startIndex = 1;
@@ -211,9 +213,8 @@
             }
 
             matches = parsedMatches;
-            
-            // Update the UI
             const timeDisplay = latestTimestampStr ? `Last entry: ${latestTimestampStr}` : 'No entries yet';
+            
             document.getElementById('last-updated-leaderboard').innerText = timeDisplay;
             document.getElementById('last-updated-slicer').innerText = timeDisplay;
 
@@ -228,18 +229,15 @@
             PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
 
-            // Group by the newest timestamp for any specific pairing
             matches.forEach(m => {
                 const pairId = [m.reporter, m.opponent].sort().join('_');
                 const mTime = m.timestampVal || 0;
                 const existingTime = latestPairs[pairId] ? (latestPairs[pairId].timestampVal || 0) : -1;
-
                 if (mTime > existingTime) {
                     latestPairs[pairId] = m;
                 }
             });
 
-            // Calculate points
             Object.values(latestPairs).forEach(m => { 
                 if (m.winner && scores[m.winner] !== undefined) {
                     scores[m.winner]++; 
@@ -248,7 +246,7 @@
             
             const sorted = Object.entries(scores)
                 .map(([name, points]) => ({ name, points }))
-                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(a.name));
 
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
@@ -294,7 +292,7 @@
                 btn.innerText = "Saved!";
                 
                 setTimeout(() => {
-                    fetchData(); // Pull fresh data from the Google Sheet
+                    fetchData(); 
                     btn.disabled = false; 
                     btn.innerText = "Submit Match";
                 }, 2000); 
@@ -308,9 +306,7 @@
         function switchView(view) {
             document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
             document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
-            if (view === 'slicer') {
-                renderSlicer();
-            }
+            if (view === 'slicer') renderSlicer();
         }
 
         function setOutcome(val) {
@@ -324,16 +320,12 @@
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
             
-            // Get highest timestamp match per pairing based on exact Sheet data
             matches.forEach(m => {
                 if (m.reporter === selected || m.opponent === selected) {
                     const opp = m.reporter === selected ? m.opponent : m.reporter;
                     const mTime = m.timestampVal || 0;
                     const existingTime = playerMatches[opp] ? (playerMatches[opp].timestampVal || 0) : -1;
-                    
-                    if (mTime > existingTime) {
-                        playerMatches[opp] = m;
-                    }
+                    if (mTime > existingTime) playerMatches[opp] = m;
                 }
             });
 
@@ -356,7 +348,6 @@
                 document.getElementById('lock-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('lock-screen').classList.add('hidden');
-                    fetchData();
                 }, 500);
             } else {
                 document.getElementById('lock-error').classList.remove('hidden');
@@ -371,6 +362,9 @@
                 rP.add(new Option(n, n)); rO.add(new Option(n, n)); sP.add(new Option(n, n));
             });
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+            
+            // BACKGROUND SYNC: Start fetching data immediately on page load
+            fetchData();
             lucide.createIcons();
         };
     </script>
