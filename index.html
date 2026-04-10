@@ -13,8 +13,6 @@
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         #lock-screen { backdrop-filter: blur(12px); transition: opacity 0.5s ease-out; }
-        
-        /* Transition for nav buttons */
         .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
@@ -28,17 +26,17 @@
             </div>
             <div>
                 <h2 class="text-3xl font-black text-slate-800 tracking-tight">Access Locked</h2>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Enter the passcode <span class="font-bold text-slate-700">FH2026</span> to continue.</p>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Enter your personal passcode to log in and report matches.</p>
             </div>
             <form id="lock-form" class="space-y-4">
                 <input type="password" id="access-code-input" placeholder="Passcode" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none transition-all">
-                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active:scale-95 flex items-center justify-center gap-2">
                     <i data-lucide="unlock" class="w-5 h-5"></i> Unlock App
                 </button>
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest">VERSION 1.6.2</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 1.8.1 • Score Tracking Enabled</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -64,24 +62,52 @@
         <section id="view-leaderboard" class="space-y-12">
             <!-- Result Entry Form -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
-                <div class="mb-8">
-                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
-                    <p class="text-slate-500 text-sm font-medium">Results are updated across all devices automatically.</p>
+                <div class="mb-8 flex justify-between items-start">
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Log a Result</h3>
+                        <p class="text-slate-500 text-sm font-medium">Logged in as: <span id="display-user-name" class="text-emerald-600 font-bold">...</span></p>
+                    </div>
+                    <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Sign Out</button>
                 </div>
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <select id="report-player" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none"></select>
-                        <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
-                            <option value="">Choose Opponent...</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                        <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl">
-                            <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest">Captured Tag</button>
-                            <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest">Lost Tag</button>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reporting Player</label>
+                            <div id="locked-reporter-name" class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400 cursor-not-allowed">Loading...</div>
                         </div>
-                        <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Opponent</label>
+                            <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                                <option value="">Choose Opponent...</option>
+                            </select>
+                        </div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Outcome</label>
+                            <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl">
+                                <button type="button" onclick="setOutcome('win')" id="outcome-win" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-lg uppercase tracking-widest">Captured Tag</button>
+                                <button type="button" onclick="setOutcome('loss')" id="outcome-loss" class="flex-1 py-4 px-3 rounded-xl text-xs font-black transition-all text-slate-500 hover:bg-slate-200 uppercase tracking-widest">Lost Tag</button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match Date</label>
+                            <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
+                            <input type="number" id="holes-up" placeholder="e.g. 3" required min="1" max="18" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Remaining</label>
+                            <input type="number" id="holes-remaining" placeholder="e.g. 2" required min="0" max="17" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+
                     <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active:scale-[0.98]">
                         Submit Match
                     </button>
@@ -123,8 +149,9 @@
     <script>
         // --- 1. CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1ScvOcrgOQ4_D7gbcbXDs7OsZgXoXK8RC_GS9xnjfE7JHbVPHOz_CDxqo43nl6yw2/exec"; 
-        const PASSCODE = "FH2026";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHYmSGCPD6rFmG9GHrzlP9cUk97zn96nPN3g6uFO5NEk5s9ijGO075dDynmNh6JpN9/exec"; 
+        const AUTH_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
+        const SHARED_PASSCODE = "FH2026";
 
         const PLAYERS = [
             "Alex Samson", "Brandon Benn", "Charlie McKinlay", "Colton Kalkanis",
@@ -138,34 +165,46 @@
 
         let matches = [];
         let currentOutcome = 'win';
+        let currentUser = null;
+        let passwordMap = {};
 
         function parseCSVLine(str) {
             const result = [];
             let current = '';
             let inQuotes = false;
             for (let i = 0; i < str.length; i++) {
-                if (str[i] === '"') {
-                    inQuotes = !inQuotes;
-                } else if (str[i] === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += str[i];
-                }
+                if (str[i] === '"') inQuotes = !inQuotes;
+                else if (str[i] === ',' && !inQuotes) { result.push(current); current = ''; }
+                else current += str[i];
             }
             result.push(current);
             return result.map(v => v.replace(/^"|"$/g, '').trim());
         }
 
+        async function fetchAuthData() {
+            if (!AUTH_CSV_URL) return;
+            try {
+                const res = await fetch(AUTH_CSV_URL + (AUTH_CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now());
+                const text = await res.text();
+                const lines = text.split('\n').filter(l => l.trim() !== "");
+                lines.slice(1).forEach(line => {
+                    const values = parseCSVLine(line);
+                    if (values.length >= 2) {
+                        const name = values[0].trim();
+                        const pass = values[1].trim();
+                        if (name && pass) passwordMap[pass] = name;
+                    }
+                });
+            } catch (e) { console.error("Auth fetch failed", e); }
+        }
+
         async function fetchData() {
             const icon = document.getElementById('refresh-icon');
             if (icon) icon.classList.add('animate-spin');
-            
             try {
                 const urlToFetch = CSV_URL + (CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now();
                 const response = await fetch(urlToFetch);
                 const text = await response.text();
-                
                 if (!text || text.length < 10) throw new Error("Empty response");
                 parseCSV(text);
             } catch (err) {
@@ -179,11 +218,8 @@
         function parseCSV(csvText) {
             const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
             if (lines.length === 0) return;
-            
             let startIndex = 0;
-            if (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) {
-                startIndex = 1;
-            }
+            if (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) startIndex = 1;
             
             const parsedMatches = [];
             let latestTimestampStr = "";
@@ -194,11 +230,7 @@
                 if (values.length >= 6) {
                     const tsRaw = values[0].trim();
                     const matchTime = new Date(tsRaw).getTime() || new Date(values[1].trim()).getTime() || 0;
-                    
-                    if (matchTime > latestTimestampVal) {
-                        latestTimestampVal = matchTime;
-                        latestTimestampStr = tsRaw;
-                    }
+                    if (matchTime > latestTimestampVal) { latestTimestampVal = matchTime; latestTimestampStr = tsRaw; }
 
                     parsedMatches.push({
                         timestampRaw: tsRaw,
@@ -207,47 +239,31 @@
                         reporter: values[2].trim(),
                         opponent: values[3].trim(),
                         winner: values[4].trim(),
-                        loser: values[5].trim()
+                        loser: values[5].trim(),
+                        score: values[6] ? values[6].trim() : "" // Column G
                     });
                 }
             }
-
             matches = parsedMatches;
             const timeDisplay = latestTimestampStr ? `Last entry: ${latestTimestampStr}` : 'No entries yet';
-            
             document.getElementById('last-updated-leaderboard').innerText = timeDisplay;
             document.getElementById('last-updated-slicer').innerText = timeDisplay;
-
             calculateLeaderboard();
-            if (!document.getElementById('view-slicer').classList.contains('hidden')) {
-                renderSlicer();
-            }
+            if (!document.getElementById('view-slicer').classList.contains('hidden')) renderSlicer();
         }
 
         function calculateLeaderboard() {
             const scores = {};
             PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
-
             matches.forEach(m => {
                 const pairId = [m.reporter, m.opponent].sort().join('_');
                 const mTime = m.timestampVal || 0;
                 const existingTime = latestPairs[pairId] ? (latestPairs[pairId].timestampVal || 0) : -1;
-                if (mTime > existingTime) {
-                    latestPairs[pairId] = m;
-                }
+                if (mTime > existingTime) latestPairs[pairId] = m;
             });
-
-            Object.values(latestPairs).forEach(m => { 
-                if (m.winner && scores[m.winner] !== undefined) {
-                    scores[m.winner]++; 
-                }
-            });
-            
-            const sorted = Object.entries(scores)
-                .map(([name, points]) => ({ name, points }))
-                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
-
+            Object.values(latestPairs).forEach(m => { if (m.winner && scores[m.winner] !== undefined) scores[m.winner]++; });
+            const sorted = Object.entries(scores).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-6">
@@ -264,52 +280,48 @@
         document.getElementById('match-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const p1 = document.getElementById('report-player').value;
+            const p1 = currentUser; 
             const p2 = document.getElementById('report-opponent').value;
             const date = document.getElementById('match-date').value;
+            const hUp = document.getElementById('holes-up').value;
+            const hRem = document.getElementById('holes-remaining').value;
 
-            if (p1 === p2) {
-                alert("You cannot play against yourself!");
-                return;
-            }
+            if (!p1 || !p2 || p1 === p2) { alert("Please select a valid opponent."); return; }
             
             btn.disabled = true; 
             btn.innerText = "Updating Match Results...";
 
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
+            const finalScore = `${hUp} & ${hRem}`;
 
             try {
                 await fetch(SCRIPT_URL, {
+                    // Use POST as defined in your Apps Script doPost(e)
                     method: 'POST',
                     mode: 'no-cors',
                     cache: 'no-cache',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser })
+                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser, score: finalScore })
                 });
 
                 document.getElementById('report-opponent').value = "";
+                document.getElementById('holes-up').value = "";
+                document.getElementById('holes-remaining').value = "";
                 btn.innerText = "Match Updated!";
                 
-                setTimeout(() => {
-                    fetchData(); 
-                    btn.disabled = false; 
-                    btn.innerText = "Submit Match";
-                }, 2000); 
+                setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Match"; }, 2000); 
             } catch (err) {
                 alert("Submission error. Check script URL.");
-                btn.disabled = false; 
-                btn.innerText = "Submit Match";
+                btn.disabled = false; btn.innerText = "Submit Match";
             }
         };
 
         function switchView(view) {
             document.getElementById('view-leaderboard').classList.toggle('hidden', view !== 'leaderboard');
             document.getElementById('view-slicer').classList.toggle('hidden', view !== 'slicer');
-            
             const btnLead = document.getElementById('btn-leaderboard');
             const btnSlice = document.getElementById('btn-slicer');
-            
             if (view === 'leaderboard') {
                 btnLead.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg";
                 btnSlice.className = "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50";
@@ -330,7 +342,6 @@
             const selected = document.getElementById('slicer-select').value;
             const grid = document.getElementById('slicer-grid');
             const playerMatches = {};
-            
             matches.forEach(m => {
                 if (m.reporter === selected || m.opponent === selected) {
                     const opp = m.reporter === selected ? m.opponent : m.reporter;
@@ -344,7 +355,7 @@
                 const match = playerMatches[opp];
                 const isWin = match && match.winner === selected;
                 const status = !match ? 'unplayed' : isWin ? 'captured' : 'lost';
-                const label = !match ? 'Not Played' : isWin ? 'Captured Tag' : 'Tag Lost';
+                const label = !match ? 'Not Played' : isWin ? `Won (${match.score})` : `Lost (${match.score})`;
                 const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style}">
                     <div><h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${label}</p></div>
@@ -354,27 +365,40 @@
             lucide.createIcons();
         }
 
+        function unlock(userName) {
+            currentUser = userName; localStorage.setItem('fh_user', userName);
+            document.getElementById('display-user-name').innerText = userName;
+            document.getElementById('locked-reporter-name').innerText = userName;
+            document.getElementById('slicer-select').value = userName;
+            const oppSelect = document.getElementById('report-opponent');
+            oppSelect.innerHTML = '<option value="">Choose Opponent...</option>';
+            PLAYERS.filter(p => p !== userName).forEach(n => oppSelect.add(new Option(n, n)));
+            document.getElementById('lock-screen').style.opacity = '0';
+            setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
+        }
+
+        function logout() { localStorage.removeItem('fh_user'); location.reload(); }
+
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
-            if (document.getElementById('access-code-input').value === PASSCODE) {
-                document.getElementById('lock-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('lock-screen').classList.add('hidden');
-                }, 500);
-            } else {
-                document.getElementById('lock-error').classList.remove('hidden');
+            const input = document.getElementById('access-code-input').value.trim();
+            if (passwordMap[input]) { unlock(passwordMap[input]); return; }
+            if (input === SHARED_PASSCODE) {
+                const name = prompt("Enter your name as it appears on the leaderboard:");
+                if (PLAYERS.includes(name)) unlock(name);
+                else alert("Name not found on the roster.");
+                return;
             }
+            document.getElementById('lock-error').classList.remove('hidden');
         };
 
         window.onload = () => {
-            const rP = document.getElementById('report-player');
-            const rO = document.getElementById('report-opponent');
             const sP = document.getElementById('slicer-select');
-            PLAYERS.forEach(n => {
-                rP.add(new Option(n, n)); rO.add(new Option(n, n)); sP.add(new Option(n, n));
-            });
+            PLAYERS.forEach(n => sP.add(new Option(n, n)));
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
-            fetchData();
+            fetchAuthData(); fetchData();
+            const savedUser = localStorage.getItem('fh_user');
+            if (savedUser && PLAYERS.includes(savedUser)) unlock(savedUser);
             lucide.createIcons();
         };
     </script>
