@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags at Friday Harbour v2.23</title>
+    <title>Battle Tags Friday Harbour v2.3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -11,12 +11,11 @@
         .win-bg { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
         .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
         .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
-        select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        select { appearance: none; -webkit-appearance: none; }
         #lock-screen { backdrop-filter: blur(16px); transition: opacity 0.5s ease-out; }
         .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .active-scale:active { transform: scale(0.96); }
         
-        /* Custom scrollbar aesthetics */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -32,23 +31,24 @@
             </div>
             <div>
                 <h2 class="text-3xl font-black text-slate-800 tracking-tight">Identify Yourself</h2>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Select your name from the roster to access the tracker.</p>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Select your name to access your scorecard. This will be remembered on this device.</p>
             </div>
             <form id="lock-form" class="space-y-4">
-                <div class="relative">
-                    <select id="player-identity-select" required class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-bold text-xl outline-none transition-all cursor-pointer appearance-none">
+                <div class="relative text-left">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Your Roster Name</label>
+                    <select id="player-identity-select" required class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl font-bold text-lg outline-none cursor-pointer appearance-none">
                         <option value="">Choose Your Name...</option>
                     </select>
-                    <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-400">
+                    <div class="absolute bottom-5 right-5 pointer-events-none text-slate-400">
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2">
-                    <i data-lucide="check" class="w-5 h-5"></i> Confirm & Enter
+                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2 transition-all">
+                    Confirm Identity <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.1.2 • Final Stable Build</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.3.1 • Identity Logic Enabled</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -71,7 +71,7 @@
     </header>
 
     <main class="max-w-3xl mx-auto p-4 md:p-8">
-        <!-- LEADERBOARD SECTION -->
+        <!-- LOG RESULT & STANDINGS SECTION -->
         <section id="view-leaderboard" class="space-y-12">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8 flex justify-between items-start">
@@ -83,14 +83,14 @@
                 </div>
                 <form id="match-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
+                        <div class="space-y-2 text-left">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reporting Player</label>
-                            <div id="locked-reporter-name" class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400 cursor-not-allowed uppercase tracking-tight">...</div>
+                            <div id="locked-reporter-name" class="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400 uppercase tracking-tight italic">Loading...</div>
                         </div>
-                        <div class="space-y-2">
+                        <div class="space-y-2 text-left">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Opponent</label>
                             <div class="relative">
-                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 appearance-none">
+                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 appearance-none cursor-pointer">
                                     <option value="">Choose Opponent...</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
@@ -100,7 +100,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end text-left">
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Outcome</label>
                             <div class="flex gap-3 p-1.5 bg-slate-100 rounded-2xl">
@@ -114,25 +114,14 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
-                                <input type="number" id="holes-up" placeholder="e.g. 3" required min="1" max="18" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining</label>
-                                <input type="number" id="holes-remaining" placeholder="e.g. 2" required min="0" max="17" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
-                            </div>
+                    <div class="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
+                            <input type="number" id="holes-up" placeholder="3" required min="1" max="18" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Scorecard Photo (Optional)</label>
-                            <div class="relative">
-                                <input type="file" id="match-photo" accept="image/*" class="hidden" onchange="updatePhotoLabel()">
-                                <label for="match-photo" id="photo-label" class="flex items-center justify-center gap-2 w-full p-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl font-bold text-slate-400 hover:border-emerald-500 hover:text-emerald-600 transition-all cursor-pointer">
-                                    <i data-lucide="camera" class="w-5 h-5"></i> Take Photo
-                                </label>
-                            </div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining</label>
+                            <input type="number" id="holes-remaining" placeholder="2" required min="0" max="17" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
                         </div>
                     </div>
 
@@ -142,32 +131,31 @@
                 </form>
             </div>
 
-            <!-- Leaderboard Table -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
                     <div>
-                        <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Live Standings</h2>
-                        <p id="last-updated-leaderboard" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Syncing with Sheet...</p>
+                        <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left">Live Standings</h2>
+                        <p id="last-updated-leaderboard" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 text-left">Syncing with Google...</p>
                     </div>
                     <button onclick="fetchData()" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-full transition-all">
                         <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
                     </button>
                 </div>
                 <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50">
-                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Connecting...</div>
+                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Connecting to Database...</div>
                 </div>
             </div>
         </section>
 
-        <!-- SLICER / PLAYER STATUS SECTION -->
+        <!-- POINT SLICER SECTION -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div>
+                <div class="text-left">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
-                    <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Syncing...</p>
+                    <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Database synced</p>
                 </div>
                 <div class="relative min-w-[320px]">
-                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none"></select>
+                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"></select>
                     <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-emerald-600">
                         <i data-lucide="chevron-down" class="w-6 h-6"></i>
                     </div>
@@ -213,17 +201,24 @@
             const icon = document.getElementById('refresh-icon');
             if (icon) icon.classList.add('animate-spin');
             try {
-                const response = await fetch(CSV_URL + (CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now());
+                // gid=0 ensures we hit the first tab (Matches)
+                const response = await fetch(CSV_URL + "&t=" + Date.now());
                 const text = await response.text();
+                if (!text || text.length < 5) throw new Error("Empty sheet");
                 parseCSV(text);
-            } catch (err) { console.warn("Fetch failed", err); }
-            finally { if (icon) icon.classList.remove('animate-spin'); }
+            } catch (err) { 
+                console.error("Fetch error:", err);
+                document.getElementById('leaderboard-list').innerHTML = `<div class="p-10 text-rose-500 font-bold">Sync Error. Please check Sheet sharing.</div>`;
+            } finally { 
+                if (icon) icon.classList.remove('animate-spin'); 
+            }
         }
 
         function parseCSV(csvText) {
             const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
             if (lines.length === 0) return;
-            let startIndex = lines[0].toLowerCase().includes('reporter') ? 1 : 0;
+            let startIndex = (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) ? 1 : 0;
+            
             const parsed = [];
             let latestTs = ""; let latestTsVal = 0;
 
@@ -235,12 +230,12 @@
                     parsed.push({
                         tsRaw: ts, tsVal: val, date: v[1].trim(), reporter: v[2].trim(),
                         opponent: v[3].trim(), winner: v[4].trim(), loser: v[5].trim(),
-                        score: v[6] ? v[6].trim() : "", photoUrl: v[7] ? v[7].trim() : ""
+                        score: v[6] ? v[6].trim() : ""
                     });
                 }
             }
             matches = parsed;
-            const msg = latestTs ? `Synced: ${latestTs}` : 'No matches logged';
+            const msg = latestTs ? `Synced: ${latestTs}` : 'No entries yet';
             document.getElementById('last-updated-leaderboard').innerText = msg;
             document.getElementById('last-updated-slicer').innerText = msg;
             calculateLeaderboard();
@@ -250,15 +245,19 @@
         function calculateLeaderboard() {
             const scores = {}; PLAYERS.forEach(p => scores[p] = 0);
             const latestPairs = {};
+            
+            // Sort by timestamp to find the definitive latest match for every pair
             matches.sort((a,b) => a.tsVal - b.tsVal).forEach(m => {
                 const id = [m.reporter, m.opponent].sort().join('_');
                 latestPairs[id] = m;
             });
+
             Object.values(latestPairs).forEach(m => { if (m.winner && scores[m.winner] !== undefined) scores[m.winner]++; });
             const sorted = Object.entries(scores).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+            
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
-                    <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-6 text-left">
                         <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <span class="font-bold text-slate-800 text-base tracking-tight uppercase">${p.name}</span>
                     </div>
@@ -269,79 +268,39 @@
                 </div>`).join('');
         }
 
-        function updatePhotoLabel() {
-            const file = document.getElementById('match-photo').files[0];
-            const label = document.getElementById('photo-label');
-            if (file) {
-                label.innerText = `📎 ${file.name}`;
-                label.className = "flex items-center justify-center gap-2 w-full p-4 bg-emerald-50 border-2 border-emerald-500 rounded-2xl font-bold text-emerald-600 cursor-pointer";
-            }
-        }
-
-        async function processImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width; let h = img.height; const max = 800;
-                        if (w > h && w > max) { h *= max / w; w = max; }
-                        else if (h > max) { w *= max / h; h = max; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.5));
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
         document.getElementById('match-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const p1 = currentUser; const p2 = document.getElementById('report-opponent').value;
+            const p1 = currentUser; 
+            const p2 = document.getElementById('report-opponent').value;
             const date = document.getElementById('match-date').value;
             const hUp = document.getElementById('holes-up').value;
             const hRem = document.getElementById('holes-remaining').value;
-            const photoFile = document.getElementById('match-photo').files[0];
 
-            if (!p1 || !p2 || p1 === p2) { alert("Invalid selection."); return; }
+            if (!p1 || !p2 || p1 === p2) { alert("Invalid Opponent selection."); return; }
             btn.disabled = true; btn.innerText = "Syncing...";
 
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
             const score = `${hUp} & ${hRem}`;
             
-            let imgData = ""; let imgName = "";
-            if (photoFile) {
-                btn.innerText = "Processing Photo...";
-                imgData = await processImage(photoFile);
-                imgName = `Match_${p1}_vs_${p2}_${date}.jpg`;
-            }
-
-            btn.innerText = "Uploading...";
-
             try {
-                // Return to total stable no-cors mode for Google Apps Script uploads
+                // CRITICAL: mode: 'no-cors' prevents browser security blocks with Google Scripts
                 await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    cache: 'no-cache', headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser, score, image: imgData, imageName: imgName })
+                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner, loser, score })
                 });
 
+                // Clear form
                 document.getElementById('report-opponent').value = "";
                 document.getElementById('holes-up').value = "";
                 document.getElementById('holes-remaining').value = "";
-                document.getElementById('match-photo').value = "";
-                document.getElementById('photo-label').innerHTML = `<i data-lucide="camera" class="w-5 h-5"></i> Take Photo`;
-                document.getElementById('photo-label').className = "flex items-center justify-center gap-2 w-full p-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl font-bold text-slate-400 hover:border-emerald-500 hover:text-emerald-600 transition-all cursor-pointer";
                 
-                btn.innerText = "Success!";
+                btn.innerText = "Match Saved!";
                 setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Match"; }, 2000); 
             } catch (err) {
-                alert("Submission failed. Check your internet connection.");
+                alert("Connection failed. Check your internet signal.");
                 btn.disabled = false; btn.innerText = "Submit Match";
             }
         };
@@ -373,12 +332,11 @@
 
             grid.innerHTML = PLAYERS.filter(p => p !== sel).map(opp => {
                 const m = playerMatches[opp]; const isWin = m && m.winner === sel;
-                const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                const pic = (m && m.photoUrl && m.photoUrl.startsWith("http")) ? `<a href="${m.photoUrl}" target="_blank" class="p-2 bg-white/50 rounded-lg hover:bg-white transition-all active-scale"><i data-lucide="image" class="w-4 h-4 text-slate-600"></i></a>` : "";
+                const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200 shadow-sm' : 'loss-bg border-rose-200 shadow-sm';
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style} group hover:shadow-md">
-                    <div class="flex items-center gap-4">
-                        <div><h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4><p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p></div>
-                        ${pic}
+                    <div class="text-left">
+                        <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4>
+                        <p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p>
                     </div>
                     <i data-lucide="${!m ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
                 </div>`;
@@ -388,19 +346,23 @@
 
         function unlock(userName) {
             currentUser = userName; 
-            localStorage.setItem('fh_battle_tags_v3', userName);
+            localStorage.setItem('fh_battle_tags_ident', userName);
             document.getElementById('display-user-name').innerText = userName;
             document.getElementById('locked-reporter-name').innerText = userName;
+            document.getElementById('locked-reporter-name').classList.remove('italic');
+            document.getElementById('locked-reporter-name').classList.add('text-slate-800');
             document.getElementById('slicer-select').value = userName;
+            
             const opp = document.getElementById('report-opponent');
             opp.innerHTML = '<option value="">Choose Opponent...</option>';
             PLAYERS.filter(p => p !== userName).forEach(n => opp.add(new Option(n, n)));
+            
             document.getElementById('lock-screen').style.opacity = '0';
             setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
         }
 
         function logout() { 
-            localStorage.removeItem('fh_battle_tags_v3'); 
+            localStorage.removeItem('fh_battle_tags_ident'); 
             location.reload(); 
         }
 
@@ -413,10 +375,15 @@
         window.onload = () => {
             const idSel = document.getElementById('player-identity-select');
             const slSel = document.getElementById('slicer-select');
-            PLAYERS.forEach(n => { idSel.add(new Option(n, n)); slSel.add(new Option(n, n)); });
+            PLAYERS.forEach(n => { 
+                idSel.add(new Option(n, n)); 
+                slSel.add(new Option(n, n)); 
+            });
+            
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
             fetchData();
-            const saved = localStorage.getItem('fh_battle_tags_v3');
+            
+            const saved = localStorage.getItem('fh_battle_tags_ident');
             if (saved && PLAYERS.includes(saved)) unlock(saved);
             lucide.createIcons();
         };
