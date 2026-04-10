@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,7 +79,7 @@
                         <input type="date" id="match-date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
                     </div>
                     <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active:scale-[0.98]">
-                        Submit Your Match
+                        Submit to Spreadsheet
                     </button>
                 </form>
             </div>
@@ -114,9 +113,9 @@
     <script>
         // --- 1. CONFIGURATION (REPLACE THESE) ---
         // Get this from "Publish to Web" (CSV)
-        const CSV_URL = "PASTE_YOUR_CSV_PUBLISHED_LINK_HERE"; 
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
         // Get this from "Deploy as Web App"
-        const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1ScvOcrgOQ4_D7gbcbXDs7OsZgXoXK8RC_GS9xnjfE7JHbVPHOz_CDxqo43nl6yw2/exec"; 
         const PASSCODE = "FH2026";
 
         const PLAYERS = [
@@ -289,5 +288,3 @@
     </script>
 </body>
 </html>
-
-```
