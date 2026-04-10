@@ -14,6 +14,7 @@
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         #lock-screen { backdrop-filter: blur(12px); transition: opacity 0.5s ease-out; }
         .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-scale:active { transform: scale(0.96); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
@@ -30,13 +31,13 @@
             </div>
             <form id="lock-form" class="space-y-4">
                 <input type="password" id="access-code-input" placeholder="Passcode" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none transition-all">
-                <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                <button type="submit" id="unlock-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2">
                     <i data-lucide="unlock" class="w-5 h-5"></i> Unlock App
                 </button>
                 <p id="lock-error" class="text-rose-500 text-xs font-black hidden uppercase">Invalid Passcode</p>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 1.9.5 • Sync Recovery</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.0.2 • Sync Optimized</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -119,12 +120,13 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active:scale-[0.98]">
+                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale">
                         Submit Match
                     </button>
                 </form>
             </div>
 
+            <!-- Standings -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between px-4">
                     <div>
@@ -141,6 +143,7 @@
             </div>
         </section>
 
+        <!-- Slicer View -->
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div>
@@ -148,7 +151,7 @@
                     <p id="last-updated-slicer" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Syncing...</p>
                 </div>
                 <div class="relative min-w-[320px]">
-                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none"></select>
+                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all"></select>
                 </div>
             </div>
             <div id="slicer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -159,8 +162,8 @@
         // --- 1. CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
         
-        // --- PASTE YOUR NEW WEB APP URL HERE ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTbhft7ALXGRvgVw0sACvDqQl3AArcHfsY7-XjpYIkGIfqFd71Sf6C-ZPga5hNLSRd/exec"; 
+        // --- UPDATED SCRIPT URL ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYzv2EC2Ye28Lj__TKdTwHUoHhcxBaBwajNrRkaOjGP4cAYdwGWuOooQ1plUGDVsjQ/exec"; 
         
         const AUTH_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2xsu-pBl1suWLMkPZA5OOLTS2oNLq1AIKq56hzfJ7lwm2HLNqT4jJoArQe0pcWsjCMqsJMFN0jtvB/pub?output=csv"; 
         const SHARED_PASSCODE = "FH2026";
@@ -198,7 +201,7 @@
             try {
                 const res = await fetch(AUTH_CSV_URL + (AUTH_CSV_URL.includes('?') ? "&" : "?") + "t=" + Date.now());
                 const text = await res.text();
-                const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim() !== "");
+                const lines = text.split('\n').filter(l => l.trim() !== "");
                 lines.slice(1).forEach(line => {
                     const values = parseCSVLine(line);
                     if (values.length >= 2) {
@@ -245,14 +248,10 @@
                     if (matchTime > latestTimestampVal) { latestTimestampVal = matchTime; latestTimestampStr = tsRaw; }
 
                     parsedMatches.push({
-                        timestampRaw: tsRaw,
-                        timestampVal: matchTime,
-                        date: values[1].trim(),
-                        reporter: values[2].trim(),
-                        opponent: values[3].trim(),
-                        winner: values[4].trim(),
-                        loser: values[5].trim(),
-                        score: values[6] ? values[6].trim() : "",
+                        timestampRaw: tsRaw, timestampVal: matchTime,
+                        date: values[1].trim(), reporter: values[2].trim(),
+                        opponent: values[3].trim(), winner: values[4].trim(),
+                        loser: values[5].trim(), score: values[6] ? values[6].trim() : "",
                         photoUrl: values[7] ? values[7].trim() : ""
                     });
                 }
@@ -280,12 +279,12 @@
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-6">
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
+                        <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <span class="font-bold text-slate-800 text-base tracking-tight uppercase">${p.name}</span>
                     </div>
                     <div class="text-right">
                         <div class="text-2xl font-black text-emerald-700 leading-none">${p.points}</div>
-                        <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
+                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
                     </div>
                 </div>`).join('');
         }
@@ -306,14 +305,13 @@
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxDim = 1000; // Slightly smaller for faster uploads
+                        let width = img.width; let height = img.height; 
+                        const maxDim = 800; 
                         if (width > height && width > maxDim) { height *= maxDim / width; width = maxDim; }
                         else if (height > maxDim) { width *= maxDim / height; height = maxDim; }
                         canvas.width = width; canvas.height = height;
                         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
+                        resolve(canvas.toDataURL('image/jpeg', 0.5)); 
                     };
                     img.src = e.target.result;
                 };
@@ -333,29 +331,24 @@
 
             if (!p1 || !p2 || p1 === p2) { alert("Please select a valid opponent."); return; }
             
-            btn.disabled = true; 
-            btn.innerText = "Processing...";
+            btn.disabled = true; btn.innerText = "Syncing...";
 
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
             const finalScore = `${hUp} & ${hRem}`;
             
-            let imageData = "";
-            let imageName = "";
+            let imageData = ""; let imageName = "";
             if (photoFile) {
-                btn.innerText = "Compressing Photo...";
+                btn.innerText = "Processing Photo...";
                 imageData = await processImage(photoFile);
                 imageName = `Match_${p1}_vs_${p2}_${date}.jpg`;
             }
 
-            btn.innerText = "Syncing with Sheet...";
+            btn.innerText = "Uploading to Sheet...";
 
             try {
-                // We use mode: 'no-cors' for Google Apps Script
                 await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
+                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ 
                         date, reporter: p1, opponent: p2, winner, loser, score: finalScore,
@@ -373,7 +366,7 @@
                 btn.innerText = "Success!";
                 setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Match"; }, 2000); 
             } catch (err) {
-                alert("Submission failed. Ensure you are connected to the internet.");
+                alert("Upload failed. Try a smaller photo or check connection.");
                 btn.disabled = false; btn.innerText = "Submit Match";
             }
         };
@@ -415,10 +408,10 @@
             grid.innerHTML = PLAYERS.filter(p => p !== selected).map(opp => {
                 const match = playerMatches[opp];
                 const isWin = match && match.winner === selected;
-                const status = !match ? 'unplayed' : isWin ? 'captured' : 'lost';
                 const label = !match ? 'Not Played' : isWin ? `Won (${match.score})` : `Lost (${match.score})`;
                 const style = !match ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                const photoIcon = (match && match.photoUrl) ? `<a href="${match.photoUrl}" target="_blank" class="p-2 bg-white/50 rounded-lg hover:bg-white transition-all"><i data-lucide="image" class="w-4 h-4 text-slate-600"></i></a>` : "";
+                const hasPhoto = match && match.photoUrl && match.photoUrl.startsWith("http");
+                const photoIcon = hasPhoto ? `<a href="${match.photoUrl}" target="_blank" class="p-2 bg-white/50 rounded-lg hover:bg-white transition-all active-scale"><i data-lucide="image" class="w-4 h-4 text-slate-600"></i></a>` : "";
                 
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style} group hover:shadow-md">
                     <div class="flex items-center gap-4">
@@ -472,17 +465,4 @@
         };
     </script>
 </body>
-</html>      data.date, 
-      data.reporter, 
-      data.opponent, 
-      data.winner, 
-      data.loser, 
-      data.score, 
-      imageUrl
-    ]);
-
-    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
-  } catch (f) {
-    return ContentService.createTextOutput("Error: " + f.toString()).setMimeType(ContentService.MimeType.TEXT);
-  }
-}
+</html>
