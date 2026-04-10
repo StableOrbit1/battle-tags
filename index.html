@@ -212,8 +212,23 @@
             const winner = currentOutcome === 'win' ? p1 : p2;
             const loser = currentOutcome === 'win' ? p2 : p1;
 
+            // --- OPTIMISTIC UI UPDATE ---
+            // Update the browser's memory immediately so the UI responds instantly
+            matches.push({
+                date: date,
+                reporter: p1,
+                opponent: p2,
+                winner: winner,
+                loser: loser
+            });
+            
+            // Re-render both views with the newly added match
+            calculateLeaderboard();
+            if (!document.getElementById('view-slicer').classList.contains('hidden')) {
+                renderSlicer();
+            }
+
             try {
-                // Using text/plain to avoid browser blocking the payload in no-cors mode
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -226,7 +241,8 @@
                 btn.innerText = "Saved!";
                 
                 setTimeout(() => {
-                    fetchData(); // Trigger a refresh
+                    // Do NOT call fetchData() here! The Google CSV takes up to 5 minutes to refresh.
+                    // If we pull the data now, it will overwrite our optimistic update with the old sheet data.
                     btn.disabled = false; 
                     btn.innerText = "Submit Match";
                 }, 2000); 
