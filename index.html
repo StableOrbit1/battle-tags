@@ -63,7 +63,7 @@
                     <i data-lucide="trophy" class="w-4 h-4"></i> Standings
                 </button>
                 <button onclick="switchView('slicer')" id="btn-slicer" class="nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50">
-                    <i data-lucide="users" class="w-4 h-4"></i> My Status
+                    <i data-lucide="swords" class="w-4 h-4"></i> Damage Report
                 </button>
             </nav>
         </div>
@@ -137,8 +137,8 @@
         <section id="view-slicer" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div class="text-left">
-                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Point Slicer</h2>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Match History & Dates</p>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Damage Report</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for your match-ups</p>
                 </div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"></select>
@@ -319,20 +319,18 @@
             });
 
             grid.innerHTML = PLAYERS.filter(p => p !== sel).map(opp => {
-                const m = playerMatches[opp]; 
-                const isWin = m && m.winner === sel;
+                const m = playerMatches[opp]; const isWin = m && m.winner === sel;
                 const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200 shadow-sm' : 'loss-bg border-rose-200 shadow-sm';
                 
-                // Construct Date UI for the card
-                const dateStr = (m && m.date) ? `<span class="block text-[9px] text-slate-500 mt-1.5 font-bold"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>` : '';
-
+                // Display specific emojis for wins and losses, fallback to normal icon if unplayed
+                const iconHtml = !m ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : isWin ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+                
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style} group hover:shadow-md">
                     <div class="text-left">
                         <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4>
                         <p class="text-[10px] font-black uppercase opacity-60 tracking-wider text-balance">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p>
-                        ${dateStr}
                     </div>
-                    <i data-lucide="${!m ? 'minus-circle' : isWin ? 'check-circle-2' : 'x-circle'}" class="w-6 h-6"></i>
+                    ${iconHtml}
                 </div>`;
             }).join('');
             lucide.createIcons();
