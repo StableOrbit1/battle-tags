@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v2.6.0</title>
+    <title>Battle Tags Friday Harbour v2.6.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -21,7 +21,7 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative">
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative text-center">
 
     <!-- Identity Selection Overlay -->
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6 text-center">
@@ -37,23 +37,23 @@
                 <div class="relative text-left">
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Roster Name</label>
                     <select id="player-identity-select" required class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl font-bold text-lg outline-none cursor-pointer appearance-none">
-                        <option value="">Choose Your Name...</option>
+                        <option value="">Syncing Roster...</option>
                     </select>
                     <div class="absolute bottom-5 right-5 pointer-events-none text-slate-400">
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2 transition-all">
+                <button type="submit" id="confirm-btn" disabled class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2 transition-all disabled:opacity-50">
                     Confirm Identity <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.6.0 • Payment Status Enabled</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.6.1 • Live Roster Feed</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex flex-col items-center md:items-start text-center md:text-left">
+            <div class="flex flex-col items-center md:items-start">
                 <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight uppercase">
                     <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
                 </h1>
@@ -76,18 +76,18 @@
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
                 <div class="mb-8 flex justify-between items-start">
                     <div class="text-left">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight text-left">Report Tag Capture</h3>
-                        <p class="text-slate-500 text-sm font-medium text-left">Reporting as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase tracking-tight italic">...</span></p>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Report Tag Capture</h3>
+                        <p class="text-slate-500 text-sm font-medium" id="user-display-status">Reporting as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase tracking-tight">...</span></p>
                     </div>
                     <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Switch User</button>
                 </div>
                 <form id="match-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2 text-left">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                        <div class="space-y-2">
                             <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Winner (You)</label>
-                            <div id="locked-reporter-name" class="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-2xl font-bold text-emerald-900 uppercase tracking-tight shadow-inner">...</div>
+                            <div id="locked-reporter-name" class="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-2xl font-bold text-emerald-900 uppercase tracking-tight shadow-inner italic">...</div>
                         </div>
-                        <div class="space-y-2 text-left">
+                        <div class="space-y-2">
                             <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Defeated Opponent</label>
                             <div class="relative">
                                 <select id="report-opponent" required class="w-full p-4 bg-slate-50 border-2 border-rose-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-rose-400 appearance-none cursor-pointer">
@@ -115,8 +115,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale flex items-center justify-center gap-2">
-                        <i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win
+                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale">
+                        Submit Win
                     </button>
                 </form>
             </div>
@@ -128,18 +128,18 @@
                         <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
                     </button>
                 </div>
-                <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50">
+                <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50 text-left">
                     <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
                 </div>
             </div>
         </section>
 
         <!-- DAMAGE REPORT SECTION -->
-        <section id="view-slicer" class="hidden space-y-8">
+        <section id="view-slicer" class="hidden space-y-8 text-left">
             <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div class="text-left">
+                <div>
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Damage Report</h2>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 text-left">Latest results for your match-ups</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for your match-ups</p>
                 </div>
                 <div class="relative min-w-[320px]">
                     <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"></select>
@@ -153,25 +153,14 @@
     </main>
 
     <script>
-        // --- 1. CONFIGURATION ---
+        // --- CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=0&single=true&output=csv"; 
+        const ROSTER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=1601545269&single=true&output=csv";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5NjiGnCT-hyFpO9iXr5gQJ4by2JWvx9qXIgrzzCznEiibtLStc0r_qa9-qkXR7x7p/exec"; 
-        
-        // --- PASTE YOUR NEW ROSTER/PAYMENT CSV LINK HERE ---
-        const ROSTER_CSV_URL = "PASTE_YOUR_PUBLISHED_ROSTER_TAB_CSV_LINK_HERE"; 
 
-        const PLAYERS = [
-            "Alex Samson", "Brandon Benn", "Charlie McKinlay", "Colton Kalkanis",
-            "Corey Pellerin", "Craig Flannagan", "Dave Ashwood", "Dave McCharles",
-            "Jeff Ash", "Jesse Rabishaw", "Jordan Baker", "Jordan Horowitz",
-            "Keith Palmer", "Lou Soriano", "Luke Coles", "Mike Brigden",
-            "Mike Van Berkel", "Nick Coulson", "Nick Leigh", "Rick DesForges",
-            "Rick Kubas", "Rob Nichols", "Ryan Fedrigo", "Sean McBurney",
-            "Shane Quinlan", "Shea Burton", "Tyler Risdon"
-        ].sort();
-
+        let PLAYERS = [];
+        let playerPaidStatus = {};
         let matches = [];
-        let playerStatusMap = {};
         let currentUser = null;
 
         function parseCSVLine(str) {
@@ -187,30 +176,44 @@
             return result.map(v => v.replace(/^"|"$/g, '').trim());
         }
 
-        async function fetchRosterData() {
-            if (ROSTER_CSV_URL.includes("PASTE_YOUR")) return;
+        async function fetchRoster() {
             try {
-                const response = await fetch(ROSTER_CSV_URL + (ROSTER_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now());
+                const response = await fetch(ROSTER_CSV_URL + "?t=" + Date.now());
                 const text = await response.text();
                 const lines = text.split('\n').filter(l => l.trim() !== "");
+                const names = [];
                 lines.slice(1).forEach(line => {
                     const parts = parseCSVLine(line);
                     if (parts.length >= 2) {
                         const name = parts[0].trim();
                         const isPaid = parts[1].trim().toUpperCase() === 'Y';
-                        playerStatusMap[name] = isPaid ? "Paid Up" : "Not Paid";
+                        names.push(name);
+                        playerPaidStatus[name] = isPaid;
                     }
                 });
-                // If user is already logged in, refresh their display name
-                if (currentUser) updateUIForUser(currentUser);
+                PLAYERS = names.sort();
+                populateDropdowns();
+                checkSavedUser();
             } catch (err) { console.warn("Roster fetch failed", err); }
+        }
+
+        function populateDropdowns() {
+            const idSel = document.getElementById('player-identity-select');
+            const slSel = document.getElementById('slicer-select');
+            idSel.innerHTML = '<option value="">Choose Your Name...</option>';
+            slSel.innerHTML = '';
+            PLAYERS.forEach(n => {
+                idSel.add(new Option(n, n));
+                slSel.add(new Option(n, n));
+            });
+            document.getElementById('confirm-btn').disabled = false;
         }
 
         async function fetchData() {
             const icon = document.getElementById('refresh-icon');
             if (icon) icon.classList.add('animate-spin');
             try {
-                const response = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now());
+                const response = await fetch(CSV_URL + "&t=" + Date.now());
                 const text = await response.text();
                 parseCSV(text);
             } catch (err) { console.warn("Fetch failed", err); }
@@ -221,10 +224,8 @@
             const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
             if (lines.length === 0) return;
             let startIndex = (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) ? 1 : 0;
-            
             const parsed = [];
             let latestTsVal = 0;
-
             for (let i = startIndex; i < lines.length; i++) {
                 const v = parseCSVLine(lines[i]);
                 if (v.length >= 6) {
@@ -251,10 +252,9 @@
             });
             Object.values(latestPairs).forEach(m => { if (m.winner && scores[m.winner] !== undefined) scores[m.winner]++; });
             const sorted = Object.entries(scores).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
-            
             document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
-                    <div class="flex items-center gap-6 text-left">
+                    <div class="flex items-center gap-6">
                         <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <span class="font-bold text-slate-800 text-base tracking-tight uppercase">${p.name}</span>
                     </div>
@@ -271,10 +271,8 @@
             const p1 = currentUser; const p2 = document.getElementById('report-opponent').value;
             const date = document.getElementById('match-date').value;
             const score = `${document.getElementById('holes-up').value} & ${document.getElementById('holes-remaining').value}`;
-
             if (!p1 || !p2 || p1 === p2) { alert("Invalid selection."); return; }
-            btn.disabled = true; btn.innerText = "Syncing...";
-
+            btn.disabled = true; btn.innerText = "Syncing Match...";
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors', cache: 'no-cache',
@@ -282,12 +280,9 @@
                     body: JSON.stringify({ date, reporter: p1, opponent: p2, winner: p1, loser: p2, score })
                 });
                 document.getElementById('report-opponent').value = "";
-                btn.innerText = "Success!";
-                setTimeout(() => { fetchData(); btn.disabled = false; btn.innerHTML = '<i data-lucide="upload-cloud" class="w-5 h-5 inline mr-1"></i> Submit Win'; lucide.createIcons(); }, 2000); 
-            } catch (err) {
-                alert("Upload failed.");
-                btn.disabled = false; btn.innerText = "Submit Win";
-            }
+                btn.innerText = "Match Recorded!";
+                setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Win"; }, 2000); 
+            } catch (err) { alert("Upload failed."); btn.disabled = false; btn.innerText = "Submit Win"; }
         };
 
         function switchView(v) {
@@ -308,18 +303,15 @@
                     if (!playerMatches[opp] || m.tsVal > playerMatches[opp].tsVal) playerMatches[opp] = m;
                 }
             });
-
             grid.innerHTML = PLAYERS.filter(p => p !== sel).map(opp => {
                 const m = playerMatches[opp]; const isWin = m && m.winner === sel;
                 const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                const dateStr = (m && m.date) ? `<span class="block text-[9px] text-slate-500 mt-1 font-bold"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>` : '';
-                const icon = !m ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : isWin ? `<span class="text-2xl">🏷️</span>` : `<span class="text-2xl">💀</span>`;
-                
+                const icon = !m ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-200"></i>` : isWin ? `<span class="text-2xl">🏷️</span>` : `<span class="text-2xl">💀</span>`;
                 return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style}">
                     <div class="text-left">
                         <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4>
                         <p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p>
-                        ${dateStr}
+                        ${(m && m.date) ? `<span class="text-[9px] text-slate-400 font-bold block mt-1 uppercase">${m.date}</span>` : ''}
                     </div>
                     ${icon}
                 </div>`;
@@ -327,26 +319,22 @@
             lucide.createIcons();
         }
 
-        function updateUIForUser(userName) {
-            const status = playerStatusMap[userName] || "Status Pending";
-            const colorClass = status === "Paid Up" ? "text-emerald-600" : "text-rose-500";
-            document.getElementById('display-user-name').innerHTML = `${userName} <span class="${colorClass} font-black ml-1">(${status})</span>`;
-            document.getElementById('locked-reporter-name').innerText = userName;
-        }
-
         function unlock(userName) {
             currentUser = userName; 
-            localStorage.setItem('fh_battle_tags_v8', userName);
-            updateUIForUser(userName);
+            localStorage.setItem('fh_battle_tags_v9', userName);
+            const isPaid = playerPaidStatus[userName];
+            const payText = isPaid ? "<span class='text-emerald-600'>(Paid Up)</span>" : "<span class='text-rose-500'>(Not Paid)</span>";
+            document.getElementById('display-user-name').innerHTML = `${userName} ${payText}`;
+            document.getElementById('locked-reporter-name').innerText = userName;
             document.getElementById('slicer-select').value = userName;
             const opp = document.getElementById('report-opponent');
-            opp.innerHTML = '<option value="">Select Opponent...</option>';
+            opp.innerHTML = '<option value="">Choose Opponent...</option>';
             PLAYERS.filter(p => p !== userName).forEach(n => opp.add(new Option(n, n)));
             document.getElementById('lock-screen').style.opacity = '0';
             setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
         }
 
-        function logout() { localStorage.removeItem('fh_battle_tags_v8'); location.reload(); }
+        function logout() { localStorage.removeItem('fh_battle_tags_v9'); location.reload(); }
 
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
@@ -354,15 +342,15 @@
             if (n) unlock(n);
         };
 
-        window.onload = () => {
-            const idSel = document.getElementById('player-identity-select');
-            const slSel = document.getElementById('slicer-select');
-            PLAYERS.forEach(n => { idSel.add(new Option(n, n)); slSel.add(new Option(n, n)); });
-            document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
-            fetchRosterData();
-            fetchData();
-            const saved = localStorage.getItem('fh_battle_tags_v8');
+        function checkSavedUser() {
+            const saved = localStorage.getItem('fh_battle_tags_v9');
             if (saved && PLAYERS.includes(saved)) unlock(saved);
+        }
+
+        window.onload = () => {
+            document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+            fetchRoster();
+            fetchData();
             lucide.createIcons();
         };
     </script>
