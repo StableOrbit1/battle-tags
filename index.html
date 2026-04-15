@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v2.6.1</title>
+    <title>Battle Tags Friday Harbour v2.6.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -48,7 +48,7 @@
                 </button>
             </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.6.1 • Live Roster Feed</div>
+        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.6.2 • URL Fix Applied</div>
     </div>
 
     <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
@@ -153,7 +153,7 @@
     </main>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- 1. CONFIGURATION ---
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=0&single=true&output=csv"; 
         const ROSTER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=1601545269&single=true&output=csv";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5NjiGnCT-hyFpO9iXr5gQJ4by2JWvx9qXIgrzzCznEiibtLStc0r_qa9-qkXR7x7p/exec"; 
@@ -176,9 +176,15 @@
             return result.map(v => v.replace(/^"|"$/g, '').trim());
         }
 
+        // Helper to handle Google CSV Cache Busting correctly
+        function getFreshUrl(baseUrl) {
+            const separator = baseUrl.includes("?") ? "&" : "?";
+            return `${baseUrl}${separator}t=${Date.now()}`;
+        }
+
         async function fetchRoster() {
             try {
-                const response = await fetch(ROSTER_CSV_URL + "?t=" + Date.now());
+                const response = await fetch(getFreshUrl(ROSTER_CSV_URL));
                 const text = await response.text();
                 const lines = text.split('\n').filter(l => l.trim() !== "");
                 const names = [];
@@ -191,10 +197,14 @@
                         playerPaidStatus[name] = isPaid;
                     }
                 });
+                if (names.length === 0) throw new Error("No names found in CSV");
                 PLAYERS = names.sort();
                 populateDropdowns();
                 checkSavedUser();
-            } catch (err) { console.warn("Roster fetch failed", err); }
+            } catch (err) { 
+                console.warn("Roster fetch failed", err); 
+                document.getElementById('player-identity-select').innerHTML = '<option value="">Error Loading Roster...</option>';
+            }
         }
 
         function populateDropdowns() {
@@ -213,7 +223,7 @@
             const icon = document.getElementById('refresh-icon');
             if (icon) icon.classList.add('animate-spin');
             try {
-                const response = await fetch(CSV_URL + "&t=" + Date.now());
+                const response = await fetch(getFreshUrl(CSV_URL));
                 const text = await response.text();
                 parseCSV(text);
             } catch (err) { console.warn("Fetch failed", err); }
@@ -321,7 +331,7 @@
 
         function unlock(userName) {
             currentUser = userName; 
-            localStorage.setItem('fh_battle_tags_v9', userName);
+            localStorage.setItem('fh_battle_tags_v10', userName);
             const isPaid = playerPaidStatus[userName];
             const payText = isPaid ? "<span class='text-emerald-600'>(Paid Up)</span>" : "<span class='text-rose-500'>(Not Paid)</span>";
             document.getElementById('display-user-name').innerHTML = `${userName} ${payText}`;
@@ -334,7 +344,7 @@
             setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
         }
 
-        function logout() { localStorage.removeItem('fh_battle_tags_v9'); location.reload(); }
+        function logout() { localStorage.removeItem('fh_battle_tags_v10'); location.reload(); }
 
         document.getElementById('lock-form').onsubmit = (e) => {
             e.preventDefault();
@@ -343,7 +353,7 @@
         };
 
         function checkSavedUser() {
-            const saved = localStorage.getItem('fh_battle_tags_v9');
+            const saved = localStorage.getItem('fh_battle_tags_v10');
             if (saved && PLAYERS.includes(saved)) unlock(saved);
         }
 
