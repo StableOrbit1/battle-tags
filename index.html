@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v3.0.2 (Final)</title>
+    <title>Battle Tags Friday Harbour v3.0.3 (Final)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -137,7 +136,12 @@
             <section id="view-damage" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Damage Report</h2>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for your match-ups</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for <span id="damage-report-name" class="text-emerald-600 font-bold">...</span></p>
+                    
+                    <!-- Stats Badges -->
+                    <div id="damage-stats" class="flex flex-wrap gap-3 mt-5">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
                 
                 <div id="damage-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -403,13 +407,25 @@
 
         function renderDamageReport() {
             const grid = document.getElementById('damage-grid');
+            const nameLabel = document.getElementById('damage-report-name');
+            const statsContainer = document.getElementById('damage-stats');
+            
             if (!currentUser) return;
+
+            nameLabel.innerText = currentUser.toUpperCase();
+
+            let playedCount = 0;
+            let wonCount = 0;
+            let lostCount = 0;
 
             const html = players.filter(p => p.name !== currentUser).map(opp => {
                 const pairId = [currentUser, opp.name].sort().join('_').replace(/\s+/g, '');
                 const match = matches.find(m => m.id === pairId);
                 const isWin = match && match.winner === currentUser;
                 const status = !match ? 'unplayed' : isWin ? 'won' : 'lost';
+
+                if (status === 'won') wonCount++;
+                if (status === 'lost') lostCount++;
 
                 const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 
                                    status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : 
@@ -438,6 +454,20 @@
                     </div>
                 `;
             }).join('');
+
+            playedCount = wonCount + lostCount;
+
+            statsContainer.innerHTML = `
+                <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    <span class="text-sm">⚔️</span> ${playedCount} Played
+                </div>
+                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    <span class="text-sm">🏷️</span> ${wonCount} Won
+                </div>
+                <div class="flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    <span class="text-sm">💀</span> ${lostCount} Lost
+                </div>
+            `;
 
             grid.innerHTML = html;
             lucide.createIcons();
