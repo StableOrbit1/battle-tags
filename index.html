@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v3.0 (Final)</title>
+    <title>Battle Tags Friday Harbour v3.0.1 (Final)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -120,7 +120,7 @@
                         </div>
 
                         <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale flex items-center justify-center gap-2">
-                            <i data-lucide="upload-cloud" class="w-5 h-5"></i> <span id="submit-btn-text">Submit Win</span>
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win
                         </button>
                     </form>
                 </div>
@@ -289,17 +289,13 @@
             const holesRem = document.getElementById('holes-remaining').value;
             
             const btn = document.getElementById('submit-btn');
-            const btnText = document.getElementById('submit-btn-text');
-            const icon = btn.querySelector('i');
 
             if (!opponent || !currentUser) return;
 
-            // Loading state
+            // Secure visual Loading state
             btn.disabled = true;
             btn.classList.add('opacity-50');
-            btnText.innerText = "Syncing...";
-            icon.setAttribute('data-lucide', 'loader-2');
-            icon.classList.add('animate-spin');
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
             lucide.createIcons();
 
             try {
@@ -324,11 +320,10 @@
                 console.error(err);
                 alert("Database error. Check your connection.");
             } finally {
+                // Restore button state securely
                 btn.disabled = false;
                 btn.classList.remove('opacity-50');
-                btnText.innerText = "Submit Win";
-                icon.setAttribute('data-lucide', 'upload-cloud');
-                icon.classList.remove('animate-spin');
+                btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`;
                 lucide.createIcons();
             }
         };
