@@ -3,366 +3,449 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v2.6.2</title>
+    <title>Battle Tags Friday Harbour v3.0 (Final)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .hidden { display: none; }
-        .win-bg { background-color: #ecfdf5; border-color: #10b981; color: #065f46; }
-        .loss-bg { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
-        .unplayed-bg { background-color: #f8fafc; border-color: #e2e8f0; color: #64748b; }
-        select { appearance: none; -webkit-appearance: none; }
-        #lock-screen { backdrop-filter: blur(16px); transition: opacity 0.5s ease-out; }
-        .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hidden { display: none !important; }
+        input, select { -webkit-appearance: none; }
         .active-scale:active { transform: scale(0.96); }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background-color: #f8fafc;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 relative text-center">
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
-    <!-- Identity Selection Overlay -->
-    <div id="lock-screen" class="fixed inset-0 z-[100] bg-emerald-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20 z-10">
+    <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
+        <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
+            <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Syncing Database...
+        </div>
+    </div>
+
+    <div id="screen-password" class="fixed inset-0 z-[100] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="lock" class="w-10 h-10"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Vault Secure</h2>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Enter the 2026 Access Code.</p>
+            </div>
+            <form id="password-form" class="space-y-4">
+                <input type="password" id="pw-input" required placeholder="••••••" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none tracking-widest uppercase">
+                <button type="submit" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl transition-all active-scale">Verify Code</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="screen-identity" class="fixed inset-0 z-[90] bg-emerald-900 flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
                 <i data-lucide="user-check" class="w-10 h-10"></i>
             </div>
             <div>
-                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Identify Yourself</h2>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Select your name to enter the tracker.</p>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight tracking-tighter">Who are you?</h2>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Select your name to start tracking.</p>
             </div>
-            <form id="lock-form" class="space-y-4">
-                <div class="relative text-left">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Roster Name</label>
-                    <select id="player-identity-select" required class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl font-bold text-lg outline-none cursor-pointer appearance-none">
-                        <option value="">Syncing Roster...</option>
-                    </select>
-                    <div class="absolute bottom-5 right-5 pointer-events-none text-slate-400">
-                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                    </div>
+            <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
                 </div>
-                <button type="submit" id="confirm-btn" disabled class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl active-scale flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-                    Confirm Identity <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                </button>
-            </form>
         </div>
-        <div class="absolute bottom-8 text-emerald-900/40 text-xs font-black tracking-widest uppercase">Version 2.6.2 • URL Fix Applied</div>
     </div>
 
-    <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex flex-col items-center md:items-start">
-                <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight uppercase">
-                    <i data-lucide="lighthouse" class="w-8 h-8 text-emerald-400"></i> BATTLE TAGS
-                </h1>
-                <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">The Nest at Friday Harbour</p>
-            </div>
-            <nav class="flex bg-emerald-950/40 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800/50 backdrop-blur-sm">
-                <button onclick="switchView('leaderboard')" id="btn-leaderboard" class="nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg">
-                    <i data-lucide="trophy" class="w-4 h-4"></i> Standings
-                </button>
-                <button onclick="switchView('slicer')" id="btn-slicer" class="nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50">
-                    <i data-lucide="swords" class="w-4 h-4"></i> Damage Report
-                </button>
-            </nav>
-        </div>
-    </header>
-
-    <main class="max-w-3xl mx-auto p-4 md:p-8">
-        <!-- LOG RESULT & STANDINGS SECTION -->
-        <section id="view-leaderboard" class="space-y-12">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
-                <div class="mb-8 flex justify-between items-start">
-                    <div class="text-left">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Report Tag Capture</h3>
-                        <p class="text-slate-500 text-sm font-medium" id="user-display-status">Reporting as: <span id="display-user-name" class="text-emerald-600 font-bold uppercase tracking-tight">...</span></p>
-                    </div>
-                    <button onclick="logout()" class="text-[10px] font-black uppercase bg-slate-100 text-slate-400 px-3 py-1 rounded-lg hover:bg-rose-50 hover:text-rose-500 transition-all">Switch User</button>
+    <div id="screen-app" class="hidden">
+        <header class="bg-emerald-900 text-white p-6 shadow-2xl sticky top-0 z-50">
+            <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex flex-col items-center md:items-start">
+                    <h1 class="text-2xl font-black flex items-center gap-2 tracking-tight uppercase">
+                        <i data-lucide="trophy" class="w-6 h-6 text-emerald-400"></i> BATTLE TAGS
+                    </h1>
+                    <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">The Nest at Friday Harbour</p>
                 </div>
-                <form id="match-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Winner (You)</label>
-                            <div id="locked-reporter-name" class="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-2xl font-bold text-emerald-900 uppercase tracking-tight shadow-inner italic">...</div>
+                <nav class="flex bg-emerald-950/40 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800/50 backdrop-blur-sm">
+                    <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm">
+                        Standings
+                    </button>
+                    <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center">
+                        <i data-lucide="swords" class="w-3 h-3"></i> Damage Report
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
+            <section id="view-leaderboard" class="space-y-12">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
+                    <div class="mb-8 flex justify-between items-start">
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Report Capture</h3>
+                            <p class="text-slate-500 text-sm font-medium">
+                                Reporting as <span id="display-user-name" class="text-emerald-600 font-bold uppercase">...</span>
+                            </p>
                         </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Defeated Opponent</label>
-                            <div class="relative">
-                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border-2 border-rose-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-rose-400 appearance-none cursor-pointer">
-                                    <option value="">Choose Opponent...</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
-                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-slate-50 rounded-xl" title="Switch User">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match Date</label>
-                            <input type="date" id="match-date" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none">
+                    <form id="match-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Defeated Opponent</label>
+                                <select id="report-opponent" required class="w-full p-4 bg-slate-50 border-2 border-rose-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-rose-400 appearance-none cursor-pointer">
+                                    <option value="">Select Opponent...</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match Date</label>
+                                <input type="date" id="match-date" required class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                            </div>
                         </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
-                            <input type="number" id="holes-up" placeholder="3" required min="1" max="18" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+
+                        <div class="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Holes Up</label>
+                                <input type="number" id="holes-up" required min="1" max="18" placeholder="3" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining</label>
+                                <input type="number" id="holes-remaining" required min="0" max="17" placeholder="2" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
+                            </div>
                         </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining</label>
-                            <input type="number" id="holes-remaining" placeholder="2" required min="0" max="17" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
-                        </div>
+
+                        <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale flex items-center justify-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i> <span id="submit-btn-text">Submit Win</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="space-y-6">
+                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left ml-4">Live Standings</h2>
+                    <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left divide-y divide-slate-50">
+                        <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
                     </div>
-
-                    <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl active-scale">
-                        Submit Win
-                    </button>
-                </form>
-            </div>
-
-            <div class="space-y-6">
-                <div class="flex items-center justify-between px-4">
-                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left">Live Standings</h2>
-                    <button onclick="fetchData()" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-full transition-all">
-                        <i data-lucide="refresh-cw" class="w-5 h-5" id="refresh-icon"></i>
-                    </button>
                 </div>
-                <div id="leaderboard-list" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden divide-y divide-slate-50 text-left">
-                    <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- DAMAGE REPORT SECTION -->
-        <section id="view-slicer" class="hidden space-y-8 text-left">
-            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div>
+            <section id="view-damage" class="hidden space-y-8 text-left">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Damage Report</h2>
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Latest results for your match-ups</p>
                 </div>
-                <div class="relative min-w-[320px]">
-                    <select id="slicer-select" onchange="renderSlicer()" class="w-full p-5 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-900 text-xl shadow-inner outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"></select>
-                    <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-emerald-600">
-                        <i data-lucide="chevron-down" class="w-6 h-6"></i>
+                
+                <div id="damage-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     </div>
-                </div>
-            </div>
-            <div id="slicer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </section>
-    </main>
+            </section>
+        </main>
+    </div>
 
-    <script>
-        // --- 1. CONFIGURATION ---
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=0&single=true&output=csv"; 
-        const ROSTER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWNJivI6-6uajyXXx7_5l5MZML9KG7lPvurOg8GnaD9iYzfo_H1gXKc4oOCYCNwdx177d1SyxQw2O/pub?gid=1601545269&single=true&output=csv";
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5NjiGnCT-hyFpO9iXr5gQJ4by2JWvx9qXIgrzzCznEiibtLStc0r_qa9-qkXR7x7p/exec"; 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-        let PLAYERS = [];
-        let playerPaidStatus = {};
-        let matches = [];
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDf_1RE4hscqVVbHoN7Vvqoylj8elWLUn4",
+            authDomain: "battletags-27390.firebaseapp.com",
+            projectId: "battletags-27390",
+            storageBucket: "battletags-27390.firebasestorage.app",
+            messagingSenderId: "930795580018",
+            appId: "1:930795580018:web:b82b95d64572483f85f0eb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'friday-harbour-battle-tags';
+        const ACCESS_PASSWORD = "FH2026";
+
+        // --- GLOBAL STATE ---
         let currentUser = null;
+        let players = [];
+        let matches = [];
 
-        function parseCSVLine(str) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < str.length; i++) {
-                if (str[i] === '"') inQuotes = !inQuotes;
-                else if (str[i] === ',' && !inQuotes) { result.push(current); current = ''; }
-                else current += str[i];
-            }
-            result.push(current);
-            return result.map(v => v.replace(/^"|"$/g, '').trim());
-        }
+        // --- INITIALIZATION ---
+        document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+        lucide.createIcons();
 
-        // Helper to handle Google CSV Cache Busting correctly
-        function getFreshUrl(baseUrl) {
-            const separator = baseUrl.includes("?") ? "&" : "?";
-            return `${baseUrl}${separator}t=${Date.now()}`;
-        }
+        signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
 
-        async function fetchRoster() {
-            try {
-                const response = await fetch(getFreshUrl(ROSTER_CSV_URL));
-                const text = await response.text();
-                const lines = text.split('\n').filter(l => l.trim() !== "");
-                const names = [];
-                lines.slice(1).forEach(line => {
-                    const parts = parseCSVLine(line);
-                    if (parts.length >= 2) {
-                        const name = parts[0].trim();
-                        const isPaid = parts[1].trim().toUpperCase() === 'Y';
-                        names.push(name);
-                        playerPaidStatus[name] = isPaid;
-                    }
-                });
-                if (names.length === 0) throw new Error("No names found in CSV");
-                PLAYERS = names.sort();
-                populateDropdowns();
-                checkSavedUser();
-            } catch (err) { 
-                console.warn("Roster fetch failed", err); 
-                document.getElementById('player-identity-select').innerHTML = '<option value="">Error Loading Roster...</option>';
-            }
-        }
+        onAuthStateChanged(auth, (firebaseUser) => {
+            if (firebaseUser) {
+                listenToPlayers();
+                listenToMatches();
 
-        function populateDropdowns() {
-            const idSel = document.getElementById('player-identity-select');
-            const slSel = document.getElementById('slicer-select');
-            idSel.innerHTML = '<option value="">Choose Your Name...</option>';
-            slSel.innerHTML = '';
-            PLAYERS.forEach(n => {
-                idSel.add(new Option(n, n));
-                slSel.add(new Option(n, n));
-            });
-            document.getElementById('confirm-btn').disabled = false;
-        }
+                const isUnlocked = localStorage.getItem('bt_unlocked') === 'true';
+                const savedName = localStorage.getItem('bt_identity');
 
-        async function fetchData() {
-            const icon = document.getElementById('refresh-icon');
-            if (icon) icon.classList.add('animate-spin');
-            try {
-                const response = await fetch(getFreshUrl(CSV_URL));
-                const text = await response.text();
-                parseCSV(text);
-            } catch (err) { console.warn("Fetch failed", err); }
-            finally { if (icon) icon.classList.remove('animate-spin'); }
-        }
-
-        function parseCSV(csvText) {
-            const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== "");
-            if (lines.length === 0) return;
-            let startIndex = (lines[0].toLowerCase().includes('reporter') || lines[0].toLowerCase().includes('timestamp')) ? 1 : 0;
-            const parsed = [];
-            let latestTsVal = 0;
-            for (let i = startIndex; i < lines.length; i++) {
-                const v = parseCSVLine(lines[i]);
-                if (v.length >= 6) {
-                    const ts = v[0].trim(); const val = new Date(ts).getTime() || 0;
-                    if (val > latestTsVal) { latestTsVal = val; }
-                    parsed.push({
-                        tsVal: val, date: v[1].trim(), reporter: v[2].trim(),
-                        opponent: v[3].trim(), winner: v[4].trim(), loser: v[5].trim(),
-                        score: v[6] ? v[6].trim() : ""
-                    });
+                if (!isUnlocked) {
+                    showScreen('password');
+                } else if (!savedName) {
+                    showScreen('identity');
+                } else {
+                    setIdentity(savedName);
+                    showScreen('app');
                 }
             }
-            matches = parsed;
-            calculateLeaderboard();
-            if (!document.getElementById('view-slicer').classList.contains('hidden')) renderSlicer();
+        });
+
+        // --- SCREEN MANAGEMENT ---
+        function showScreen(screenName) {
+            document.getElementById('screen-loading').classList.add('hidden');
+            document.getElementById('screen-password').classList.add('hidden');
+            document.getElementById('screen-identity').classList.add('hidden');
+            document.getElementById('screen-app').classList.add('hidden');
+
+            document.getElementById(`screen-${screenName}`).classList.remove('hidden');
+
+            if (screenName === 'app') {
+                document.body.classList.remove('overflow-hidden');
+            } else {
+                document.body.classList.add('overflow-hidden');
+            }
         }
 
-        function calculateLeaderboard() {
-            const scores = {}; PLAYERS.forEach(p => scores[p] = 0);
-            const latestPairs = {};
-            matches.sort((a,b) => a.tsVal - b.tsVal).forEach(m => {
-                const id = [m.reporter, m.opponent].sort().join('_');
-                latestPairs[id] = m;
+        window.switchView = function(viewName) {
+            document.getElementById('view-leaderboard').classList.toggle('hidden', viewName !== 'leaderboard');
+            document.getElementById('view-damage').classList.toggle('hidden', viewName !== 'damage');
+
+            const navLead = document.getElementById('nav-leaderboard');
+            const navDam = document.getElementById('nav-damage');
+
+            if (viewName === 'leaderboard') {
+                navLead.className = "flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm";
+                navDam.className = "flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center";
+            } else {
+                navLead.className = "flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all text-emerald-100 opacity-60";
+                navDam.className = "flex-1 py-3 px-6 rounded-xl font-black text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center";
+            }
+        };
+
+        // --- DATA LISTENERS ---
+        function listenToPlayers() {
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'players');
+            onSnapshot(q, (snapshot) => {
+                players = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => a.name.localeCompare(b.name));
+                updateIdentityList();
+                updateOpponentDropdown();
+                updateUserStatusDisplay();
+                renderLeaderboard();
+                renderDamageReport();
             });
-            Object.values(latestPairs).forEach(m => { if (m.winner && scores[m.winner] !== undefined) scores[m.winner]++; });
-            const sorted = Object.entries(scores).map(([name, points]) => ({ name, points })).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
-            document.getElementById('leaderboard-list').innerHTML = sorted.map((p, i) => `
-                <div class="flex items-center justify-between p-7 hover:bg-slate-50 transition-colors">
-                    <div class="flex items-center gap-6">
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <span class="font-bold text-slate-800 text-base tracking-tight uppercase">${p.name}</span>
+        }
+
+        function listenToMatches() {
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'matches');
+            onSnapshot(q, (snapshot) => {
+                matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderLeaderboard();
+                renderDamageReport();
+            });
+        }
+
+        // --- USER ACTIONS & FORM HANDLING ---
+        document.getElementById('password-form').onsubmit = function(e) {
+            e.preventDefault();
+            const pw = document.getElementById('pw-input').value;
+            if (pw.toUpperCase() === ACCESS_PASSWORD) {
+                localStorage.setItem('bt_unlocked', 'true');
+                showScreen('identity');
+            } else {
+                alert("Invalid Access Code");
+            }
+        };
+
+        window.handleIdentitySubmit = function(name) {
+            localStorage.setItem('bt_identity', name);
+            setIdentity(name);
+            showScreen('app');
+        };
+
+        function setIdentity(name) {
+            currentUser = name;
+            updateUserStatusDisplay();
+            updateOpponentDropdown();
+            renderDamageReport();
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('bt_unlocked');
+            localStorage.removeItem('bt_identity');
+            window.location.reload();
+        };
+
+        document.getElementById('match-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const opponent = document.getElementById('report-opponent').value;
+            const date = document.getElementById('match-date').value;
+            const holesUp = document.getElementById('holes-up').value;
+            const holesRem = document.getElementById('holes-remaining').value;
+            
+            const btn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('submit-btn-text');
+            const icon = btn.querySelector('i');
+
+            if (!opponent || !currentUser) return;
+
+            // Loading state
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            btnText.innerText = "Syncing...";
+            icon.setAttribute('data-lucide', 'loader-2');
+            icon.classList.add('animate-spin');
+            lucide.createIcons();
+
+            try {
+                const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matches', pairId);
+                
+                await setDoc(matchDocRef, {
+                    winner: currentUser,
+                    loser: opponent,
+                    score: `${holesUp} & ${holesRem}`,
+                    date: date,
+                    timestamp: new Date().toISOString()
+                });
+
+                document.getElementById('report-opponent').value = "";
+                document.getElementById('holes-up').value = "";
+                document.getElementById('holes-remaining').value = "";
+                
+                alert("Tag Captured! Damage Report and Standings updated.");
+
+            } catch (err) {
+                console.error(err);
+                alert("Database error. Check your connection.");
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                btnText.innerText = "Submit Win";
+                icon.setAttribute('data-lucide', 'upload-cloud');
+                icon.classList.remove('animate-spin');
+                lucide.createIcons();
+            }
+        };
+
+        // --- DOM UPDATES ---
+        function updateIdentityList() {
+            const list = document.getElementById('identity-list');
+            list.innerHTML = players.map(p => `
+                <button type="button" onclick="handleIdentitySubmit('${p.name}')" class="w-full p-4 bg-slate-50 border-2 border-slate-100 hover:border-emerald-500 rounded-2xl font-bold text-slate-700 flex justify-between items-center group transition-all active-scale">
+                    <span class="uppercase tracking-tight text-sm">${p.name}</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-emerald-500"></i>
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function updateOpponentDropdown() {
+            if (!currentUser) return;
+            const select = document.getElementById('report-opponent');
+            select.innerHTML = '<option value="">Select Opponent...</option>';
+            players.filter(p => p.name !== currentUser).forEach(p => {
+                select.add(new Option(p.name, p.name));
+            });
+        }
+
+        function updateUserStatusDisplay() {
+            if (!currentUser) return;
+            
+            const pData = players.find(p => p.name === currentUser);
+            let displayHtml = `${currentUser}`;
+            
+            if (pData) {
+                const isPaid = pData.paid === 'Y';
+                const statusColor = isPaid ? 'text-emerald-500' : 'text-rose-500';
+                const statusText = isPaid ? 'PAID UP' : 'NOT PAID';
+                displayHtml += `<span class="ml-1 font-black ${statusColor}">(${statusText})</span>`;
+            }
+            
+            document.getElementById('display-user-name').innerHTML = displayHtml;
+        }
+
+        function renderLeaderboard() {
+            const scores = {};
+            players.forEach(p => scores[p.name] = 0);
+            
+            matches.forEach(m => {
+                if (scores[m.winner] !== undefined) scores[m.winner]++;
+            });
+
+            const sorted = Object.entries(scores)
+                .map(([name, points]) => ({ name, points }))
+                .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
+            const listEl = document.getElementById('leaderboard-list');
+            
+            if (sorted.length === 0) {
+                listEl.innerHTML = '<div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>';
+                return;
+            }
+
+            listEl.innerHTML = sorted.map((p, i) => `
+                <div class="flex items-center justify-between p-6 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-5">
+                        <span class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${i < 3 ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
+                            ${i + 1}
+                        </span>
+                        <span class="font-bold text-slate-800 uppercase tracking-tight">${p.name}</span>
                     </div>
                     <div class="text-right">
                         <div class="text-2xl font-black text-emerald-700 leading-none">${p.points}</div>
                         <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Tags</div>
                     </div>
-                </div>`).join('');
+                </div>
+            `).join('');
         }
 
-        document.getElementById('match-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            const p1 = currentUser; const p2 = document.getElementById('report-opponent').value;
-            const date = document.getElementById('match-date').value;
-            const score = `${document.getElementById('holes-up').value} & ${document.getElementById('holes-remaining').value}`;
-            if (!p1 || !p2 || p1 === p2) { alert("Invalid selection."); return; }
-            btn.disabled = true; btn.innerText = "Syncing Match...";
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ date, reporter: p1, opponent: p2, winner: p1, loser: p2, score })
-                });
-                document.getElementById('report-opponent').value = "";
-                btn.innerText = "Match Recorded!";
-                setTimeout(() => { fetchData(); btn.disabled = false; btn.innerText = "Submit Win"; }, 2000); 
-            } catch (err) { alert("Upload failed."); btn.disabled = false; btn.innerText = "Submit Win"; }
-        };
+        function renderDamageReport() {
+            const grid = document.getElementById('damage-grid');
+            if (!currentUser) return;
 
-        function switchView(v) {
-            document.getElementById('view-leaderboard').classList.toggle('hidden', v !== 'leaderboard');
-            document.getElementById('view-slicer').classList.toggle('hidden', v !== 'slicer');
-            document.getElementById('btn-leaderboard').className = v === 'leaderboard' ? "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg" : "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50";
-            document.getElementById('btn-slicer').className = v === 'slicer' ? "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-white text-emerald-900 shadow-lg" : "nav-btn flex-1 px-8 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-emerald-100 hover:bg-emerald-800/50";
-            if (v === 'slicer') renderSlicer();
-        }
+            const html = players.filter(p => p.name !== currentUser).map(opp => {
+                const pairId = [currentUser, opp.name].sort().join('_').replace(/\s+/g, '');
+                const match = matches.find(m => m.id === pairId);
+                const isWin = match && match.winner === currentUser;
+                const status = !match ? 'unplayed' : isWin ? 'won' : 'lost';
 
-        function renderSlicer() {
-            const sel = document.getElementById('slicer-select').value;
-            const grid = document.getElementById('slicer-grid');
-            const playerMatches = {};
-            matches.forEach(m => {
-                if (m.reporter === sel || m.opponent === sel) {
-                    const opp = m.reporter === sel ? m.opponent : m.reporter;
-                    if (!playerMatches[opp] || m.tsVal > playerMatches[opp].tsVal) playerMatches[opp] = m;
-                }
-            });
-            grid.innerHTML = PLAYERS.filter(p => p !== sel).map(opp => {
-                const m = playerMatches[opp]; const isWin = m && m.winner === sel;
-                const style = !m ? 'unplayed-bg' : isWin ? 'win-bg border-emerald-200' : 'loss-bg border-rose-200';
-                const icon = !m ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-200"></i>` : isWin ? `<span class="text-2xl">🏷️</span>` : `<span class="text-2xl">💀</span>`;
-                return `<div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${style}">
-                    <div class="text-left">
-                        <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp}</h4>
-                        <p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${!m ? 'Not Played' : isWin ? `Captured (${m.score})` : `Lost (${m.score})`}</p>
-                        ${(m && m.date) ? `<span class="text-[9px] text-slate-400 font-bold block mt-1 uppercase">${m.date}</span>` : ''}
+                const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 
+                                   status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : 
+                                   'bg-white border-slate-100 opacity-70';
+                
+                const statusText = status === 'unplayed' ? 'Not Played' : 
+                                   status === 'won' ? `Captured (${match.score})` : 
+                                   `Lost (${match.score})`;
+
+                const dateHtml = match ? `<div class="flex items-center gap-1 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date}</div>` : '';
+                
+                const icon = status === 'unplayed' 
+                    ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` 
+                    : status === 'won' 
+                        ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` 
+                        : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+
+                return `
+                    <div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${styleClass}">
+                        <div class="text-left">
+                            <h4 class="font-black text-base text-slate-800 uppercase tracking-tight">${opp.name}</h4>
+                            <p class="text-[10px] font-black uppercase opacity-60 tracking-wider">${statusText}</p>
+                            ${dateHtml}
+                        </div>
+                        ${icon}
                     </div>
-                    ${icon}
-                </div>`;
+                `;
             }).join('');
+
+            grid.innerHTML = html;
             lucide.createIcons();
         }
-
-        function unlock(userName) {
-            currentUser = userName; 
-            localStorage.setItem('fh_battle_tags_v10', userName);
-            const isPaid = playerPaidStatus[userName];
-            const payText = isPaid ? "<span class='text-emerald-600'>(Paid Up)</span>" : "<span class='text-rose-500'>(Not Paid)</span>";
-            document.getElementById('display-user-name').innerHTML = `${userName} ${payText}`;
-            document.getElementById('locked-reporter-name').innerText = userName;
-            document.getElementById('slicer-select').value = userName;
-            const opp = document.getElementById('report-opponent');
-            opp.innerHTML = '<option value="">Choose Opponent...</option>';
-            PLAYERS.filter(p => p !== userName).forEach(n => opp.add(new Option(n, n)));
-            document.getElementById('lock-screen').style.opacity = '0';
-            setTimeout(() => { document.getElementById('lock-screen').classList.add('hidden'); }, 500);
-        }
-
-        function logout() { localStorage.removeItem('fh_battle_tags_v10'); location.reload(); }
-
-        document.getElementById('lock-form').onsubmit = (e) => {
-            e.preventDefault();
-            const n = document.getElementById('player-identity-select').value;
-            if (n) unlock(n);
-        };
-
-        function checkSavedUser() {
-            const saved = localStorage.getItem('fh_battle_tags_v10');
-            if (saved && PLAYERS.includes(saved)) unlock(saved);
-        }
-
-        window.onload = () => {
-            document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
-            fetchRoster();
-            fetchData();
-            lucide.createIcons();
-        };
     </script>
 </body>
 </html>
