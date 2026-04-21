@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v4.1 (Fast Uploads)</title>
+    <title>Battle Tags Friday Harbour v4.2 (Final with Splash)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -36,6 +37,8 @@
         input[type=file]::file-selector-button:hover {
             background-color: #d1fae5;
         }
+        
+        /* Splash Screen Animation */
         @keyframes splashFadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -48,16 +51,18 @@
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
     <!-- SCREEN 00: SPLASH (Fades out after 3s) -->
-    <div id="screen-splash" class="fixed inset-0 z-[300] bg-white flex flex-col items-center justify-center transition-opacity duration-1000">
-        <img src="IMG_2087.png" alt="BattleTags 2026" class="w-128 md:w-160 lg:w-192 h-auto splash-animate">
+    <div id="screen-splash" class="fixed inset-0 z-[400] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
+        <img src="IMG_2087.png" alt="BattleTags 2026" class="w-[48rem] md:w-[60rem] lg:w-[72rem] max-w-[95vw] h-auto splash-animate drop-shadow-xl" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS 2026</h1><p class=\'text-slate-400 mt-2\'>Logo Image Not Found</p>'">
     </div>
 
+    <!-- SCREEN 0: LOADING -->
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
             <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Syncing Database...
         </div>
     </div>
 
+    <!-- SCREEN 1: PASSWORD -->
     <div id="screen-password" class="fixed inset-0 z-[100] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -74,6 +79,7 @@
         </div>
     </div>
 
+    <!-- SCREEN 2: IDENTITY -->
     <div id="screen-identity" class="fixed inset-0 z-[90] bg-emerald-900 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -89,6 +95,7 @@
         </div>
     </div>
 
+    <!-- MAIN APP SCREEN -->
     <div id="screen-app" class="hidden">
         <header class="bg-emerald-900 text-white p-4 md:p-6 shadow-2xl sticky top-0 z-50">
             <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -232,13 +239,19 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
+        // ====================================================================
+        // IMPORTANT: IF YOU STARTED A "FRESH" DATABASE EARLIER, CHANGE THIS 
+        // TO 'friday-harbour-battle-tags-v2' SO IT FINDS YOUR NEW PHOTOS!
+        // ====================================================================
+        const DATABASE_FOLDER_NAME = 'friday-harbour-battle-tags';
+
         // --- HYBRID FIREBASE CONFIGURATION ---
         let firebaseConfig;
         let activeAppId;
         
         try {
             firebaseConfig = JSON.parse(__firebase_config);
-            activeAppId = typeof __app_id !== 'undefined' ? __app_id : 'friday-harbour-battle-tags';
+            activeAppId = typeof __app_id !== 'undefined' ? __app_id : DATABASE_FOLDER_NAME;
         } catch (e) {
             firebaseConfig = {
                 apiKey: "AIzaSyDf_1RE4hscqVVbHoN7Vvqoylj8elWLUn4",
@@ -248,7 +261,7 @@
                 messagingSenderId: "930795580018",
                 appId: "1:930795580018:web:b82b95d64572483f85f0eb"
             };
-            activeAppId = 'friday-harbour-battle-tags';
+            activeAppId = DATABASE_FOLDER_NAME;
         }
 
         const app = initializeApp(firebaseConfig);
@@ -267,7 +280,7 @@
         // Custom Toast Notifications
         function showToast(msg, isError = false) {
             const t = document.createElement('div');
-            t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl z-[300] transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
+            t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl z-[500] transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
             t.innerHTML = msg;
             document.body.appendChild(t);
             setTimeout(() => {
@@ -277,7 +290,6 @@
         }
 
         // --- IMAGE COMPRESSION HELPER ---
-        // This function shrinks massive 10MB phone photos down to fast 300kb web photos
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -307,7 +319,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Convert the canvas to a highly compressed JPG Blob
                     canvas.toBlob((blob) => {
                         if (blob) {
                             resolve(blob);
@@ -319,6 +330,17 @@
                 img.onerror = (error) => reject(error);
             });
         };
+
+        // --- SPLASH SCREEN LOGIC ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('screen-splash');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.classList.add('hidden'), 1000);
+                }
+            }, 3000); // 3-second hold
+        });
 
         // --- INITIALIZATION ---
         document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
@@ -483,27 +505,23 @@
                 let photoUrl = null;
 
                 if (photoInput.files.length > 0) {
-                    // Update Button State to show compression
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Compressing Photo...`;
+                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Compressing...`;
                     lucide.createIcons();
                     
                     const file = photoInput.files[0];
-                    
-                    // Call the compression helper (1200px max, 70% quality JPG)
                     const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
 
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading Photo...`;
+                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading...`;
                     lucide.createIcons();
 
                     const safeFileName = file.name.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
                     const storageRef = ref(storage, `match_photos/${activeAppId}/${pairId}_${Date.now()}_${safeFileName}`);
                     
-                    // Upload the much smaller blob instead of the massive original file
                     await uploadBytes(storageRef, compressedBlob);
                     photoUrl = await getDownloadURL(storageRef);
                 }
 
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing Database...`;
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
                 lucide.createIcons();
 
                 const matchDocRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId);
@@ -527,7 +545,7 @@
                 document.getElementById('holes-remaining').value = "";
                 document.getElementById('match-photo').value = ""; 
                 
-                showToast("Tag Captured! Gallery Updated.");
+                showToast("Tag Captured! Board and Gallery Updated.");
 
             } catch (err) {
                 console.error(err);
@@ -728,19 +746,34 @@
             lucide.createIcons();
         }
 
-        // --- SPLASH SCREEN LOGIC ---
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('screen-splash');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => {
-                        splash.classList.add('hidden');
-                    }, 1000); // Wait for the CSS transition to finish before completely hiding
-                }
-            }, 3000); // 3-second hold
-        });
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            if (!grid) return;
+            
+            const photos = matches
+                .filter(m => m.photoUrl)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+            if (photos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No evidence uploaded yet.</div>`;
+                return;
+            }
+
+            grid.innerHTML = photos.map(m => `
+                <div class="bg-white rounded-3xl p-3 shadow-md border border-slate-100 flex flex-col gap-3 transition-transform hover:scale-[1.02]">
+                    <a href="${m.photoUrl}" target="_blank" class="block relative aspect-square rounded-2xl overflow-hidden bg-slate-100">
+                        <img src="${m.photoUrl}" alt="Match Photo" class="w-full h-full object-cover" loading="lazy">
+                    </a>
+                    <div class="px-2 pb-2 text-left">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</p>
+                        <p class="text-sm font-black text-slate-800 leading-tight">${m.winner} <span class="text-emerald-500 font-bold">def.</span> ${m.loser}</p>
+                        <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">${m.score}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>
