@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v4.4 (Rules Screen)</title>
+    <title>Battle Tags Friday Harbour v4.5 (Rules & Stash Tracker)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -201,10 +201,11 @@
                     <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left ml-4">Live Standings</h2>
                     <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
                         <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
-                            <div onclick="sortLeaderboard('name')" class="col-span-6 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
                             <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
-                            <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base">🏷️</span><span class="hidden md:inline">Won</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
-                            <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base">💀</span><span class="hidden md:inline">Lst</span> <span id="sort-lost" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('total')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Current Stash"><span class="text-sm md:text-base">🏷️</span><span class="hidden md:inline">Stash</span> <span id="sort-total" class="text-emerald-500">▼</span></div>
                         </div>
                         <div id="leaderboard-list" class="divide-y divide-slate-50">
                             <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
@@ -259,11 +260,11 @@
                     
                     <!-- Rules Logo -->
                     <div class="flex justify-center mb-8">
-                        <img src="IMG_2087.png" alt="BattleTags Logo" class="w-48 md:w-64 h-auto drop-shadow-sm" onerror="this.outerHTML='<h2 class=\'text-2xl font-black text-emerald-600 mb-4\'>BATTLETAGS</h2>'">
+                        <img src="IMG_2087.png" alt="BattleTags Logo" class="w-48 md:w-64 h-auto" onerror="this.outerHTML='<h2 class=\'text-2xl font-black text-emerald-600 mb-4\'>BATTLETAGS</h2>'">
                     </div>
 
                     <div class="space-y-2 mb-10 text-center">
-                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">What is BattleTag?</h2>
+                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">How it Works</h2>
                         <div class="w-16 h-1.5 bg-emerald-500 mx-auto rounded-full mt-4"></div>
                     </div>
                     
@@ -275,9 +276,9 @@
                                 <i data-lucide="swords" class="w-6 h-6"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Premise</h3>
+                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Arsenal</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
-                                    BattleTags is an ongoing, season-long match-play war at The Nest at Friday Harbour. Every player starts with their physical Tag. Your ultimate goal is to challenge your buddies, beat them on the course, and capture their tags to climb the leaderboard.
+                                    BattleTags is an ongoing, season-long match-play war at The Nest at Friday Harbour. Every player starts the season armed with exactly <strong>26 physical Tags</strong>—one for every other player in the league.
                                 </p>
                             </div>
                         </div>
@@ -290,7 +291,7 @@
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">The Challenge</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
-                                    Any player can challenge another player to a match. The format is standard 18-hole head-to-head Match Play. You win holes, you go up. You lose holes, you go down.
+                                    Any player can challenge another player to a match. The format is standard head-to-head Match Play. You win holes, you go up. You lose holes, you go down.
                                 </p>
                             </div>
                         </div>
@@ -303,7 +304,7 @@
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">To The Victor Go The Spoils</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
-                                    If you win the match, you take their Tag. The <strong>winner</strong> is strictly responsible for pulling up this app, logging the victory (Holes Up & Holes Remaining), and updating the Damage Report. 
+                                    If you win the match, you capture one of their Tags, adding it to your stash. The <strong>winner</strong> is strictly responsible for pulling up this app, logging the victory (Holes Up & Holes Remaining), and updating the Damage Report. 
                                 </p>
                             </div>
                         </div>
@@ -329,7 +330,7 @@
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">The Glory</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
-                                    The live standings track every match played, tags won, and tags lost. The player with the most Tags collected by the end of the season wins ultimate bragging rights for the year.
+                                    The live standings track every match and mathematically calculate your "Stash" (starting at 26). The player who hoards the largest stash of Tags by the end of the season wins ultimate bragging rights for the year.
                                 </p>
                             </div>
                         </div>
@@ -380,7 +381,7 @@
         let viewingDamageFor = null; 
         let players = [];
         let matches = [];
-        let currentSort = { column: 'won', direction: 'desc' };
+        let currentSort = { column: 'total', direction: 'desc' }; // Default to Stash Total
 
         // Custom Toast Notifications
         window.showToast = function(msg, isError = false) {
@@ -660,7 +661,7 @@
                 
                 await setDoc(matchDocRef, matchData);
 
-                // Setup WhatsApp Share Link
+                // Setup WhatsApp Share Link with PRE-FILLED HYPE MESSAGE!
                 let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
                 if(photoUrl) waText += `\n\n📸 Evidence: ${photoUrl}`;
                 
@@ -760,17 +761,19 @@
 
             const statsMap = {};
             players.forEach(p => {
-                statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0 };
+                statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, total: 26 };
             });
             
             matches.forEach(m => {
                 if (statsMap[m.winner]) {
                     statsMap[m.winner].won++;
                     statsMap[m.winner].played++;
+                    statsMap[m.winner].total++;
                 }
                 if (statsMap[m.loser]) {
                     statsMap[m.loser].lost++;
                     statsMap[m.loser].played++;
+                    statsMap[m.loser].total--;
                 }
             });
 
@@ -791,19 +794,20 @@
 
             listEl.innerHTML = sorted.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-6 flex items-center gap-3 overflow-hidden">
-                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
+                    <div class="col-span-4 flex items-center gap-2 overflow-hidden">
+                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'total' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
                             ${i + 1}
                         </span>
                         <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base">${p.name}</span>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.played}</div>
-                    <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
-                    <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
+                    <div class="col-span-2 text-center font-bold text-emerald-500 text-xs md:text-base">+${p.won}</div>
+                    <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">-${p.lost}</div>
+                    <div class="col-span-2 text-center font-black text-emerald-700 text-sm md:text-lg">${p.total}</div>
                 </div>
             `).join('');
 
-            ['name', 'played', 'won', 'lost'].forEach(col => {
+            ['name', 'played', 'won', 'lost', 'total'].forEach(col => {
                 const el = document.getElementById(`sort-${col}`);
                 if (el) {
                     el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : '';
