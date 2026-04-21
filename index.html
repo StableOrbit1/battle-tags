@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v4.2 (Final with Splash)</title>
+    <title>Battle Tags Friday Harbour v4.3 (WhatsApp Share)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -37,8 +37,6 @@
         input[type=file]::file-selector-button:hover {
             background-color: #d1fae5;
         }
-        
-        /* Splash Screen Animation */
         @keyframes splashFadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -51,8 +49,29 @@
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
     <!-- SCREEN 00: SPLASH (Fades out after 3s) -->
-    <div id="screen-splash" class="fixed inset-0 z-[400] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
-        <img src="IMG_2087.png" alt="BattleTags 2026" class="w-[48rem] md:w-[60rem] lg:w-[72rem] max-w-[95vw] h-auto splash-animate drop-shadow-xl" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS 2026</h1><p class=\'text-slate-400 mt-2\'>Logo Image Not Found</p>'">
+    <div id="screen-splash" class="fixed inset-0 z-[600] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
+        <img src="BTLogo.png" alt="BattleTags 2026" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS 2026</h1><p class=\'text-slate-400 mt-2\'>Logo Image Not Found</p>'">
+    </div>
+
+    <!-- WHATSAPP SUCCESS MODAL -->
+    <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+            </div>
+            <div>
+                <h3 class="text-3xl font-black text-slate-800 tracking-tight">Tag Captured!</h3>
+                <p class="text-slate-500 text-sm mt-2 font-medium">Your win has been synced to the database.</p>
+            </div>
+            <div class="space-y-3 mt-4">
+                <a id="wa-share-btn" href="#" target="_blank" onclick="closeSuccessModal()" class="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-[#1ebd5a] transition-all shadow-lg active-scale flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i> Send to WhatsApp
+                </a>
+                <button onclick="closeSuccessModal()" class="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active-scale">
+                    Skip
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- SCREEN 0: LOADING -->
@@ -239,10 +258,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // ====================================================================
-        // IMPORTANT: IF YOU STARTED A "FRESH" DATABASE EARLIER, CHANGE THIS 
-        // TO 'friday-harbour-battle-tags-v2' SO IT FINDS YOUR NEW PHOTOS!
-        // ====================================================================
         const DATABASE_FOLDER_NAME = 'friday-harbour-battle-tags';
 
         // --- HYBRID FIREBASE CONFIGURATION ---
@@ -278,7 +293,7 @@
         let currentSort = { column: 'won', direction: 'desc' };
 
         // Custom Toast Notifications
-        function showToast(msg, isError = false) {
+        window.showToast = function(msg, isError = false) {
             const t = document.createElement('div');
             t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl z-[500] transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
             t.innerHTML = msg;
@@ -288,6 +303,17 @@
                 setTimeout(() => t.remove(), 300);
             }, 3000);
         }
+
+        // Close WhatsApp Modal
+        window.closeSuccessModal = function() {
+            const modal = document.getElementById('modal-success');
+            const content = document.getElementById('modal-success-content');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); 
+        };
 
         // --- IMAGE COMPRESSION HELPER ---
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
@@ -339,7 +365,7 @@
                     splash.style.opacity = '0';
                     setTimeout(() => splash.classList.add('hidden'), 1000);
                 }
-            }, 3000); // 3-second hold
+            }, 3000); 
         });
 
         // --- INITIALIZATION ---
@@ -540,12 +566,25 @@
                 
                 await setDoc(matchDocRef, matchData);
 
+                // Setup WhatsApp Share Link with PRE-FILLED HYPE MESSAGE!
+                let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
+                if(photoUrl) waText += `\n\n📸 Evidence: ${photoUrl}`;
+                
+                document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+
+                // Reset form
                 document.getElementById('report-opponent').value = "";
                 document.getElementById('holes-up').value = "";
                 document.getElementById('holes-remaining').value = "";
                 document.getElementById('match-photo').value = ""; 
                 
-                showToast("Tag Captured! Board and Gallery Updated.");
+                // Show Success Modal so they can click the Share button
+                const modal = document.getElementById('modal-success');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modal-success-content').classList.remove('scale-0');
+                    document.getElementById('modal-success-content').classList.add('scale-100');
+                }, 10);
 
             } catch (err) {
                 console.error(err);
