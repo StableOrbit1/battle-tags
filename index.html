@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags Friday Harbour v4.6</title>
+    <title>Battle Tags Friday Harbour v5.1 (Schedule Alerts)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -43,6 +43,15 @@
         .splash-animate {
             animation: splashFadeIn 0.8s ease-out forwards;
         }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-6px) rotate(-6deg); }
+            50% { transform: translateX(6px) rotate(6deg); }
+            75% { transform: translateX(-6px) rotate(-6deg); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
@@ -52,15 +61,15 @@
         <img src="IMG_2087.png" alt="BattleTags 2026" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS 2026</h1><p class=\'text-slate-400 mt-2\'>Logo Image Not Found</p>'">
     </div>
 
-    <!-- WHATSAPP SUCCESS MODAL -->
+    <!-- DYNAMIC WHATSAPP SUCCESS MODAL -->
     <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
                 <i data-lucide="check-circle-2" class="w-10 h-10"></i>
             </div>
             <div>
-                <h3 class="text-3xl font-black text-slate-800 tracking-tight">Tag Captured!</h3>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Your win has been synced to the database.</p>
+                <h3 id="modal-success-title" class="text-3xl font-black text-slate-800 tracking-tight">Success!</h3>
+                <p id="modal-success-subtitle" class="text-slate-500 text-sm mt-2 font-medium">Your data has been synced.</p>
             </div>
             <div class="space-y-3 mt-4">
                 <a id="wa-share-btn" href="#" target="_blank" onclick="closeSuccessModal()" class="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-[#1ebd5a] transition-all shadow-lg active-scale flex items-center justify-center gap-2">
@@ -124,7 +133,10 @@
                     <p class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">The Nest at Friday Harbour</p>
                 </div>
                 <nav class="flex bg-emerald-950/40 rounded-2xl p-1.5 w-full md:w-auto border border-emerald-800/50 backdrop-blur-sm overflow-x-auto custom-scrollbar">
-                    <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap">
+                    <button onclick="switchView('battle')" id="nav-battle" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap">
+                        Go to Battle
+                    </button>
+                    <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         Standings
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
@@ -142,8 +154,64 @@
 
         <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
             
+            <!-- GO TO BATTLE SECTION -->
+            <section id="view-battle" class="space-y-12">
+                <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
+                    <div class="mb-8 flex justify-between items-start">
+                        <div>
+                            <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">Go to Battle</h2>
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">Schedule your next match</p>
+                        </div>
+                        <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-slate-50 rounded-xl" title="Switch User">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <form id="schedule-form" class="space-y-6 bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Who have you scheduled a battle with?</label>
+                                <select id="schedule-opponent" required class="w-full p-4 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 appearance-none cursor-pointer shadow-sm">
+                                    <option value="">Select Opponent...</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">When is the battle to take place?</label>
+                                <input type="date" id="schedule-date" required class="w-full p-4 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 shadow-sm">
+                            </div>
+                        </div>
+
+                        <div class="text-center py-4">
+                            <span class="font-black text-emerald-600 uppercase tracking-[0.15em] text-sm md:text-base">Good luck on your match!</span>
+                        </div>
+
+                        <button type="submit" id="schedule-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl transition-all active-scale flex items-center justify-center gap-2">
+                            <i data-lucide="calendar-plus" class="w-5 h-5"></i> Schedule Match
+                        </button>
+                    </form>
+
+                    <!-- Magic 8 Ball Section -->
+                    <div class="mt-12 pt-10 border-t border-slate-100 flex flex-col items-center">
+                        <h3 class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 text-center">Ask the golf gods about your fate in this match</h3>
+                        
+                        <div id="magic-8-ball" onclick="shakeMagicBall()" class="w-48 h-48 rounded-full bg-slate-900 shadow-[inset_0_-15px_30px_rgba(0,0,0,0.8),0_15px_25px_rgba(0,0,0,0.2)] flex items-center justify-center cursor-pointer transition-transform active:scale-95 relative border-4 border-slate-800 group">
+                            <!-- Inner reflection ring -->
+                            <div class="absolute inset-3 rounded-full border border-slate-700/50"></div>
+                            <!-- Highlight -->
+                            <div class="absolute top-4 left-8 w-16 h-8 bg-white/10 rounded-[100%] rotate-[-30deg]"></div>
+                            
+                            <div id="magic-8-text" class="text-emerald-400 font-bold text-center px-6 leading-tight drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] z-10 flex flex-col items-center justify-center h-full w-full">
+                                <span class="text-5xl opacity-30 font-serif italic tracking-tighter mb-1">8</span>
+                                <span class="text-[10px] uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Tap to Ask</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
             <!-- LEADERBOARD SECTION -->
-            <section id="view-leaderboard" class="space-y-12">
+            <section id="view-leaderboard" class="hidden space-y-12">
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
                         <div>
@@ -152,9 +220,6 @@
                                 Reporting as <span id="display-user-name" class="text-emerald-600 font-bold uppercase">...</span>
                             </p>
                         </div>
-                        <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-slate-50 rounded-xl" title="Switch User">
-                            <i data-lucide="log-out" class="w-5 h-5"></i>
-                        </button>
                     </div>
                     
                     <form id="match-form" class="space-y-6">
@@ -200,10 +265,11 @@
                     <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left ml-4">Live Standings</h2>
                     <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
                         <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
-                            <div onclick="sortLeaderboard('name')" class="col-span-6 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
                             <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
-                            <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
+                            <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500"></span></div>
                             <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
+                            <div onclick="sortLeaderboard('total')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Current Stash"><span class="text-sm md:text-base">🏷️</span><span class="hidden md:inline">Stash</span> <span id="sort-total" class="text-emerald-500">▼</span></div>
                         </div>
                         <div id="leaderboard-list" class="divide-y divide-slate-50">
                             <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
@@ -268,7 +334,6 @@
                     
                     <div class="space-y-8">
                         
-                        <!-- Rule Block 1 -->
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
                                 <i data-lucide="swords" class="w-6 h-6"></i>
@@ -281,7 +346,6 @@
                             </div>
                         </div>
 
-                        <!-- Rule Block 2 -->
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
                                 <i data-lucide="crosshair" class="w-6 h-6"></i>
@@ -294,7 +358,6 @@
                             </div>
                         </div>
 
-                        <!-- Rule Block 3 -->
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
                                 <i data-lucide="smartphone" class="w-6 h-6"></i>
@@ -307,7 +370,6 @@
                             </div>
                         </div>
 
-                        <!-- Rule Block 4 -->
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
                                 <i data-lucide="camera" class="w-6 h-6"></i>
@@ -320,7 +382,6 @@
                             </div>
                         </div>
 
-                        <!-- Rule Block 5 -->
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
                                 <i data-lucide="trophy" class="w-6 h-6"></i>
@@ -328,7 +389,19 @@
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">The Glory</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
-                                    The live standings track every match played, tags won, and tags lost. The player with the most Tags collected by the end of the season wins ultimate bragging rights for the year.
+                                    The live standings track every match and mathematically calculate your "Stash" (starting at 26). The player who hoards the largest stash of Tags by the end of the season wins ultimate bragging rights for the year.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
+                                <i data-lucide="banknote" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Payout</h3>
+                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">
+                                    At the end of the season, the top three players with the largest stash of Tags will take home the prize pool. Payouts are distributed as <strong>60% for 1st place</strong>, <strong>30% for 2nd place</strong>, and <strong>10% for 3rd place</strong>.
                                 </p>
                             </div>
                         </div>
@@ -372,14 +445,10 @@
         const auth = getAuth(app);
         
         // --- TURN ON OFFLINE CACHING ---
-        // This saves thousands of database reads by storing data on the user's phone
         let db;
         try {
-            db = initializeFirestore(app, {
-                localCache: persistentLocalCache()
-            });
+            db = initializeFirestore(app, { localCache: persistentLocalCache() });
         } catch (e) {
-            // Safe fallback for Private Browsing/Incognito mode where caching is blocked
             db = getFirestore(app); 
         }
 
@@ -391,7 +460,42 @@
         let viewingDamageFor = null; 
         let players = [];
         let matches = [];
-        let currentSort = { column: 'won', direction: 'desc' }; // Default back to Won tags
+        let currentSort = { column: 'total', direction: 'desc' };
+
+        // --- MAGIC 8 BALL LOGIC ---
+        const golfGodSayings = [
+            "Signs point to a win",
+            "Signs point to a loss",
+            "Buy more balls, the gods say No",
+            "Fore Left, the outlook is bad",
+            "Try again later",
+            "Crushing victory",
+            "Crushing defeat",
+            "Too much time in the S2, loss",
+            "You will putt well, win",
+            "You will drive well, win",
+            "Bring a helmet, too tough to call",
+            "Tag is safe",
+            "Tag and dignity are at risk",
+            "Slow and steady wins the race",
+            "Centre of the green is where the winners circle is",
+            "Meet me at 9 o'clock on the 9th green"
+        ];
+
+        window.shakeMagicBall = function() {
+            const ball = document.getElementById('magic-8-ball');
+            const textContainer = document.getElementById('magic-8-text');
+            
+            ball.classList.add('animate-shake');
+            textContainer.innerHTML = '<i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-emerald-600"></i>';
+            lucide.createIcons();
+
+            setTimeout(() => {
+                ball.classList.remove('animate-shake');
+                const randomSaying = golfGodSayings[Math.floor(Math.random() * golfGodSayings.length)];
+                textContainer.innerHTML = `<span class="text-sm tracking-tight">${randomSaying}</span>`;
+            }, 500);
+        };
 
         // Custom Toast Notifications
         window.showToast = function(msg, isError = false) {
@@ -471,6 +575,7 @@
 
         // --- INITIALIZATION ---
         document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('schedule-date').value = new Date().toISOString().split('T')[0];
         lucide.createIcons();
 
         const initAuth = async () => {
@@ -523,29 +628,21 @@
         }
 
         window.switchView = function(viewName) {
-            document.getElementById('view-leaderboard').classList.toggle('hidden', viewName !== 'leaderboard');
-            document.getElementById('view-damage').classList.toggle('hidden', viewName !== 'damage');
-            document.getElementById('view-gallery').classList.toggle('hidden', viewName !== 'gallery');
-            document.getElementById('view-rules').classList.toggle('hidden', viewName !== 'rules');
-
-            const navLead = document.getElementById('nav-leaderboard');
-            const navDam = document.getElementById('nav-damage');
-            const navGal = document.getElementById('nav-gallery');
-            const navRules = document.getElementById('nav-rules');
-
-            [navLead, navDam, navGal, navRules].forEach(el => {
-                el.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap";
+            const sections = ['battle', 'leaderboard', 'damage', 'gallery', 'rules'];
+            sections.forEach(sec => {
+                document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec);
             });
 
-            if (viewName === 'leaderboard') {
-                navLead.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap";
-            } else if (viewName === 'damage') {
-                navDam.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap";
-            } else if (viewName === 'gallery') {
-                navGal.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap";
-            } else if (viewName === 'rules') {
-                navRules.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap";
-            }
+            sections.forEach(sec => {
+                const navEl = document.getElementById(`nav-${sec}`);
+                if (navEl) {
+                    if (viewName === sec) {
+                        navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap";
+                    } else {
+                        navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap";
+                    }
+                }
+            });
         };
 
         // --- DATA LISTENERS ---
@@ -614,6 +711,72 @@
             window.location.reload();
         };
 
+        // --- NEW: SCHEDULING A MATCH ---
+        document.getElementById('schedule-form').onsubmit = async function(e) {
+            e.preventDefault();
+            if (!auth.currentUser) return;
+
+            const opponent = document.getElementById('schedule-opponent').value;
+            const date = document.getElementById('schedule-date').value;
+            const btn = document.getElementById('schedule-btn');
+
+            if (!opponent || !currentUser) return;
+
+            const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
+            
+            const existingMatch = matches.find(m => m.id === pairId);
+            if (existingMatch && existingMatch.winner) {
+                showToast("You have already played this opponent!", true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
+            lucide.createIcons();
+
+            try {
+                const matchDocRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId);
+                await setDoc(matchDocRef, {
+                    status: 'scheduled',
+                    player1: currentUser,
+                    player2: opponent,
+                    scheduledDate: date,
+                    timestamp: new Date().toISOString()
+                });
+
+                // Format WhatsApp Message for Scheduling
+                let waText = `🗓️ *BATTLETAG SCHEDULED*\n${currentUser.toUpperCase()} is going to battle against ${opponent.toUpperCase()} on ${date}! ⚔️\n\nMay the Golf Gods have mercy on their souls.`;
+                document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+                
+                // Update Modal Content Dynamically
+                document.getElementById('modal-success-title').innerText = "Battle Scheduled!";
+                document.getElementById('modal-success-subtitle').innerText = "Your upcoming match has been added to the board.";
+                
+                document.getElementById('schedule-opponent').value = "";
+                
+                // Switch View and Show Modal
+                switchView('damage');
+                
+                const modal = document.getElementById('modal-success');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modal-success-content').classList.remove('scale-0');
+                    document.getElementById('modal-success-content').classList.add('scale-100');
+                }, 10);
+
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to schedule match.", true);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                btn.innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5"></i> Schedule Match`;
+                lucide.createIcons();
+            }
+        };
+
+        // --- EXISTING: LOGGING A WIN ---
         document.getElementById('match-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!auth.currentUser) return;
@@ -658,6 +821,7 @@
                 const matchDocRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId);
                 
                 const matchData = {
+                    status: 'completed', 
                     winner: currentUser,
                     loser: opponent,
                     score: `${holesUp} & ${holesRem}`,
@@ -671,19 +835,22 @@
                 
                 await setDoc(matchDocRef, matchData);
 
-                // Setup WhatsApp Share Link with PRE-FILLED HYPE MESSAGE!
+                // Format WhatsApp Message for Logging a Win
                 let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
                 if(photoUrl) waText += `\n\n📸 Evidence: ${photoUrl}`;
                 
                 document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+                
+                // Update Modal Content Dynamically
+                document.getElementById('modal-success-title').innerText = "Tag Captured!";
+                document.getElementById('modal-success-subtitle').innerText = "Your win has been synced to the database.";
 
-                // Reset form
+                // Reset forms
                 document.getElementById('report-opponent').value = "";
                 document.getElementById('holes-up').value = "";
                 document.getElementById('holes-remaining').value = "";
                 document.getElementById('match-photo').value = ""; 
                 
-                // Show Success Modal so they can click the Share button
                 const modal = document.getElementById('modal-success');
                 modal.classList.remove('hidden');
                 setTimeout(() => {
@@ -726,12 +893,18 @@
 
         function updateDropdowns() {
             const oppSelect = document.getElementById('report-opponent');
+            const scheduleSelect = document.getElementById('schedule-opponent');
             const damageSelect = document.getElementById('damage-view-select');
             
             if (currentUser && oppSelect) {
                 oppSelect.innerHTML = '<option value="">Select Opponent...</option>';
                 players.filter(p => p.name !== currentUser).forEach(p => {
                     oppSelect.add(new Option(p.name, p.name));
+                });
+                
+                scheduleSelect.innerHTML = '<option value="">Select Opponent...</option>';
+                players.filter(p => p.name !== currentUser).forEach(p => {
+                    scheduleSelect.add(new Option(p.name, p.name));
                 });
             }
 
@@ -771,17 +944,21 @@
 
             const statsMap = {};
             players.forEach(p => {
-                statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0 };
+                statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, total: 26 };
             });
             
             matches.forEach(m => {
-                if (statsMap[m.winner]) {
-                    statsMap[m.winner].won++;
-                    statsMap[m.winner].played++;
-                }
-                if (statsMap[m.loser]) {
-                    statsMap[m.loser].lost++;
-                    statsMap[m.loser].played++;
+                if (m.winner) {
+                    if (statsMap[m.winner]) {
+                        statsMap[m.winner].won++;
+                        statsMap[m.winner].played++;
+                        statsMap[m.winner].total++;
+                    }
+                    if (statsMap[m.loser]) {
+                        statsMap[m.loser].lost++;
+                        statsMap[m.loser].played++;
+                        statsMap[m.loser].total--;
+                    }
                 }
             });
 
@@ -802,19 +979,20 @@
 
             listEl.innerHTML = sorted.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-6 flex items-center gap-3 overflow-hidden">
-                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
+                    <div class="col-span-4 flex items-center gap-2 overflow-hidden">
+                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'total' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
                             ${i + 1}
                         </span>
                         <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base">${p.name}</span>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.played}</div>
-                    <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
-                    <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
+                    <div class="col-span-2 text-center font-bold text-emerald-500 text-xs md:text-base">+${p.won}</div>
+                    <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">-${p.lost}</div>
+                    <div class="col-span-2 text-center font-black text-emerald-700 text-sm md:text-lg">${p.total}</div>
                 </div>
             `).join('');
 
-            ['name', 'played', 'won', 'lost'].forEach(col => {
+            ['name', 'played', 'won', 'lost', 'total'].forEach(col => {
                 const el = document.getElementById(`sort-${col}`);
                 if (el) {
                     el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : '';
@@ -835,30 +1013,44 @@
             const html = players.filter(p => p.name !== viewingDamageFor).map(opp => {
                 const pairId = [viewingDamageFor, opp.name].sort().join('_').replace(/\s+/g, '');
                 const match = matches.find(m => m.id === pairId);
-                const isWin = match && match.winner === viewingDamageFor;
-                const status = !match ? 'unplayed' : isWin ? 'won' : 'lost';
+                
+                let status = 'unplayed';
+                if (match) {
+                    if (match.winner === viewingDamageFor) status = 'won';
+                    else if (match.winner && match.winner !== viewingDamageFor) status = 'lost';
+                    else if (!match.winner && match.scheduledDate) status = 'scheduled';
+                }
 
                 if (status === 'won') wonCount++;
                 if (status === 'lost') lostCount++;
 
                 const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 
                                    status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : 
+                                   status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' :
                                    'bg-white border-slate-100 opacity-70';
                 
                 const statusText = status === 'unplayed' ? 'Not Played' : 
                                    status === 'won' ? `Captured (${match.score})` : 
-                                   `Lost (${match.score})`;
+                                   status === 'lost' ? `Lost (${match.score})` :
+                                   'Scheduled Battle';
 
                 const photoIconHtml = (match && match.photoUrl) ? 
                     `<a href="${match.photoUrl}" target="_blank" class="text-emerald-500 hover:text-emerald-700 bg-emerald-100 p-1 rounded inline-flex transition-colors" title="View Evidence Photo"><i data-lucide="camera" class="w-3 h-3"></i></a>` : '';
 
-                const dateHtml = match ? `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date} ${photoIconHtml}</div>` : '';
+                let dateHtml = '';
+                if (status === 'scheduled') {
+                    dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-amber-600 uppercase"><i data-lucide="calendar-clock" class="w-3 h-3"></i> Set for ${match.scheduledDate}</div>`;
+                } else if (match && match.date) {
+                    dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date} ${photoIconHtml}</div>`;
+                }
                 
                 const icon = status === 'unplayed' 
                     ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` 
-                    : status === 'won' 
-                        ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` 
-                        : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+                    : status === 'scheduled'
+                        ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>`
+                        : status === 'won' 
+                            ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` 
+                            : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
 
                 return `
                     <div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${styleClass}">
@@ -895,7 +1087,7 @@
             if (!grid) return;
             
             const photos = matches
-                .filter(m => m.photoUrl)
+                .filter(m => m.photoUrl && m.winner)
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
 
             if (photos.length === 0) {
