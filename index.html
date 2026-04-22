@@ -343,7 +343,7 @@
     <!-- Firebase SDK 11.6.1 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
@@ -370,7 +370,19 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        
+        // --- TURN ON OFFLINE CACHING ---
+        // This saves thousands of database reads by storing data on the user's phone
+        let db;
+        try {
+            db = initializeFirestore(app, {
+                localCache: persistentLocalCache()
+            });
+        } catch (e) {
+            // Safe fallback for Private Browsing/Incognito mode where caching is blocked
+            db = getFirestore(app); 
+        }
+
         const storage = getStorage(app); 
         const ACCESS_PASSWORD = "FH2026";
 
