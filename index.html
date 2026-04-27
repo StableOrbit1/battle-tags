@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v5.2 (Clean Leaderboard)</title>
+    <title>Battle Tags v5.3 (Breakfast Ball & Clean WA)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -56,12 +56,10 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
-    <!-- SCREEN 00: SPLASH (Fades out after 3s) -->
     <div id="screen-splash" class="fixed inset-0 z-[600] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
         <img src="IMG_2087.png" alt="BattleTags 2026" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS 2026</h1><p class=\'text-slate-400 mt-2\'>Logo Image Not Found</p>'">
     </div>
 
-    <!-- DYNAMIC WHATSAPP SUCCESS MODAL -->
     <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -82,14 +80,12 @@
         </div>
     </div>
 
-    <!-- SCREEN 0: LOADING -->
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
             <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Syncing Database...
         </div>
     </div>
 
-    <!-- SCREEN 1: PASSWORD -->
     <div id="screen-password" class="fixed inset-0 z-[100] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -106,7 +102,6 @@
         </div>
     </div>
 
-    <!-- SCREEN 2: IDENTITY -->
     <div id="screen-identity" class="fixed inset-0 z-[90] bg-emerald-900 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -117,12 +112,10 @@
                 <p class="text-slate-500 text-sm mt-2 font-medium">Select your name to start tracking.</p>
             </div>
             <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                <!-- Roster Populated by JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN -->
     <div id="screen-app" class="hidden">
         <header class="bg-emerald-900 text-white p-4 md:p-6 shadow-2xl sticky top-0 z-50">
             <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -153,7 +146,6 @@
 
         <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
             
-            <!-- GO TO BATTLE SECTION -->
             <section id="view-battle" class="space-y-12">
                 <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
@@ -189,14 +181,11 @@
                         </button>
                     </form>
 
-                    <!-- Magic 8 Ball Section -->
                     <div class="mt-12 pt-10 border-t border-slate-100 flex flex-col items-center">
                         <h3 class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 text-center">Ask the golf gods about your fate in this match</h3>
                         
                         <div id="magic-8-ball" onclick="shakeMagicBall()" class="w-48 h-48 rounded-full bg-slate-900 shadow-[inset_0_-15px_30px_rgba(0,0,0,0.8),0_15px_25px_rgba(0,0,0,0.2)] flex items-center justify-center cursor-pointer transition-transform active:scale-95 relative border-4 border-slate-800 group">
-                            <!-- Inner reflection ring -->
                             <div class="absolute inset-3 rounded-full border border-slate-700/50"></div>
-                            <!-- Highlight -->
                             <div class="absolute top-4 left-8 w-16 h-8 bg-white/10 rounded-[100%] rotate-[-30deg]"></div>
                             
                             <div id="magic-8-text" class="text-emerald-400 font-bold text-center px-6 leading-tight drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] z-10 flex flex-col items-center justify-center h-full w-full">
@@ -209,7 +198,6 @@
                 </div>
             </section>
 
-            <!-- LEADERBOARD SECTION -->
             <section id="view-leaderboard" class="hidden space-y-12">
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
@@ -246,7 +234,6 @@
                             </div>
                         </div>
 
-                        <!-- Photo Upload Section -->
                         <div class="space-y-2 bg-slate-50 border border-slate-100 p-4 rounded-3xl">
                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">
                                 <i data-lucide="camera" class="w-3 h-3"></i> Optional Evidence
@@ -276,7 +263,6 @@
                 </div>
             </section>
 
-            <!-- DAMAGE REPORT SECTION -->
             <section id="view-damage" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-6">
@@ -286,8 +272,7 @@
                         </div>
                         <div class="relative w-full md:w-auto">
                             <select id="damage-view-select" onchange="window.changeDamageView(this.value)" class="w-full md:w-64 p-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl font-black text-emerald-800 outline-none focus:border-emerald-500 appearance-none cursor-pointer">
-                                <!-- Populated by JS -->
-                            </select>
+                                </select>
                             <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-emerald-600">
                                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
                             </div>
@@ -295,16 +280,13 @@
                     </div>
                     
                     <div id="damage-stats" class="flex flex-wrap gap-3 mt-6">
-                        <!-- Stats Badges Populated by JS -->
-                    </div>
+                        </div>
                 </div>
                 
                 <div id="damage-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Damage cards populated by JS -->
-                </div>
+                    </div>
             </section>
 
-            <!-- PHOTO GALLERY SECTION -->
             <section id="view-gallery" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Photoboard</h2>
@@ -312,15 +294,12 @@
                 </div>
                 
                 <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Photos populated by JS -->
-                </div>
+                    </div>
             </section>
 
-            <!-- RULES SECTION -->
             <section id="view-rules" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-200">
                     
-                    <!-- Rules Logo -->
                     <div class="flex justify-center mb-8">
                         <img src="IMG_2087.png" alt="BattleTags Logo" class="w-48 md:w-64 h-auto" onerror="this.outerHTML='<h2 class=\'text-2xl font-black text-emerald-600 mb-4\'>BATTLETAGS</h2>'">
                     </div>
@@ -352,6 +331,18 @@
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">The Challenge</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">
                                     Any player can challenge another player to a match. The format is standard head-to-head Match Play. You win holes, you go up. You lose holes, you go down.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center shrink-0 mt-1">
+                                <i data-lucide="coffee" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Breakfast Ball</h3>
+                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">
+                                    Every player gets a breakfast ball on the first hole. However, choose wisely: if you elect to hit a second ball, you are <strong>committed to that second ball</strong>. No playing your first!
                                 </p>
                             </div>
                         </div>
@@ -411,7 +402,6 @@
         </main>
     </div>
 
-    <!-- Firebase SDK 11.6.1 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, initializeFirestore, persistentLocalCache, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -835,7 +825,7 @@
 
                 // Format WhatsApp Message for Logging a Win
                 let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
-                if(photoUrl) waText += `\n\n📸 Evidence: ${photoUrl}`;
+                if(photoUrl) waText += `\n\n📸 Evidence uploaded! Open the app Gallery to see the carnage.`;
                 
                 document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
                 
