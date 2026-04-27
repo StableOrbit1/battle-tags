@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v5.4 (Scheduled Matches Tab)</title>
+    <title>Battle Tags v5.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -128,8 +128,11 @@
                     <button onclick="switchView('battle')" id="nav-battle" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap">
                         Go to Battle
                     </button>
-                    <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
+                    <button onclick="switchView('submit')" id="nav-submit" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         Submit Results
+                    </button>
+                    <button onclick="switchView('standings')" id="nav-standings" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
+                        Standings
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         <i data-lucide="swords" class="w-3 h-3 hidden md:inline"></i> Damage
@@ -201,12 +204,13 @@
                 </div>
             </section>
 
-            <section id="view-leaderboard" class="hidden space-y-12">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
+            <!-- SUBMIT RESULTS SECTION -->
+            <section id="view-submit" class="hidden space-y-12">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
                         <div>
-                            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Report Capture</h3>
-                            <p class="text-slate-500 text-sm font-medium">
+                            <h3 class="text-3xl font-black text-slate-800 tracking-tight">Report Capture</h3>
+                            <p class="text-slate-500 text-sm font-medium mt-2">
                                 Reporting as <span id="display-user-name" class="text-emerald-600 font-bold uppercase">...</span>
                             </p>
                         </div>
@@ -249,19 +253,24 @@
                         </button>
                     </form>
                 </div>
+            </section>
 
-                <div class="space-y-6">
-                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-left ml-4">Live Standings</h2>
-                    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
-                        <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
-                            <div onclick="sortLeaderboard('name')" class="col-span-6 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
-                            <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
-                            <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
-                            <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
-                        </div>
-                        <div id="leaderboard-list" class="divide-y divide-slate-50">
-                            <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
-                        </div>
+            <!-- LIVE STANDINGS SECTION -->
+            <section id="view-standings" class="hidden space-y-8 text-left">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">Live Standings</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Current Season Rankings</p>
+                </div>
+                
+                <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
+                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
+                        <div onclick="sortLeaderboard('name')" class="col-span-6 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
+                        <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
+                        <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
+                        <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
+                    </div>
+                    <div id="leaderboard-list" class="divide-y divide-slate-50">
+                        <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
                     </div>
                 </div>
             </section>
@@ -631,7 +640,7 @@
         }
 
         window.switchView = function(viewName) {
-            const sections = ['battle', 'leaderboard', 'damage', 'gallery', 'scheduled', 'rules'];
+            const sections = ['battle', 'submit', 'standings', 'damage', 'gallery', 'scheduled', 'rules'];
             sections.forEach(sec => {
                 document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec);
             });
