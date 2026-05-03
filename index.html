@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.1 (Match Management)</title>
+    <title>Battle Tags v6.2 (Evidence Confirmation)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -34,10 +34,12 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
+    <!-- SPLASH SCREEN -->
     <div id="screen-splash" class="fixed inset-0 z-[600] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
         <img src="IMG_2087.png" alt="BattleTags" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS</h1><p class=\'text-slate-400 mt-2\'>Logo Not Found</p>'">
     </div>
 
+    <!-- WHATSAPP SUCCESS MODAL -->
     <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -58,12 +60,35 @@
         </div>
     </div>
 
+    <!-- NO PHOTO CONFIRMATION MODAL -->
+    <div id="modal-confirm-photo" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-confirm-photo-content">
+            <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="camera-off" class="w-10 h-10"></i>
+            </div>
+            <div>
+                <h3 class="text-3xl font-black text-slate-800 tracking-tight leading-tight">No Evidence?</h3>
+                <p class="text-slate-500 text-sm mt-3 font-medium">Are you sure you don't want to upload photographic evidence of the carnage?</p>
+            </div>
+            <div class="space-y-3 mt-4">
+                <button onclick="cancelPhotoSkip()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg active-scale flex items-center justify-center gap-2">
+                    <i data-lucide="camera" class="w-5 h-5"></i> Add Photo
+                </button>
+                <button onclick="confirmPhotoSkip()" class="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active-scale">
+                    Submit Without Evidence
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN -->
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
             <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Syncing Vault...
         </div>
     </div>
 
+    <!-- PHONE AUTH: ENTER NUMBER -->
     <div id="screen-phone" class="fixed inset-0 z-[100] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 relative overflow-hidden">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -77,11 +102,13 @@
                 <input type="tel" id="phone-input" required placeholder="+1 416 555 1234" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none tracking-widest">
                 <button type="submit" id="send-code-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl transition-all active-scale">Send Code</button>
             </form>
+            <!-- Invisible reCAPTCHA container required by Firebase -->
             <div id="recaptcha-container"></div>
         </div>
         <p class="text-emerald-500/50 text-[10px] uppercase tracking-widest font-bold mt-8">Enterprise SaaS Edition</p>
     </div>
 
+    <!-- PHONE AUTH: VERIFY OTP -->
     <div id="screen-otp" class="fixed inset-0 z-[95] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -99,6 +126,7 @@
         </div>
     </div>
 
+    <!-- IDENTITY CLAIM (MULTI-TENANT ONBOARDING) -->
     <div id="screen-identity" class="fixed inset-0 z-[90] bg-emerald-900 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20">
             <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -109,10 +137,12 @@
                 <p class="text-slate-500 text-xs mt-2 font-medium leading-relaxed">This is your first time logging in. Select your name to permanently lock your phone number to your BattleTag identity.</p>
             </div>
             <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                </div>
+                <!-- Unclaimed Roster Populated by JS -->
+            </div>
         </div>
     </div>
 
+    <!-- MAIN APP SCREEN -->
     <div id="screen-app" class="hidden">
         <header class="bg-emerald-900 text-white p-4 md:p-6 shadow-2xl sticky top-0 z-50">
             <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -198,6 +228,7 @@
                 </div>
             </section>
 
+            <!-- SUBMIT RESULTS SECTION -->
             <section id="view-submit" class="hidden space-y-12">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
@@ -248,6 +279,7 @@
                 </div>
             </section>
 
+            <!-- LIVE STANDINGS SECTION -->
             <section id="view-standings" class="space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Live Standings</h2>
@@ -267,6 +299,7 @@
                 </div>
             </section>
 
+            <!-- DAMAGE REPORT -->
             <section id="view-damage" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-6">
@@ -289,6 +322,7 @@
                 <div id="damage-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </section>
 
+            <!-- GALLERY -->
             <section id="view-gallery" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Photoboard</h2>
@@ -297,6 +331,7 @@
                 <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </section>
 
+            <!-- SCHEDULED MATCHES SECTION -->
             <section id="view-scheduled" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Upcoming Battles</h2>
@@ -305,6 +340,7 @@
                 <div id="scheduled-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
+            <!-- RULES -->
             <section id="view-rules" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex justify-center mb-8">
@@ -371,6 +407,7 @@
         </main>
     </div>
 
+    <!-- Firebase SDK 11.6.1 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, initializeFirestore, persistentLocalCache, collection, doc, setDoc, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -473,6 +510,21 @@
             }, 300); 
         };
 
+        // Close Evidence Confirmation Modal
+        window.cancelPhotoSkip = function() {
+            const content = document.getElementById('modal-confirm-photo-content');
+            content.classList.replace('scale-100', 'scale-0');
+            setTimeout(() => {
+                document.getElementById('modal-confirm-photo').classList.add('hidden');
+            }, 300);
+        };
+
+        // Submit Match Without Photo (From Modal)
+        window.confirmPhotoSkip = function() {
+            window.cancelPhotoSkip();
+            executeMatchSubmission();
+        };
+
         // --- IMAGE COMPRESSION HELPER ---
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
             return new Promise((resolve, reject) => {
@@ -531,14 +583,11 @@
         document.getElementById('schedule-date').value = new Date().toISOString().split('T')[0];
         lucide.createIcons();
 
-        // Check Auth State (No longer anonymous! True Phone Auth)
+        // Check Auth State
         onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser && firebaseUser.phoneNumber) {
-                // User is authenticated via Phone. Now we wait for the database to sync
-                // to see if their phone number matches a profile.
                 listenToDatabase(firebaseUser.phoneNumber);
             } else {
-                // Not logged in. Show Phone UI.
                 showScreen('phone');
             }
         });
@@ -566,7 +615,7 @@
                 showScreen('otp');
             } catch(err) {
                 console.error(err);
-                showToast("Error sending code. If testing in Preview, domain must be authorized in Firebase Console.", true);
+                showToast("Error sending code. Domain must be authorized in Firebase Console.", true);
                 btn.innerHTML = 'Send Code';
                 btn.disabled = false;
             }
@@ -582,7 +631,6 @@
 
             try {
                 await window.confirmationResult.confirm(code);
-                // Success! onAuthStateChanged will naturally pick up the transition.
                 document.getElementById('otp-input').value = "";
             } catch (err) {
                 showToast("Invalid code", true);
@@ -619,14 +667,11 @@
             const qP = collection(db, 'artifacts', activeAppId, 'public', 'data', 'players');
             onSnapshot(qP, (snapshot) => {
                 rawPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => a.name.localeCompare(b.name));
-                
-                // MULTI-TENANT ROUTING: Find the user's claimed identity based on their verified phone number
                 const myProfile = rawPlayers.find(p => p.phone === phoneNumber);
 
                 if (myProfile) {
-                    // IDENTITY FOUND! Lock them into their specific group.
                     currentUser = myProfile.name;
-                    currentGroup = myProfile.groupId || 'BattleTagGroup1'; // Default to Group 1 for legacy data
+                    currentGroup = myProfile.groupId || 'BattleTagGroup1'; 
                     viewingDamageFor = currentUser;
 
                     updateDropdowns();
@@ -635,7 +680,6 @@
                     renderDamageReport();
                     showScreen('app');
                 } else {
-                    // NO IDENTITY YET. They must claim a name to be assigned to BattleTagGroup1
                     const unclaimedPlayers = rawPlayers.filter(p => !p.phone || p.phone === "");
                     renderIdentityClaimList(unclaimedPlayers);
                     showScreen('identity');
@@ -654,7 +698,6 @@
             }, (error) => console.error(error));
         }
 
-        // --- IDENTITY CLAIM LOGIC (First Login) ---
         function renderIdentityClaimList(unclaimedPlayers) {
             const list = document.getElementById('identity-list');
             if (unclaimedPlayers.length === 0) {
@@ -675,13 +718,11 @@
             try {
                 showScreen('loading');
                 const playerRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'players', docId);
-                // Permanently lock the phone number and assign to BattleTagGroup1
                 await updateDoc(playerRef, { 
                     phone: auth.currentUser.phoneNumber,
                     groupId: 'BattleTagGroup1' 
                 });
                 showToast("Identity Claimed Successfully!");
-                // The onSnapshot listener will immediately re-fire and route them to the main app!
             } catch (err) {
                 console.error(err);
                 showToast("Failed to claim profile.", true);
@@ -689,17 +730,13 @@
             }
         };
 
-        // --- FILTER HELPERS FOR MULTI-TENANCY ---
         function getGroupPlayers() {
-            // Only return players that belong to the current user's group
             return rawPlayers.filter(p => (p.groupId || 'BattleTagGroup1') === currentGroup);
         }
         function getGroupMatches() {
-            // Only return matches that belong to the current user's group
             return rawMatches.filter(m => (m.groupId || 'BattleTagGroup1') === currentGroup);
         }
 
-        // --- UI MANAGEMENT ---
         function showScreen(screenName) {
             ['splash', 'loading', 'phone', 'otp', 'identity', 'app'].forEach(s => {
                 const el = document.getElementById(`screen-${s}`);
@@ -732,7 +769,6 @@
             renderDamageReport();
         }
 
-        // --- WRITING DATA (Tagging with currentGroup) ---
         document.getElementById('schedule-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
@@ -762,8 +798,8 @@
                     player1: currentUser,
                     player2: opponent,
                     scheduledDate: date,
-                    scheduledBy: currentUser, // Tracks the Booker
-                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
+                    scheduledBy: currentUser,
+                    groupId: currentGroup, 
                     timestamp: new Date().toISOString()
                 });
 
@@ -787,18 +823,34 @@
             }
         };
 
+        // --- SUBMIT RESULTS FLOW ---
         document.getElementById('match-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
 
+            const opponent = document.getElementById('report-opponent').value;
+            if (!opponent) return;
+
+            const photoInput = document.getElementById('match-photo');
+            
+            // CHECK FOR PHOTO: Trigger confirmation modal if empty
+            if (photoInput.files.length === 0) {
+                const modal = document.getElementById('modal-confirm-photo');
+                modal.classList.remove('hidden');
+                setTimeout(() => document.getElementById('modal-confirm-photo-content').classList.replace('scale-0', 'scale-100'), 10);
+                return; // Stop form execution here
+            }
+
+            executeMatchSubmission();
+        };
+
+        window.executeMatchSubmission = async function() {
             const opponent = document.getElementById('report-opponent').value;
             const date = document.getElementById('match-date').value;
             const holesUp = document.getElementById('holes-up').value;
             const holesRem = document.getElementById('holes-remaining').value;
             const photoInput = document.getElementById('match-photo');
             const btn = document.getElementById('submit-btn');
-
-            if (!opponent) return;
 
             btn.disabled = true;
             
@@ -831,7 +883,7 @@
                     loser: opponent,
                     score: `${holesUp} & ${holesRem}`,
                     date: date,
-                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
+                    groupId: currentGroup,
                     timestamp: new Date().toISOString()
                 };
 
@@ -856,7 +908,7 @@
 
             } catch (err) {
                 console.error(err);
-                showToast("Failed to process or upload photo.", true);
+                showToast("Failed to process submission.", true);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`;
@@ -864,7 +916,7 @@
             }
         };
 
-        // --- RENDER DOM UPDATES (Filtered by Group) ---
+        // --- RENDER DOM UPDATES ---
         function updateDropdowns() {
             const oppSelect = document.getElementById('report-opponent');
             const scheduleSelect = document.getElementById('schedule-opponent');
@@ -1071,13 +1123,10 @@
                 return;
             }
 
-            // Get local date string for 'today' (YYYY-MM-DD format)
             const today = new Date();
-            // offset timezone to match local day cleanly
             const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 
             grid.innerHTML = upcoming.map(m => {
-                // If they scheduled it, OR if it's an old scheduled match and they are player1
                 const isBooker = m.scheduledBy === currentUser || m.player1 === currentUser;
                 const isPast = m.scheduledDate < localDate;
                 
