@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.2 (Evidence Confirmation)</title>
+    <title>Battle Tags v6.2.1 (Stable)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -393,13 +394,6 @@
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">The live standings track every match played, tags won, and tags lost. The player with the most Tags won by the end of the season takes ultimate bragging rights.</p>
                             </div>
                         </div>
-                        <div class="flex gap-4 items-start">
-                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 mt-1"><i data-lucide="banknote" class="w-6 h-6"></i></div>
-                            <div>
-                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Payout</h3>
-                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">At the end of the season, the top three players with the most Tags won will take home the prize pool. Payouts are distributed as <strong>60% for 1st place</strong>, <strong>30% for 2nd place</strong>, and <strong>10% for 3rd place</strong>.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -586,8 +580,11 @@
         // Check Auth State
         onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser && firebaseUser.phoneNumber) {
+                // User is authenticated via Phone. Now we wait for the database to sync
+                // to see if their phone number matches a profile.
                 listenToDatabase(firebaseUser.phoneNumber);
             } else {
+                // Not logged in. Show Phone UI.
                 showScreen('phone');
             }
         });
@@ -615,7 +612,7 @@
                 showScreen('otp');
             } catch(err) {
                 console.error(err);
-                showToast("Error sending code. Domain must be authorized in Firebase Console.", true);
+                showToast("Error sending code. Domain must be authorized in Firebase.", true);
                 btn.innerHTML = 'Send Code';
                 btn.disabled = false;
             }
@@ -631,6 +628,7 @@
 
             try {
                 await window.confirmationResult.confirm(code);
+                // Success! onAuthStateChanged will naturally pick up the transition.
                 document.getElementById('otp-input').value = "";
             } catch (err) {
                 showToast("Invalid code", true);
@@ -667,11 +665,14 @@
             const qP = collection(db, 'artifacts', activeAppId, 'public', 'data', 'players');
             onSnapshot(qP, (snapshot) => {
                 rawPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => a.name.localeCompare(b.name));
+                
+                // MULTI-TENANT ROUTING: Find the user's claimed identity based on their verified phone number
                 const myProfile = rawPlayers.find(p => p.phone === phoneNumber);
 
                 if (myProfile) {
+                    // IDENTITY FOUND! Lock them into their specific group.
                     currentUser = myProfile.name;
-                    currentGroup = myProfile.groupId || 'BattleTagGroup1'; 
+                    currentGroup = myProfile.groupId || 'BattleTagGroup1'; // Default to Group 1 for legacy data
                     viewingDamageFor = currentUser;
 
                     updateDropdowns();
@@ -680,6 +681,7 @@
                     renderDamageReport();
                     showScreen('app');
                 } else {
+                    // NO IDENTITY YET. They must claim a name to be assigned to BattleTagGroup1
                     const unclaimedPlayers = rawPlayers.filter(p => !p.phone || p.phone === "");
                     renderIdentityClaimList(unclaimedPlayers);
                     showScreen('identity');
@@ -698,6 +700,7 @@
             }, (error) => console.error(error));
         }
 
+        // --- IDENTITY CLAIM LOGIC (First Login) ---
         function renderIdentityClaimList(unclaimedPlayers) {
             const list = document.getElementById('identity-list');
             if (unclaimedPlayers.length === 0) {
@@ -718,11 +721,13 @@
             try {
                 showScreen('loading');
                 const playerRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'players', docId);
+                // Permanently lock the phone number and assign to BattleTagGroup1
                 await updateDoc(playerRef, { 
                     phone: auth.currentUser.phoneNumber,
                     groupId: 'BattleTagGroup1' 
                 });
                 showToast("Identity Claimed Successfully!");
+                // The onSnapshot listener will immediately re-fire and route them to the main app!
             } catch (err) {
                 console.error(err);
                 showToast("Failed to claim profile.", true);
@@ -730,13 +735,17 @@
             }
         };
 
+        // --- FILTER HELPERS FOR MULTI-TENANCY ---
         function getGroupPlayers() {
+            // Only return players that belong to the current user's group
             return rawPlayers.filter(p => (p.groupId || 'BattleTagGroup1') === currentGroup);
         }
         function getGroupMatches() {
+            // Only return matches that belong to the current user's group
             return rawMatches.filter(m => (m.groupId || 'BattleTagGroup1') === currentGroup);
         }
 
+        // --- UI MANAGEMENT ---
         function showScreen(screenName) {
             ['splash', 'loading', 'phone', 'otp', 'identity', 'app'].forEach(s => {
                 const el = document.getElementById(`screen-${s}`);
@@ -769,6 +778,7 @@
             renderDamageReport();
         }
 
+        // --- WRITING DATA (Tagging with currentGroup) ---
         document.getElementById('schedule-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
@@ -798,8 +808,8 @@
                     player1: currentUser,
                     player2: opponent,
                     scheduledDate: date,
-                    scheduledBy: currentUser,
-                    groupId: currentGroup, 
+                    scheduledBy: currentUser, // Tracks the Booker
+                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
                     timestamp: new Date().toISOString()
                 });
 
@@ -883,7 +893,7 @@
                     loser: opponent,
                     score: `${holesUp} & ${holesRem}`,
                     date: date,
-                    groupId: currentGroup,
+                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
                     timestamp: new Date().toISOString()
                 };
 
@@ -908,7 +918,7 @@
 
             } catch (err) {
                 console.error(err);
-                showToast("Failed to process submission.", true);
+                showToast("Failed to process or upload photo.", true);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`;
@@ -916,7 +926,7 @@
             }
         };
 
-        // --- RENDER DOM UPDATES ---
+        // --- RENDER DOM UPDATES (Filtered by Group) ---
         function updateDropdowns() {
             const oppSelect = document.getElementById('report-opponent');
             const scheduleSelect = document.getElementById('schedule-opponent');
@@ -1123,10 +1133,13 @@
                 return;
             }
 
+            // Get local date string for 'today' (YYYY-MM-DD format)
             const today = new Date();
+            // offset timezone to match local day cleanly
             const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 
             grid.innerHTML = upcoming.map(m => {
+                // If they scheduled it, OR if it's an old scheduled match and they are player1
                 const isBooker = m.scheduledBy === currentUser || m.player1 === currentUser;
                 const isPast = m.scheduledDate < localDate;
                 
