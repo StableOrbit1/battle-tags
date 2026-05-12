@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.2.1 (Stable)</title>
+    <title>Battle Tags v6.3 (Pulse Integrated)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -35,12 +34,10 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans min-h-screen pb-24 text-center">
 
-    <!-- SPLASH SCREEN -->
     <div id="screen-splash" class="fixed inset-0 z-[600] bg-white flex flex-col items-center justify-center transition-opacity duration-1000 overflow-hidden">
         <img src="IMG_2087.png" alt="BattleTags" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS</h1><p class=\'text-slate-400 mt-2\'>Logo Not Found</p>'">
     </div>
 
-    <!-- WHATSAPP SUCCESS MODAL -->
     <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -61,7 +58,6 @@
         </div>
     </div>
 
-    <!-- NO PHOTO CONFIRMATION MODAL -->
     <div id="modal-confirm-photo" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-confirm-photo-content">
             <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -82,14 +78,12 @@
         </div>
     </div>
 
-    <!-- LOADING SCREEN -->
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
             <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i> Syncing Vault...
         </div>
     </div>
 
-    <!-- PHONE AUTH: ENTER NUMBER -->
     <div id="screen-phone" class="fixed inset-0 z-[100] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 relative overflow-hidden">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -103,13 +97,11 @@
                 <input type="tel" id="phone-input" required placeholder="+1 416 555 1234" class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-center font-black text-2xl outline-none tracking-widest">
                 <button type="submit" id="send-code-btn" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl transition-all active-scale">Send Code</button>
             </form>
-            <!-- Invisible reCAPTCHA container required by Firebase -->
             <div id="recaptcha-container"></div>
         </div>
         <p class="text-emerald-500/50 text-[10px] uppercase tracking-widest font-bold mt-8">Enterprise SaaS Edition</p>
     </div>
 
-    <!-- PHONE AUTH: VERIFY OTP -->
     <div id="screen-otp" class="fixed inset-0 z-[95] bg-emerald-950 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -127,7 +119,6 @@
         </div>
     </div>
 
-    <!-- IDENTITY CLAIM (MULTI-TENANT ONBOARDING) -->
     <div id="screen-identity" class="fixed inset-0 z-[90] bg-emerald-900 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full space-y-8 border border-emerald-100/20">
             <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
@@ -138,12 +129,10 @@
                 <p class="text-slate-500 text-xs mt-2 font-medium leading-relaxed">This is your first time logging in. Select your name to permanently lock your phone number to your BattleTag identity.</p>
             </div>
             <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                <!-- Unclaimed Roster Populated by JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN -->
     <div id="screen-app" class="hidden">
         <header class="bg-emerald-900 text-white p-4 md:p-6 shadow-2xl sticky top-0 z-50">
             <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -157,22 +146,25 @@
                         Go to Battle
                     </button>
                     <button onclick="switchView('submit')" id="nav-submit" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        Submit Results
+                        Submit
+                    </button>
+                    <button onclick="switchView('pulse')" id="nav-pulse" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
+                        <i data-lucide="activity" class="w-3 h-3 hidden md:inline"></i> Pulse
                     </button>
                     <button onclick="switchView('standings')" id="nav-standings" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap">
                         Standings
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="swords" class="w-3 h-3 hidden md:inline"></i> Damage
+                        Damage
                     </button>
                     <button onclick="switchView('gallery')" id="nav-gallery" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="image" class="w-3 h-3 hidden md:inline"></i> Gallery
+                        Gallery
                     </button>
                     <button onclick="switchView('scheduled')" id="nav-scheduled" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="calendar-days" class="w-3 h-3 hidden md:inline"></i> Scheduled
+                        Scheduled
                     </button>
                     <button onclick="switchView('rules')" id="nav-rules" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="book-open" class="w-3 h-3 hidden md:inline"></i> Rules
+                        Rules
                     </button>
                 </nav>
             </div>
@@ -229,7 +221,6 @@
                 </div>
             </section>
 
-            <!-- SUBMIT RESULTS SECTION -->
             <section id="view-submit" class="hidden space-y-12">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200 text-left relative overflow-hidden">
                     <div class="mb-8 flex justify-between items-start">
@@ -280,7 +271,120 @@
                 </div>
             </section>
 
-            <!-- LIVE STANDINGS SECTION -->
+            <section id="view-pulse" class="hidden space-y-8 text-left">
+                <header class="bg-slate-900 p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl">
+                    <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="z-10 text-center md:text-left w-full md:w-auto">
+                        <div class="flex flex-col md:flex-row items-center gap-4 mb-3">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                <i data-lucide="activity" class="w-3 h-3"></i> Battle Pulse
+                            </div>
+                            <select id="pulse-week-selector" onchange="window.changePulseWeek(this.value)" class="bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded-xl px-4 py-1.5 text-xs font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-slate-700 transition-colors">
+                                </select>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">The <span class="text-emerald-500">Damage</span> Report</h1>
+                        <p id="pulse-date-range" class="text-slate-400 font-bold uppercase tracking-widest text-xs mt-2">Loading...</p>
+                    </div>
+                    
+                    <div class="z-10 flex gap-4 w-full md:w-auto justify-center">
+                        <div class="text-center px-6 py-4 bg-slate-800 rounded-2xl border border-slate-700 shadow-inner flex-1 md:flex-none">
+                            <p class="text-[10px] uppercase tracking-widest font-black text-slate-400 mb-1">Tags Swapped</p>
+                            <p id="pulse-stat-swapped" class="text-4xl font-black text-emerald-400">-</p>
+                        </div>
+                        <div class="text-center px-6 py-4 bg-slate-800 rounded-2xl border border-slate-700 shadow-inner flex-1 md:flex-none">
+                            <p class="text-[10px] uppercase tracking-widest font-black text-slate-400 mb-1">Battles Booked</p>
+                            <p id="pulse-stat-upcoming" class="text-4xl font-black text-amber-400">-</p>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-200">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
+                            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Timeline Insights</h2>
+                            <p id="pulse-insights-subtitle" class="text-[10px] font-bold text-sky-600 uppercase tracking-widest">Pre-Launch Hype Data</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-[1.5rem]">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2"><i data-lucide="calendar-heart" class="w-4 h-4 text-rose-500"></i> Busiest Match Day</h3>
+                            <div id="pulse-insight-busiest-day" class="text-center py-2">
+                                <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Loading...</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-[1.5rem]">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2"><i data-lucide="flame" class="w-4 h-4 text-amber-500"></i> Active Bookers</h3>
+                            <div id="pulse-insight-top-bookers" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
+                                <div class="text-center py-2"><span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Loading...</span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-[1.5rem]">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2"><i data-lucide="ghost" class="w-4 h-4 text-slate-400"></i> Yet to Book (MIA)</h3>
+                            <div id="pulse-insight-mia" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+                                <div class="text-center w-full py-2"><span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Loading...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                <i data-lucide="swords" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Aftermath</h2>
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Completed Matches</p>
+                            </div>
+                        </div>
+                        <div id="pulse-past-container" class="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                            <div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Syncing database...</div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                                <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Horizon</h2>
+                                <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Scheduled Battles</p>
+                            </div>
+                        </div>
+                        <div id="pulse-future-container" class="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                            <div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Syncing database...</div>
+                        </div>
+                    </section>
+                </div>
+                
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                            <i data-lucide="banknote" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Treasury Status</h2>
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Live Paid Up Tracker</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-slate-200 overflow-hidden rounded-[2rem] shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-100" id="pulse-tracker-container">
+                            <div class="p-8 col-span-full text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white">Syncing database...</div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
             <section id="view-standings" class="space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Live Standings</h2>
@@ -300,7 +404,6 @@
                 </div>
             </section>
 
-            <!-- DAMAGE REPORT -->
             <section id="view-damage" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-6">
@@ -323,7 +426,6 @@
                 <div id="damage-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </section>
 
-            <!-- GALLERY -->
             <section id="view-gallery" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Photoboard</h2>
@@ -332,7 +434,6 @@
                 <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </section>
 
-            <!-- SCHEDULED MATCHES SECTION -->
             <section id="view-scheduled" class="hidden space-y-8 text-left">
                 <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <h2 class="text-3xl font-black text-slate-800 tracking-tight">Upcoming Battles</h2>
@@ -341,7 +442,6 @@
                 <div id="scheduled-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            <!-- RULES -->
             <section id="view-rules" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex justify-center mb-8">
@@ -401,7 +501,6 @@
         </main>
     </div>
 
-    <!-- Firebase SDK 11.6.1 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, initializeFirestore, persistentLocalCache, collection, doc, setDoc, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -438,42 +537,66 @@
         const storage = getStorage(app); 
 
         // --- GLOBAL STATE ---
-        let currentUser = null;       // The name (e.g. "Mike Brigden")
-        let currentGroup = null;      // Multi-Tenant Group (e.g. "BattleTagGroup1")
+        let currentUser = null;       
+        let currentGroup = null;      
         let viewingDamageFor = null; 
         
         let rawPlayers = [];
         let rawMatches = [];
         let currentSort = { column: 'won', direction: 'desc' };
 
+        // Pulse State
+        let pulseSelectedWeekIndex = 0;
+        const pulseWeeks = [];
+
+        // --- PULSE WEEK GENERATION ---
+        function generatePulseWeeks() {
+            pulseWeeks.push({ label: "Pre-Launch (Hype)", start: "2026-01-01", end: "2026-04-30" });
+            let currentStart = new Date("2026-05-01T00:00:00-04:00");
+            for (let i = 1; i <= 24; i++) {
+                let end = new Date(currentStart); end.setDate(end.getDate() + 6);
+                const sStr = currentStart.toISOString().split('T')[0];
+                const eStr = end.toISOString().split('T')[0];
+                const sLabel = currentStart.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                const eLabel = end.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                pulseWeeks.push({ label: `Week ${i}: ${sLabel} - ${eLabel}`, start: sStr, end: eStr });
+                currentStart.setDate(currentStart.getDate() + 7);
+            }
+            const todayStr = new Date().toISOString().split('T')[0];
+            let foundIndex = 0;
+            for (let i = 1; i < pulseWeeks.length; i++) {
+                if (todayStr >= pulseWeeks[i].start && todayStr <= pulseWeeks[i].end) { foundIndex = i; break; }
+            }
+            pulseSelectedWeekIndex = foundIndex;
+
+            const selectEl = document.getElementById('pulse-week-selector');
+            pulseWeeks.forEach((w, index) => {
+                const opt = new Option(w.label, index);
+                if (index === pulseSelectedWeekIndex) opt.selected = true;
+                selectEl.add(opt);
+            });
+        }
+        window.changePulseWeek = function(indexStr) {
+            pulseSelectedWeekIndex = parseInt(indexStr);
+            renderPulse();
+        };
+
         // --- MAGIC 8 BALL LOGIC ---
         const golfGodSayings = [
-            "Signs point to a win",
-            "Signs point to a loss",
-            "Buy more balls, the gods say No",
-            "Fore Left, the outlook is bad",
-            "Try again later",
-            "Crushing victory",
-            "Crushing defeat",
-            "Too much time in the S2, loss",
-            "You will putt well, win",
-            "You will drive well, win",
-            "Bring a helmet, too tough to call",
-            "Tag is safe",
-            "Tag and dignity are at risk",
-            "Slow and steady wins the race",
-            "Centre of the green is where the winners circle is",
+            "Signs point to a win", "Signs point to a loss", "Buy more balls, the gods say No",
+            "Fore Left, the outlook is bad", "Try again later", "Crushing victory", "Crushing defeat",
+            "Too much time in the S2, loss", "You will putt well, win", "You will drive well, win",
+            "Bring a helmet, too tough to call", "Tag is safe", "Tag and dignity are at risk",
+            "Slow and steady wins the race", "Centre of the green is where the winners circle is",
             "Meet me at 9 o'clock on the 9th green"
         ];
 
         window.shakeMagicBall = function() {
             const ball = document.getElementById('magic-8-ball');
             const textContainer = document.getElementById('magic-8-text');
-            
             ball.classList.add('animate-shake');
             textContainer.innerHTML = '<i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-emerald-600"></i>';
             lucide.createIcons();
-
             setTimeout(() => {
                 ball.classList.remove('animate-shake');
                 const randomSaying = golfGodSayings[Math.floor(Math.random() * golfGodSayings.length)];
@@ -485,77 +608,35 @@
         window.showToast = function(msg, isError = false) {
             const t = document.createElement('div');
             t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl z-[500] transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
-            t.innerHTML = msg;
-            document.body.appendChild(t);
-            setTimeout(() => {
-                t.style.opacity = '0';
-                setTimeout(() => t.remove(), 300);
-            }, 3000);
+            t.innerHTML = msg; document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
         }
 
-        // Close WhatsApp Modal
+        // Close Modals
         window.closeSuccessModal = function() {
-            const modal = document.getElementById('modal-success');
-            const content = document.getElementById('modal-success-content');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); 
+            const modal = document.getElementById('modal-success'); const content = document.getElementById('modal-success-content');
+            content.classList.remove('scale-100'); content.classList.add('scale-0');
+            setTimeout(() => modal.classList.add('hidden'), 300); 
         };
-
-        // Close Evidence Confirmation Modal
         window.cancelPhotoSkip = function() {
             const content = document.getElementById('modal-confirm-photo-content');
             content.classList.replace('scale-100', 'scale-0');
-            setTimeout(() => {
-                document.getElementById('modal-confirm-photo').classList.add('hidden');
-            }, 300);
+            setTimeout(() => document.getElementById('modal-confirm-photo').classList.add('hidden'), 300);
         };
-
-        // Submit Match Without Photo (From Modal)
-        window.confirmPhotoSkip = function() {
-            window.cancelPhotoSkip();
-            executeMatchSubmission();
-        };
+        window.confirmPhotoSkip = function() { window.cancelPhotoSkip(); executeMatchSubmission(); };
 
         // --- IMAGE COMPRESSION HELPER ---
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
             return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                
+                const img = new Image(); img.src = URL.createObjectURL(file);
                 img.onload = () => {
                     URL.revokeObjectURL(img.src);
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height = Math.round(height * (maxWidth / width));
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width = Math.round(width * (maxHeight / height));
-                            height = maxHeight;
-                        }
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            resolve(blob);
-                        } else {
-                            reject(new Error('Canvas compression failed'));
-                        }
-                    }, 'image/jpeg', quality);
+                    let width = img.width, height = img.height;
+                    if (width > height) { if (width > maxWidth) { height = Math.round(height * (maxWidth / width)); width = maxWidth; } } 
+                    else { if (height > maxHeight) { width = Math.round(width * (maxHeight / height)); height = maxHeight; } }
+                    const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error('Canvas compression failed')); }, 'image/jpeg', quality);
                 };
                 img.onerror = (error) => reject(error);
             });
@@ -565,56 +646,38 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('screen-splash');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => splash.classList.add('hidden'), 1000);
-                }
+                if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.classList.add('hidden'), 1000); }
             }, 3000); 
         });
 
         // --- INITIALIZATION ---
         document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('schedule-date').value = new Date().toISOString().split('T')[0];
+        generatePulseWeeks();
         lucide.createIcons();
 
         // Check Auth State
         onAuthStateChanged(auth, (firebaseUser) => {
-            if (firebaseUser && firebaseUser.phoneNumber) {
-                // User is authenticated via Phone. Now we wait for the database to sync
-                // to see if their phone number matches a profile.
-                listenToDatabase(firebaseUser.phoneNumber);
-            } else {
-                // Not logged in. Show Phone UI.
-                showScreen('phone');
-            }
+            if (firebaseUser && firebaseUser.phoneNumber) listenToDatabase(firebaseUser.phoneNumber);
+            else showScreen('phone');
         });
 
         // --- PHONE AUTHENTICATION LOGIC ---
         window.sendOTP = async function(e) {
             e.preventDefault();
             let phone = document.getElementById('phone-input').value.replace(/\D/g,'');
-            if (phone.length === 10) phone = '+1' + phone;
-            else if (!phone.startsWith('+')) phone = '+' + phone;
+            if (phone.length === 10) phone = '+1' + phone; else if (!phone.startsWith('+')) phone = '+' + phone;
 
             const btn = document.getElementById('send-code-btn');
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin inline"></i> Sending...';
-            lucide.createIcons();
-            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin inline"></i> Sending...'; lucide.createIcons(); btn.disabled = true;
 
             try {
-                if (!window.recaptchaVerifier) {
-                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                        'size': 'invisible'
-                    });
-                }
-                const confResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-                window.confirmationResult = confResult;
+                if (!window.recaptchaVerifier) window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+                window.confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
                 showScreen('otp');
             } catch(err) {
-                console.error(err);
-                showToast("Error sending code. Domain must be authorized in Firebase.", true);
-                btn.innerHTML = 'Send Code';
-                btn.disabled = false;
+                console.error(err); showToast("Error sending code. Domain must be authorized in Firebase.", true);
+                btn.innerHTML = 'Send Code'; btn.disabled = false;
             }
         }
 
@@ -622,40 +685,25 @@
             e.preventDefault();
             const code = document.getElementById('otp-input').value;
             const btn = document.getElementById('verify-code-btn');
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin inline"></i> Verifying...';
-            lucide.createIcons();
-            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin inline"></i> Verifying...'; lucide.createIcons(); btn.disabled = true;
 
             try {
                 await window.confirmationResult.confirm(code);
-                // Success! onAuthStateChanged will naturally pick up the transition.
                 document.getElementById('otp-input').value = "";
             } catch (err) {
-                showToast("Invalid code", true);
-                btn.innerHTML = 'Verify Code';
-                btn.disabled = false;
+                showToast("Invalid code", true); btn.innerHTML = 'Verify Code'; btn.disabled = false;
             }
         }
 
-        window.logout = function() {
-            auth.signOut().then(() => {
-                currentUser = null;
-                currentGroup = null;
-                window.location.reload();
-            });
-        };
+        window.logout = function() { auth.signOut().then(() => { currentUser = null; currentGroup = null; window.location.reload(); }); };
 
         // --- MATCH CANCELLATION ---
         window.cancelMatch = async function(matchId) {
             if (!confirm("Are you sure you want to cancel this scheduled match?")) return;
             try {
-                const matchRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId);
-                await deleteDoc(matchRef);
+                await deleteDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId));
                 showToast("Scheduled match cancelled.");
-            } catch(err) {
-                console.error(err);
-                showToast("Failed to cancel match.", true);
-            }
+            } catch(err) { showToast("Failed to cancel match.", true); }
         };
 
         // --- MULTI-TENANT DATABASE LOGIC ---
@@ -665,25 +713,14 @@
             const qP = collection(db, 'artifacts', activeAppId, 'public', 'data', 'players');
             onSnapshot(qP, (snapshot) => {
                 rawPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => a.name.localeCompare(b.name));
-                
-                // MULTI-TENANT ROUTING: Find the user's claimed identity based on their verified phone number
                 const myProfile = rawPlayers.find(p => p.phone === phoneNumber);
 
                 if (myProfile) {
-                    // IDENTITY FOUND! Lock them into their specific group.
-                    currentUser = myProfile.name;
-                    currentGroup = myProfile.groupId || 'BattleTagGroup1'; // Default to Group 1 for legacy data
-                    viewingDamageFor = currentUser;
-
-                    updateDropdowns();
-                    updateUserStatusDisplay();
-                    renderLeaderboard();
-                    renderDamageReport();
+                    currentUser = myProfile.name; currentGroup = myProfile.groupId || 'BattleTagGroup1'; viewingDamageFor = currentUser;
+                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderDamageReport(); renderPulse();
                     showScreen('app');
                 } else {
-                    // NO IDENTITY YET. They must claim a name to be assigned to BattleTagGroup1
-                    const unclaimedPlayers = rawPlayers.filter(p => !p.phone || p.phone === "");
-                    renderIdentityClaimList(unclaimedPlayers);
+                    renderIdentityClaimList(rawPlayers.filter(p => !p.phone || p.phone === ""));
                     showScreen('identity');
                 }
             }, (error) => console.error(error));
@@ -692,125 +729,70 @@
             onSnapshot(qM, (snapshot) => {
                 rawMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (currentUser && currentGroup) {
-                    renderLeaderboard();
-                    renderDamageReport();
-                    renderGallery();
-                    renderScheduledMatches();
+                    renderLeaderboard(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
                 }
             }, (error) => console.error(error));
         }
 
-        // --- IDENTITY CLAIM LOGIC (First Login) ---
         function renderIdentityClaimList(unclaimedPlayers) {
             const list = document.getElementById('identity-list');
-            if (unclaimedPlayers.length === 0) {
-                list.innerHTML = `<div class="p-6 text-center text-slate-500 font-bold text-sm">No unclaimed profiles available. Contact your commissioner.</div>`;
-                return;
-            }
-
+            if (unclaimedPlayers.length === 0) return list.innerHTML = `<div class="p-6 text-center text-slate-500 font-bold text-sm">No unclaimed profiles available. Contact your commissioner.</div>`;
             list.innerHTML = unclaimedPlayers.map(p => `
                 <button type="button" onclick="claimIdentity('${p.id}', '${p.name}')" class="w-full p-4 bg-slate-50 border-2 border-slate-100 hover:border-emerald-500 rounded-2xl font-bold text-slate-700 flex justify-between items-center group transition-all active-scale">
-                    <span class="uppercase tracking-tight text-sm">${p.name}</span>
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-emerald-500"></i>
+                    <span class="uppercase tracking-tight text-sm">${p.name}</span><i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-emerald-500"></i>
                 </button>
-            `).join('');
-            lucide.createIcons();
+            `).join(''); lucide.createIcons();
         }
 
         window.claimIdentity = async function(docId, playerName) {
             try {
                 showScreen('loading');
-                const playerRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'players', docId);
-                // Permanently lock the phone number and assign to BattleTagGroup1
-                await updateDoc(playerRef, { 
-                    phone: auth.currentUser.phoneNumber,
-                    groupId: 'BattleTagGroup1' 
-                });
+                await updateDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'players', docId), { phone: auth.currentUser.phoneNumber, groupId: 'BattleTagGroup1' });
                 showToast("Identity Claimed Successfully!");
-                // The onSnapshot listener will immediately re-fire and route them to the main app!
-            } catch (err) {
-                console.error(err);
-                showToast("Failed to claim profile.", true);
-                showScreen('identity');
-            }
+            } catch (err) { showToast("Failed to claim profile.", true); showScreen('identity'); }
         };
 
-        // --- FILTER HELPERS FOR MULTI-TENANCY ---
-        function getGroupPlayers() {
-            // Only return players that belong to the current user's group
-            return rawPlayers.filter(p => (p.groupId || 'BattleTagGroup1') === currentGroup);
-        }
-        function getGroupMatches() {
-            // Only return matches that belong to the current user's group
-            return rawMatches.filter(m => (m.groupId || 'BattleTagGroup1') === currentGroup);
-        }
+        function getGroupPlayers() { return rawPlayers.filter(p => (p.groupId || 'BattleTagGroup1') === currentGroup); }
+        function getGroupMatches() { return rawMatches.filter(m => (m.groupId || 'BattleTagGroup1') === currentGroup); }
 
-        // --- UI MANAGEMENT ---
         function showScreen(screenName) {
-            ['splash', 'loading', 'phone', 'otp', 'identity', 'app'].forEach(s => {
-                const el = document.getElementById(`screen-${s}`);
-                if (el) el.classList.add('hidden');
-            });
+            ['splash', 'loading', 'phone', 'otp', 'identity', 'app'].forEach(s => { const el = document.getElementById(`screen-${s}`); if (el) el.classList.add('hidden'); });
             document.getElementById(`screen-${screenName}`).classList.remove('hidden');
             document.body.classList.toggle('overflow-hidden', screenName !== 'app');
         }
 
         window.switchView = function(viewName) {
-            const sections = ['battle', 'submit', 'standings', 'damage', 'gallery', 'scheduled', 'rules'];
-            sections.forEach(sec => {
-                document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec);
-            });
-
+            const sections = ['battle', 'submit', 'pulse', 'standings', 'damage', 'gallery', 'scheduled', 'rules'];
+            sections.forEach(sec => { document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec); });
             sections.forEach(sec => {
                 const navEl = document.getElementById(`nav-${sec}`);
                 if (navEl) {
-                    if (viewName === sec) {
-                        navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap";
-                    } else {
-                        navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap";
-                    }
+                    if (viewName === sec) navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm whitespace-nowrap";
+                    else navEl.className = "flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap";
                 }
             });
         };
 
-        window.changeDamageView = function(name) {
-            viewingDamageFor = name;
-            renderDamageReport();
-        }
+        window.changeDamageView = function(name) { viewingDamageFor = name; renderDamageReport(); }
 
-        // --- WRITING DATA (Tagging with currentGroup) ---
+        // --- WRITING DATA ---
         document.getElementById('schedule-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
 
-            const opponent = document.getElementById('schedule-opponent').value;
-            const date = document.getElementById('schedule-date').value;
-            const btn = document.getElementById('schedule-btn');
-
+            const opponent = document.getElementById('schedule-opponent').value, date = document.getElementById('schedule-date').value, btn = document.getElementById('schedule-btn');
             if (!opponent) return;
 
             const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
             const existingMatch = getGroupMatches().find(m => m.id === pairId);
             
-            if (existingMatch && existingMatch.winner) {
-                showToast("You have already played this opponent!", true);
-                return;
-            }
+            if (existingMatch && existingMatch.winner) return showToast("You have already played this opponent!", true);
 
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
-            lucide.createIcons();
+            btn.disabled = true; btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`; lucide.createIcons();
 
             try {
-                const matchDocRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId);
-                await setDoc(matchDocRef, {
-                    status: 'scheduled',
-                    player1: currentUser,
-                    player2: opponent,
-                    scheduledDate: date,
-                    scheduledBy: currentUser, // Tracks the Booker
-                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
-                    timestamp: new Date().toISOString()
+                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId), {
+                    status: 'scheduled', player1: currentUser, player2: opponent, scheduledDate: date, scheduledBy: currentUser, groupId: currentGroup, timestamp: new Date().toISOString()
                 });
 
                 let waText = `🗓️ *BATTLETAG SCHEDULED*\n${currentUser.toUpperCase()} is going to battle against ${opponent.toUpperCase()} on ${date}! ⚔️`;
@@ -820,62 +802,41 @@
                 document.getElementById('schedule-opponent').value = "";
                 
                 switchView('scheduled');
-                
-                const modal = document.getElementById('modal-success');
-                modal.classList.remove('hidden');
+                const modal = document.getElementById('modal-success'); modal.classList.remove('hidden');
                 setTimeout(() => document.getElementById('modal-success-content').classList.replace('scale-0', 'scale-100'), 10);
-            } catch (err) {
-                showToast("Failed to schedule match.", true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5"></i> Schedule Match`;
-                lucide.createIcons();
-            }
+            } catch (err) { showToast("Failed to schedule match.", true);
+            } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5"></i> Schedule Match`; lucide.createIcons(); }
         };
 
-        // --- SUBMIT RESULTS FLOW ---
         document.getElementById('match-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
 
-            const opponent = document.getElementById('report-opponent').value;
-            if (!opponent) return;
-
+            const opponent = document.getElementById('report-opponent').value; if (!opponent) return;
             const photoInput = document.getElementById('match-photo');
             
-            // CHECK FOR PHOTO: Trigger confirmation modal if empty
             if (photoInput.files.length === 0) {
-                const modal = document.getElementById('modal-confirm-photo');
-                modal.classList.remove('hidden');
+                const modal = document.getElementById('modal-confirm-photo'); modal.classList.remove('hidden');
                 setTimeout(() => document.getElementById('modal-confirm-photo-content').classList.replace('scale-0', 'scale-100'), 10);
-                return; // Stop form execution here
+                return;
             }
-
             executeMatchSubmission();
         };
 
         window.executeMatchSubmission = async function() {
-            const opponent = document.getElementById('report-opponent').value;
-            const date = document.getElementById('match-date').value;
-            const holesUp = document.getElementById('holes-up').value;
-            const holesRem = document.getElementById('holes-remaining').value;
-            const photoInput = document.getElementById('match-photo');
-            const btn = document.getElementById('submit-btn');
+            const opponent = document.getElementById('report-opponent').value, date = document.getElementById('match-date').value;
+            const holesUp = document.getElementById('holes-up').value, holesRem = document.getElementById('holes-remaining').value;
+            const photoInput = document.getElementById('match-photo'), btn = document.getElementById('submit-btn');
 
             btn.disabled = true;
-            
             try {
                 const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
                 let photoUrl = null;
 
                 if (photoInput.files.length > 0) {
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Compressing...`;
-                    lucide.createIcons();
-                    const file = photoInput.files[0];
-                    const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
-                    
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading...`;
-                    lucide.createIcons();
+                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Compressing...`; lucide.createIcons();
+                    const file = photoInput.files[0]; const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
+                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading...`; lucide.createIcons();
                     
                     const safeFileName = file.name.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
                     const storageRef = ref(storage, `match_photos/${activeAppId}/${pairId}_${Date.now()}_${safeFileName}`);
@@ -883,22 +844,11 @@
                     photoUrl = await getDownloadURL(storageRef);
                 }
 
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
-                lucide.createIcons();
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`; lucide.createIcons();
 
-                const matchDocRef = doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId);
-                const matchData = {
-                    status: 'completed', 
-                    winner: currentUser,
-                    loser: opponent,
-                    score: `${holesUp} & ${holesRem}`,
-                    date: date,
-                    groupId: currentGroup, // MULTI-TENANT SECURE TAG
-                    timestamp: new Date().toISOString()
-                };
-
+                const matchData = { status: 'completed', winner: currentUser, loser: opponent, score: `${holesUp} & ${holesRem}`, date: date, groupId: currentGroup, timestamp: new Date().toISOString() };
                 if (photoUrl) matchData.photoUrl = photoUrl;
-                await setDoc(matchDocRef, matchData);
+                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId), matchData);
 
                 let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
                 if(photoUrl) waText += `\n\n📸 Evidence uploaded! Open the app Gallery to see the carnage.`;
@@ -907,49 +857,25 @@
                 document.getElementById('modal-success-title').innerText = "Tag Captured!";
                 document.getElementById('modal-success-subtitle').innerText = "Your win has been synced to the database.";
 
-                document.getElementById('report-opponent').value = "";
-                document.getElementById('holes-up').value = "";
-                document.getElementById('holes-remaining').value = "";
-                document.getElementById('match-photo').value = ""; 
-                
-                const modal = document.getElementById('modal-success');
-                modal.classList.remove('hidden');
+                document.getElementById('report-opponent').value = ""; document.getElementById('holes-up').value = ""; document.getElementById('holes-remaining').value = ""; document.getElementById('match-photo').value = ""; 
+                const modal = document.getElementById('modal-success'); modal.classList.remove('hidden');
                 setTimeout(() => document.getElementById('modal-success-content').classList.replace('scale-0', 'scale-100'), 10);
-
-            } catch (err) {
-                console.error(err);
-                showToast("Failed to process or upload photo.", true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`;
-                lucide.createIcons();
-            }
+            } catch (err) { showToast("Failed to process.", true);
+            } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`; lucide.createIcons(); }
         };
 
-        // --- RENDER DOM UPDATES (Filtered by Group) ---
+        // --- RENDER DOM UPDATES ---
         function updateDropdowns() {
-            const oppSelect = document.getElementById('report-opponent');
-            const scheduleSelect = document.getElementById('schedule-opponent');
-            const damageSelect = document.getElementById('damage-view-select');
-            
+            const oppSelect = document.getElementById('report-opponent'), scheduleSelect = document.getElementById('schedule-opponent'), damageSelect = document.getElementById('damage-view-select');
             const groupPlayers = getGroupPlayers();
 
             if (currentUser && oppSelect) {
-                oppSelect.innerHTML = '<option value="">Select Opponent...</option>';
-                scheduleSelect.innerHTML = '<option value="">Select Opponent...</option>';
-                groupPlayers.filter(p => p.name !== currentUser).forEach(p => {
-                    oppSelect.add(new Option(p.name, p.name));
-                    scheduleSelect.add(new Option(p.name, p.name));
-                });
+                oppSelect.innerHTML = '<option value="">Select Opponent...</option>'; scheduleSelect.innerHTML = '<option value="">Select Opponent...</option>';
+                groupPlayers.filter(p => p.name !== currentUser).forEach(p => { oppSelect.add(new Option(p.name, p.name)); scheduleSelect.add(new Option(p.name, p.name)); });
             }
-
             if (damageSelect) {
                 damageSelect.innerHTML = '';
-                groupPlayers.forEach(p => {
-                    const opt = new Option(p.name, p.name);
-                    if (p.name === viewingDamageFor) opt.selected = true;
-                    damageSelect.add(opt);
-                });
+                groupPlayers.forEach(p => { const opt = new Option(p.name, p.name); if (p.name === viewingDamageFor) opt.selected = true; damageSelect.add(opt); });
             }
         }
 
@@ -971,20 +897,10 @@
         };
 
         function renderLeaderboard() {
-            const listEl = document.getElementById('leaderboard-list');
-            const groupPlayers = getGroupPlayers();
-            const groupMatches = getGroupMatches();
+            const listEl = document.getElementById('leaderboard-list'); const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
+            if (groupPlayers.length === 0) return listEl.innerHTML = '<div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>';
 
-            if (groupPlayers.length === 0) {
-                listEl.innerHTML = '<div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>';
-                return;
-            }
-
-            const statsMap = {};
-            groupPlayers.forEach(p => {
-                statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0 };
-            });
-            
+            const statsMap = {}; groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0 }; });
             groupMatches.forEach(m => {
                 if (m.winner) {
                     if (statsMap[m.winner]) { statsMap[m.winner].won++; statsMap[m.winner].played++; }
@@ -993,9 +909,7 @@
             });
 
             const sorted = Object.values(statsMap).sort((a, b) => {
-                let valA = a[currentSort.column];
-                let valB = b[currentSort.column];
-                let result = 0;
+                let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
                 if (currentSort.column === 'name') result = currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
                 else result = currentSort.direction === 'asc' ? valA - valB : valB - valA;
                 return result === 0 ? a.name.localeCompare(b.name) : result;
@@ -1004,9 +918,7 @@
             listEl.innerHTML = sorted.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
                     <div class="col-span-6 flex items-center gap-3 overflow-hidden">
-                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">
-                            ${i + 1}
-                        </span>
+                        <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base">${p.name}</span>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.played}</div>
@@ -1015,23 +927,15 @@
                 </div>
             `).join('');
 
-            ['name', 'played', 'won', 'lost'].forEach(col => {
-                const el = document.getElementById(`sort-${col}`);
-                if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : '';
-            });
+            ['name', 'played', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
         }
 
         function renderDamageReport() {
-            const grid = document.getElementById('damage-grid');
-            const statsContainer = document.getElementById('damage-stats');
-            
-            const groupPlayers = getGroupPlayers();
-            const groupMatches = getGroupMatches();
-
+            const grid = document.getElementById('damage-grid'), statsContainer = document.getElementById('damage-stats');
+            const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
-            let playedCount = 0; let wonCount = 0; let lostCount = 0;
-
+            let playedCount = 0, wonCount = 0, lostCount = 0;
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
                 const pairId = [viewingDamageFor, opp.name].sort().join('_').replace(/\s+/g, '');
                 const match = groupMatches.find(m => m.id === pairId);
@@ -1042,27 +946,15 @@
                     else if (match.winner && match.winner !== viewingDamageFor) status = 'lost';
                     else if (!match.winner && match.scheduledDate) status = 'scheduled';
                 }
+                if (status === 'won') wonCount++; if (status === 'lost') lostCount++;
 
-                if (status === 'won') wonCount++;
-                if (status === 'lost') lostCount++;
-
-                const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 
-                                   status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : 
-                                   status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-slate-100 opacity-70';
-                
-                const statusText = status === 'unplayed' ? 'Not Played' : 
-                                   status === 'won' ? `Captured (${match.score})` : 
-                                   status === 'lost' ? `Lost (${match.score})` : 'Scheduled Battle';
-
+                const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-slate-100 opacity-70';
+                const statusText = status === 'unplayed' ? 'Not Played' : status === 'won' ? `Captured (${match.score})` : status === 'lost' ? `Lost (${match.score})` : 'Scheduled Battle';
                 const photoIconHtml = (match && match.photoUrl) ? `<a href="${match.photoUrl}" target="_blank" class="text-emerald-500 hover:text-emerald-700 bg-emerald-100 p-1 rounded inline-flex transition-colors" title="View Evidence Photo"><i data-lucide="camera" class="w-3 h-3"></i></a>` : '';
-
                 let dateHtml = '';
                 if (status === 'scheduled') dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-amber-600 uppercase"><i data-lucide="calendar-clock" class="w-3 h-3"></i> Set for ${match.scheduledDate}</div>`;
                 else if (match && match.date) dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date} ${photoIconHtml}</div>`;
-                
-                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : 
-                             status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : 
-                             status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
 
                 return `
                     <div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${styleClass}">
@@ -1078,105 +970,169 @@
 
             playedCount = wonCount + lostCount;
             statsContainer.innerHTML = `
-                <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
-                    <span class="text-sm">⚔️</span> ${playedCount} Played
-                </div>
-                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
-                    <span class="text-sm">🏷️</span> ${wonCount} Won
-                </div>
-                <div class="flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
-                    <span class="text-sm">💀</span> ${lostCount} Lost
-                </div>
+                <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">⚔️</span> ${playedCount} Played</div>
+                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">🏷️</span> ${wonCount} Won</div>
+                <div class="flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">💀</span> ${lostCount} Lost</div>
             `;
-            grid.innerHTML = html;
-            lucide.createIcons();
+            grid.innerHTML = html; lucide.createIcons();
         }
 
         function renderGallery() {
-            const grid = document.getElementById('gallery-grid');
-            if (!grid) return;
-            
-            const photos = getGroupMatches()
-                .filter(m => m.photoUrl && m.winner)
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            if (photos.length === 0) {
-                grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No evidence uploaded yet.</div>`;
-                return;
-            }
-
+            const grid = document.getElementById('gallery-grid'); if (!grid) return;
+            const photos = getGroupMatches().filter(m => m.photoUrl && m.winner).sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (photos.length === 0) return grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No evidence uploaded yet.</div>`;
             grid.innerHTML = photos.map(m => `
                 <div class="bg-white rounded-3xl p-3 shadow-md border border-slate-100 flex flex-col gap-3 transition-transform hover:scale-[1.02]">
-                    <a href="${m.photoUrl}" target="_blank" class="block relative aspect-square rounded-2xl overflow-hidden bg-slate-100">
-                        <img src="${m.photoUrl}" alt="Match Photo" class="w-full h-full object-cover" loading="lazy">
-                    </a>
+                    <a href="${m.photoUrl}" target="_blank" class="block relative aspect-square rounded-2xl overflow-hidden bg-slate-100"><img src="${m.photoUrl}" alt="Match Photo" class="w-full h-full object-cover" loading="lazy"></a>
                     <div class="px-2 pb-2 text-left">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</p>
                         <p class="text-sm font-black text-slate-800 leading-tight">${m.winner} <span class="text-emerald-500 font-bold">def.</span> ${m.loser}</p>
                         <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">${m.score}</p>
                     </div>
                 </div>
-            `).join('');
-            lucide.createIcons();
+            `).join(''); lucide.createIcons();
         }
 
         function renderScheduledMatches() {
-            const grid = document.getElementById('scheduled-grid');
-            if (!grid) return;
-            
-            const upcoming = getGroupMatches()
-                .filter(m => m.status === 'scheduled')
-                .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
-
-            if (upcoming.length === 0) {
-                grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No battles scheduled currently.</div>`;
-                return;
-            }
-
-            // Get local date string for 'today' (YYYY-MM-DD format)
-            const today = new Date();
-            // offset timezone to match local day cleanly
-            const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-
+            const grid = document.getElementById('scheduled-grid'); if (!grid) return;
+            const upcoming = getGroupMatches().filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
+            if (upcoming.length === 0) return grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No battles scheduled currently.</div>`;
+            const today = new Date(); const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
             grid.innerHTML = upcoming.map(m => {
-                // If they scheduled it, OR if it's an old scheduled match and they are player1
-                const isBooker = m.scheduledBy === currentUser || m.player1 === currentUser;
-                const isPast = m.scheduledDate < localDate;
-                
+                const isBooker = m.scheduledBy === currentUser || m.player1 === currentUser, isPast = m.scheduledDate < localDate;
                 let statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">Scheduled</span>`;
-                if (isPast) {
-                    statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest animate-pulse shadow-sm">Waiting on Results</span>`;
-                }
-
+                if (isPast) statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest animate-pulse shadow-sm">Waiting on Results</span>`;
                 let cancelBtn = '';
-                if (isBooker) {
-                    cancelBtn = `
-                        <button onclick="cancelMatch('${m.id}')" class="mt-3 text-[10px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 flex items-center gap-1 transition-colors">
-                            <i data-lucide="x-circle" class="w-3 h-3"></i> Cancel Match
-                        </button>
-                    `;
-                }
+                if (isBooker) cancelBtn = `<button onclick="cancelMatch('${m.id}')" class="mt-3 text-[10px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-600 flex items-center gap-1 transition-colors"><i data-lucide="x-circle" class="w-3 h-3"></i> Cancel Match</button>`;
 
                 return `
                     <div class="bg-white p-6 rounded-[2rem] border-2 ${isPast ? 'border-rose-100' : 'border-amber-100'} shadow-sm flex items-start justify-between">
                         <div class="text-left">
-                            <div class="flex items-center gap-2 mb-2">
-                                ${statusBadge}
-                            </div>
+                            <div class="flex items-center gap-2 mb-2">${statusBadge}</div>
                             <h4 class="font-black text-lg text-slate-800 uppercase tracking-tight">${m.player1} <span class="text-slate-400 text-sm lowercase font-bold mx-1">vs</span> ${m.player2}</h4>
-                            <div class="flex items-center gap-1.5 mt-2 text-[10px] font-bold ${isPast ? 'text-rose-400' : 'text-slate-500'} uppercase tracking-widest">
-                                <i data-lucide="calendar-clock" class="w-3 h-3"></i> ${m.scheduledDate}
-                            </div>
+                            <div class="flex items-center gap-1.5 mt-2 text-[10px] font-bold ${isPast ? 'text-rose-400' : 'text-slate-500'} uppercase tracking-widest"><i data-lucide="calendar-clock" class="w-3 h-3"></i> ${m.scheduledDate}</div>
                             ${cancelBtn}
                         </div>
                         <div class="text-3xl drop-shadow-sm opacity-50 pt-2">⚔️</div>
                     </div>
                 `;
-            }).join('');
+            }).join(''); lucide.createIcons();
+        }
+
+        // --- PULSE DASHBOARD RENDERING ---
+        function renderPulse() {
+            const groupPlayers = getGroupPlayers(); const groupMatches = getGroupMatches();
+            if (groupPlayers.length === 0 && groupMatches.length === 0) return;
+
+            const currentWeek = pulseWeeks[pulseSelectedWeekIndex];
+            const dStart = new Date(currentWeek.start + "T12:00:00"), dEnd = new Date(currentWeek.end + "T12:00:00");
+            const displayFormat = { month: 'short', day: 'numeric', year: 'numeric' };
+            
+            document.getElementById('pulse-date-range').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Season Booking Snapshot" : `Timeframe: ${dStart.toLocaleDateString('en-US', displayFormat)} — ${dEnd.toLocaleDateString('en-US', displayFormat)}`;
+            document.getElementById('pulse-insights-subtitle').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Launch Hype Data" : `Stats for ${currentWeek.label.split(':')[0]}`;
+
+            const pastMatches = groupMatches.filter(m => m.status === 'completed' && (pulseSelectedWeekIndex === 0 || (m.date >= currentWeek.start && m.date <= currentWeek.end))).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const futureMatches = groupMatches.filter(m => m.status === 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.scheduledDate >= currentWeek.start && m.scheduledDate <= currentWeek.end))).sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
+            const insightMatches = futureMatches;
+
+            // Busiest Day
+            const dayCounts = {}; insightMatches.forEach(m => { dayCounts[m.scheduledDate] = (dayCounts[m.scheduledDate] || 0) + 1; });
+            const sortedDays = Object.entries(dayCounts).sort((a,b) => b[1] - a[1]);
+            const busiestDay = sortedDays.length > 0 ? sortedDays[0] : null;
+
+            if (busiestDay) {
+                const bDate = new Date(busiestDay[0] + "T12:00:00").toLocaleDateString('en-US', {weekday: 'long', month: 'short', day: 'numeric'});
+                document.getElementById('pulse-insight-busiest-day').innerHTML = `
+                    <div class="text-3xl font-black text-rose-500 mb-1">${busiestDay[1]} <span class="text-sm text-slate-400 uppercase tracking-widest">Matches</span></div>
+                    <div class="text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-100 border border-slate-200 inline-block px-3 py-1 rounded-full">${bDate}</div>
+                `;
+            } else { document.getElementById('pulse-insight-busiest-day').innerHTML = `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest">No matches booked</span>`; }
+
+            // Top Bookers & MIA
+            const playerCounts = {}; groupPlayers.forEach(p => playerCounts[p.name] = 0);
+            insightMatches.forEach(m => { if (playerCounts[m.player1] !== undefined) playerCounts[m.player1]++; if (playerCounts[m.player2] !== undefined) playerCounts[m.player2]++; });
+            const sortedBookers = Object.entries(playerCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+            
+            const activeBookers = sortedBookers.filter(b => b[1] > 0);
+            document.getElementById('pulse-insight-top-bookers').innerHTML = activeBookers.length > 0 ? activeBookers.map((b, i) => `
+                <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                    <span class="text-xs font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-amber-500 font-black">${i === 0 ? '👑' : i+1+'.'}</span> ${b[0]}</span>
+                    <span class="text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-md">${b[1]} Booked</span>
+                </div>
+            `).join('') : `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest block text-center mt-4">No data yet</span>`;
+
+            const miaPlayers = sortedBookers.filter(b => b[1] === 0).map(b => b[0]);
+            document.getElementById('pulse-insight-mia').innerHTML = miaPlayers.length > 0 ? miaPlayers.map(name => `
+                <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md uppercase tracking-wider">${name}</span>
+            `).join('') : `<span class="text-emerald-500 text-xs font-bold uppercase tracking-widest block text-center w-full mt-4">Everyone is playing!</span>`;
+
+            // Stats
+            document.getElementById('pulse-stat-swapped').innerText = pastMatches.length;
+            document.getElementById('pulse-stat-upcoming').innerText = futureMatches.length;
+
+            // Past Lists
+            const pastContainer = document.getElementById('pulse-past-container');
+            if (pastMatches.length === 0) pastContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No tags captured in this timeframe.</p></div>`;
+            else pastContainer.innerHTML = pastMatches.map(m => {
+                const photoHtml = m.photoUrl ? `<div class="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-emerald-200 shadow-sm"><img src="${m.photoUrl}" alt="Evidence" class="w-full h-full object-cover"></div>` : `<div class="w-16 h-16 shrink-0 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200"><i data-lucide="camera-off" class="w-5 h-5 text-slate-400"></i></div>`;
+                return `
+                    <div class="bg-white p-5 rounded-[2rem] flex items-center gap-5 relative overflow-hidden group hover:border-emerald-300 border border-slate-200 shadow-sm transition-colors">
+                        <div class="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500"></div>
+                        ${photoHtml}
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>
+                                <span class="text-[10px] font-black text-emerald-600 tracking-wider">${m.score}</span>
+                            </div>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${m.winner} <span class="text-emerald-500 text-sm font-bold lowercase mx-1">def.</span> ${m.loser}</h3>
+                        </div>
+                    </div>
+                `}).join('');
+
+            // Future Lists
+            const futureContainer = document.getElementById('pulse-future-container');
+            if (futureMatches.length === 0) futureContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No battles scheduled for this timeframe.</p></div>`;
+            else {
+                const todayStr = new Date().toISOString().split('T')[0];
+                futureContainer.innerHTML = futureMatches.map(m => {
+                    const isToday = m.scheduledDate === todayStr;
+                    const dateBadgeClass = isToday ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-100';
+                    const dateIcon = isToday ? 'alert-circle' : 'calendar-clock';
+                    const dateText = isToday ? 'TODAY' : m.scheduledDate;
+                    return `
+                        <div class="bg-white p-5 rounded-[2rem] flex items-center justify-between relative overflow-hidden border border-slate-200 shadow-sm hover:border-amber-300 transition-colors">
+                            <div class="absolute top-0 bottom-0 left-0 w-1 bg-amber-500"></div>
+                            <div class="text-left">
+                                <div class="mb-2 inline-block">
+                                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${dateBadgeClass}"><i data-lucide="${dateIcon}" class="w-3 h-3 inline pb-0.5"></i> ${dateText}</span>
+                                </div>
+                                <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">vs</span> ${m.player2}</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 text-slate-500">
+                                <span class="text-lg drop-shadow-sm">⚔️</span>
+                            </div>
+                        </div>
+                    `}).join('');
+            }
+
+            // Tracker
+            const trackerContainer = document.getElementById('pulse-tracker-container');
+            if (groupPlayers.length === 0) trackerContainer.innerHTML = `<div class="p-8 col-span-full text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white">No players found in database.</div>`;
+            else trackerContainer.innerHTML = groupPlayers.map(p => {
+                const isPaid = p.paid === 'Y';
+                const statusClass = isPaid ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-rose-600 bg-rose-50 border-rose-100';
+                const statusText = isPaid ? 'PAID' : 'UNPAID'; const icon = isPaid ? 'check' : 'x';
+                return `
+                    <div class="bg-white p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-tight">${p.name}</span>
+                        <span class="flex items-center gap-1 ${statusClass} px-2 py-1 rounded border text-[9px] font-black uppercase tracking-widest"><i data-lucide="${icon}" class="w-3 h-3"></i> ${statusText}</span>
+                    </div>
+                `}).join('');
+
             lucide.createIcons();
         }
-        
-        // Expose functions globally for the buttons
+
+        // Expose functions globally
         window.showScreen = showScreen;
     </script>
 </body>
