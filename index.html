@@ -978,26 +978,22 @@
             const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
-            // Helper to check if a match involves both a specific user and an opponent
-            const matchesBetween = (m, u, o) => {
-                const participants = [m.player1, m.player2, m.winner, m.loser].filter(Boolean);
-                return participants.includes(u) && participants.includes(o);
-            };
-
-            let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
+            // Corrected Aggregation: sum buckets to determine "Played"
+            let wonCount = 0, lostCount = 0, tiedCount = 0;
             
-            // Aggregation logic
             groupMatches.forEach(m => {
-                if (m.status === 'completed' && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
-                    playedCount++;
+                const isParticipant = (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor);
+                if (m.status === 'completed' && isParticipant) {
                     if (m.winner === 'Tie') tiedCount++;
                     else if (m.winner === viewingDamageFor) wonCount++;
-                    else if (m.loser === viewingDamageFor) lostCount++;
+                    else if (m.loser === viewingDamageFor || (m.winner && m.winner !== viewingDamageFor && m.winner !== 'Tie')) lostCount++;
                 }
             });
 
+            const playedCount = wonCount + lostCount + tiedCount;
+
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
-                const matchesWithOpp = groupMatches.filter(m => matchesBetween(m, viewingDamageFor, opp.name));
+                const matchesWithOpp = groupMatches.filter(m => (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor) && (m.player1 === opp.name || m.player2 === opp.name));
                 
                 let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
                 let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
