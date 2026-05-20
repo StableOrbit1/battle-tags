@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -774,7 +773,10 @@
             const opponent = document.getElementById('schedule-opponent').value, date = document.getElementById('schedule-date').value, btn = document.getElementById('schedule-btn');
             if (!opponent) return;
 
-            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const existingMatches = getGroupMatches().filter(m => {
+                const pList = [m.player1, m.player2, m.winner, m.loser];
+                return pList.includes(currentUser) && pList.includes(opponent);
+            });
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
 
@@ -834,7 +836,10 @@
             const holesUp = document.getElementById('holes-up').value, holesRem = document.getElementById('holes-remaining').value;
             if (!opponent || !holesUp || !holesRem) return showToast("Missing score fields", true);
 
-            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const existingMatches = getGroupMatches().filter(m => {
+                const pList = [m.player1, m.player2, m.winner, m.loser];
+                return pList.includes(currentUser) && pList.includes(opponent);
+            });
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) { window.cancelPhotoSkip(); return showToast("You already have a decisive match logged with this opponent!", true); }
 
@@ -870,7 +875,10 @@
             const opponent = document.getElementById('report-opponent').value, date = document.getElementById('match-date').value;
             if (!opponent) return showToast("Select an opponent to log a tie.", true);
 
-            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const existingMatches = getGroupMatches().filter(m => {
+                const pList = [m.player1, m.player2, m.winner, m.loser];
+                return pList.includes(currentUser) && pList.includes(opponent);
+            });
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
 
@@ -981,7 +989,8 @@
 
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
             groupMatches.forEach(m => {
-                if ([m.player1, m.player2].includes(viewingDamageFor) && m.status === 'completed') {
+                const involvesViewingPlayer = [m.player1, m.player2, m.winner, m.loser].includes(viewingDamageFor);
+                if (involvesViewingPlayer && m.status === 'completed') {
                     playedCount++;
                     if (m.winner === 'Tie') tiedCount++;
                     else if (m.winner === viewingDamageFor) wonCount++;
@@ -990,7 +999,10 @@
             });
 
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
-                const matchesWithOpp = groupMatches.filter(m => [m.player1, m.player2].includes(viewingDamageFor) && [m.player1, m.player2].includes(opp.name));
+                const matchesWithOpp = groupMatches.filter(m => {
+                    const pList = [m.player1, m.player2, m.winner, m.loser];
+                    return pList.includes(viewingDamageFor) && pList.includes(opp.name);
+                });
                 
                 let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
                 let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
