@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.3 (Pulse Integrated)</title>
+    <title>Battle Tags v6.4 (Ties Integrated)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -129,8 +130,7 @@
                 <p class="text-slate-500 text-xs mt-2 font-medium leading-relaxed">This is your first time logging in. Select your name to permanently lock your phone number to your BattleTag identity.</p>
             </div>
             <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                <!-- Profiles will be injected here -->
-            </div>
+                </div>
         </div>
     </div>
 
@@ -236,7 +236,7 @@
                     <form id="match-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
-                                <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Defeated/Tied Opponent</label>
+                                <label class="block text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Opponent</label>
                                 <select id="report-opponent" required class="w-full p-4 bg-slate-50 border-2 border-rose-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-rose-400 appearance-none cursor-pointer">
                                     <option value="">Select Opponent...</option>
                                 </select>
@@ -256,6 +256,7 @@
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining</label>
                                 <input type="number" id="holes-remaining" min="0" max="17" placeholder="2" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500">
                             </div>
+                            <p class="col-span-2 text-xs text-slate-400 font-bold tracking-tight text-center italic">Leave blank if logging a tie.</p>
                         </div>
 
                         <div class="space-y-2 bg-slate-50 border border-slate-100 p-4 rounded-3xl">
@@ -265,12 +266,12 @@
                             <input type="file" id="match-photo" accept="image/*" class="w-full text-sm text-slate-500 outline-none cursor-pointer">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl active-scale flex items-center justify-center gap-2">
+                        <div class="space-y-3 pt-4">
+                            <button type="submit" id="submit-btn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl active-scale flex items-center justify-center gap-2">
                                 <i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win
                             </button>
-                            <button type="submit" id="submit-tie-btn" class="w-full bg-slate-200 text-slate-600 py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-slate-300 transition-all shadow-inner active-scale flex items-center justify-center gap-2">
-                                <i data-lucide="minus" class="w-5 h-5"></i> Log Tie
+                            <button type="button" id="tie-btn" onclick="executeTieSubmission()" class="w-full bg-slate-200 text-slate-700 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-slate-300 transition-all shadow-md active-scale flex items-center justify-center gap-2">
+                                <i data-lucide="handshake" class="w-5 h-5"></i> Log Tie
                             </button>
                         </div>
                     </form>
@@ -398,12 +399,12 @@
                 </div>
                 
                 <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
-                    <div class="grid grid-cols-12 gap-1 md:gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
+                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
                         <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
                         <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
-                        <div onclick="sortLeaderboard('tied')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Ties"><span class="text-sm md:text-base text-slate-500">T</span><span class="hidden md:inline">ie</span> <span id="sort-tied" class="text-emerald-500"></span></div>
+                        <div onclick="sortLeaderboard('tied')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tied"><span class="text-sm md:text-base text-slate-500">T</span><span class="hidden md:inline">ie</span> <span id="sort-tied" class="text-emerald-500"></span></div>
                     </div>
                     <div id="leaderboard-list" class="divide-y divide-slate-50">
                         <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
@@ -484,21 +485,14 @@
                             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 mt-1"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">To The Victor Go The Spoils</h3>
-                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">Win the match, capture a Tag. The <strong>winner</strong> logs the victory to update the Damage Report.</p>
+                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">Win the match, capture a Tag. Log decisive wins, or log ties to preserve history.</p>
                             </div>
                         </div>
                         <div class="flex gap-4 items-start">
                             <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center shrink-0 mt-1"><i data-lucide="camera" class="w-6 h-6"></i></div>
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">Pics or it Didn't Happen</h3>
-                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">When submitting a win, uploading photographic evidence of the post-match handshake (or the loser handing over the tag) is highly encouraged. It gets added to the Photoboard Gallery for everyone to see.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start">
-                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 mt-1"><i data-lucide="trophy" class="w-6 h-6"></i></div>
-                            <div>
-                                <h3 class="text-xl font-black text-slate-800 tracking-tight">The Glory</h3>
-                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">The live standings track every match played, tags won, and tags lost. The player with the most Tags won by the end of the season takes ultimate bragging rights.</p>
+                                <p class="text-slate-600 leading-relaxed mt-2 font-medium">When submitting a match, uploading photographic evidence of the post-match handshake (or the loser handing over the tag) is highly encouraged.</p>
                             </div>
                         </div>
                     </div>
@@ -552,7 +546,6 @@
         let rawMatches = [];
         let currentSort = { column: 'won', direction: 'desc' };
 
-        // Pulse State
         let pulseSelectedWeekIndex = 0;
         const pulseWeeks = [];
 
@@ -628,7 +621,7 @@
             content.classList.replace('scale-100', 'scale-0');
             setTimeout(() => document.getElementById('modal-confirm-photo').classList.add('hidden'), 300);
         };
-        window.confirmPhotoSkip = function() { window.cancelPhotoSkip(); executeMatchSubmission(window.pendingTieSubmit); };
+        window.confirmPhotoSkip = function() { window.cancelPhotoSkip(); executeMatchSubmission(); };
 
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
             return new Promise((resolve, reject) => {
@@ -773,6 +766,7 @@
 
         window.changeDamageView = function(name) { viewingDamageFor = name; renderDamageReport(); }
 
+        // --- WRITING DATA ---
         document.getElementById('schedule-form').onsubmit = async function(e) {
             e.preventDefault();
             if (!currentUser || !currentGroup) return;
@@ -780,15 +774,18 @@
             const opponent = document.getElementById('schedule-opponent').value, date = document.getElementById('schedule-date').value, btn = document.getElementById('schedule-btn');
             if (!opponent) return;
 
-            const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
-            const existingMatch = getGroupMatches().find(m => m.id === pairId);
-            
-            if (existingMatch && existingMatch.winner) return showToast("You have already played this opponent!", true);
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
+            if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
+
+            const hasScheduled = existingMatches.some(m => m.status === 'scheduled');
+            if (hasScheduled) return showToast("You already have an active scheduled match with this opponent!", true);
 
             btn.disabled = true; btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`; lucide.createIcons();
 
             try {
-                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId), {
+                const matchId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '') + '_' + Date.now();
+                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId), {
                     status: 'scheduled', player1: currentUser, player2: opponent, scheduledDate: date, scheduledBy: currentUser, groupId: currentGroup, timestamp: new Date().toISOString()
                 });
 
@@ -805,85 +802,107 @@
             } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5"></i> Schedule Match`; lucide.createIcons(); }
         };
 
+        async function uploadPhotoIfPresent(photoInput, matchId) {
+            if (photoInput.files.length > 0) {
+                const file = photoInput.files[0];
+                const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
+                const safeFileName = file.name.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
+                const storageRef = ref(storage, `match_photos/${activeAppId}/${matchId}_${Date.now()}_${safeFileName}`);
+                await uploadBytes(storageRef, compressedBlob);
+                return await getDownloadURL(storageRef);
+            }
+            return null;
+        }
+
         document.getElementById('match-form').onsubmit = async function(e) {
             e.preventDefault();
-            const isTie = e.submitter && e.submitter.id === 'submit-tie-btn';
             if (!currentUser || !currentGroup) return;
 
             const opponent = document.getElementById('report-opponent').value; if (!opponent) return;
             const photoInput = document.getElementById('match-photo');
             
-            if (!isTie) {
-                if (!document.getElementById('holes-up').value || !document.getElementById('holes-remaining').value) {
-                    showToast("Score required for a win.", true);
-                    return;
-                }
-            }
-            
             if (photoInput.files.length === 0) {
-                window.pendingTieSubmit = isTie;
                 const modal = document.getElementById('modal-confirm-photo'); modal.classList.remove('hidden');
                 setTimeout(() => document.getElementById('modal-confirm-photo-content').classList.replace('scale-0', 'scale-100'), 10);
                 return;
             }
-            executeMatchSubmission(isTie);
+            executeMatchSubmission();
         };
 
-        window.executeMatchSubmission = async function(isTie = false) {
+        window.executeMatchSubmission = async function() {
             const opponent = document.getElementById('report-opponent').value, date = document.getElementById('match-date').value;
             const holesUp = document.getElementById('holes-up').value, holesRem = document.getElementById('holes-remaining').value;
-            const photoInput = document.getElementById('match-photo'), btn = document.getElementById(isTie ? 'submit-tie-btn' : 'submit-btn');
+            if (!opponent || !holesUp || !holesRem) return showToast("Missing score fields", true);
 
-            btn.disabled = true;
-            const originalBtnHtml = btn.innerHTML;
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
+            if (hasDecisive) { window.cancelPhotoSkip(); return showToast("You already have a decisive match logged with this opponent!", true); }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Processing...`; lucide.createIcons();
+            
             try {
-                const pairId = [currentUser, opponent].sort().join('_').replace(/\s+/g, '');
-                let photoUrl = null;
-
-                if (photoInput.files.length > 0) {
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Compressing...`; lucide.createIcons();
-                    const file = photoInput.files[0]; const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
-                    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading...`; lucide.createIcons();
-                    
-                    const safeFileName = file.name.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
-                    const storageRef = ref(storage, `match_photos/${activeAppId}/${pairId}_${Date.now()}_${safeFileName}`);
-                    await uploadBytes(storageRef, compressedBlob);
-                    photoUrl = await getDownloadURL(storageRef);
-                }
-
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`; lucide.createIcons();
-
-                let matchData;
-                if (isTie) {
-                    matchData = { status: 'completed', isTie: true, player1: currentUser, player2: opponent, score: 'All Square', date: date, groupId: currentGroup, timestamp: new Date().toISOString() };
-                } else {
-                    matchData = { status: 'completed', winner: currentUser, loser: opponent, score: `${holesUp} & ${holesRem}`, date: date, groupId: currentGroup, timestamp: new Date().toISOString() };
-                }
+                const scheduledMatch = existingMatches.find(m => m.status === 'scheduled');
+                const matchId = scheduledMatch ? scheduledMatch.id : ([currentUser, opponent].sort().join('_').replace(/\s+/g, '') + '_' + Date.now());
                 
+                const photoUrl = await uploadPhotoIfPresent(document.getElementById('match-photo'), matchId);
+
+                const matchData = { status: 'completed', winner: currentUser, loser: opponent, score: `${holesUp} & ${holesRem}`, date: date, player1: currentUser, player2: opponent, groupId: currentGroup, timestamp: new Date().toISOString() };
                 if (photoUrl) matchData.photoUrl = photoUrl;
-                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', pairId), matchData);
-
-                let waText;
-                if (isTie) {
-                    waText = `🤝 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} and ${opponent.toUpperCase()} battled to a draw! (All Square) ⚔️\n\nCheck the live Damage Report!`;
-                    document.getElementById('modal-success-title').innerText = "Match Tied!";
-                } else {
-                    waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
-                    document.getElementById('modal-success-title').innerText = "Tag Captured!";
-                }
                 
+                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId), matchData);
+
+                let waText = `🚨 *BATTLETAG ALERT*\n${currentUser.toUpperCase()} just captured a tag from ${opponent.toUpperCase()}! (${holesUp} & ${holesRem}) ⚔️\n\nCheck the live Damage Report!`;
                 if(photoUrl) waText += `\n\n📸 Evidence uploaded! Open the app Gallery to see the carnage.`;
                 
                 document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
-                document.getElementById('modal-success-subtitle').innerText = "Your results have been synced to the database.";
+                document.getElementById('modal-success-title').innerText = "Tag Captured!";
+                document.getElementById('modal-success-subtitle').innerText = "Your win has been synced to the database.";
 
                 document.getElementById('report-opponent').value = ""; document.getElementById('holes-up').value = ""; document.getElementById('holes-remaining').value = ""; document.getElementById('match-photo').value = ""; 
                 const modal = document.getElementById('modal-success'); modal.classList.remove('hidden');
                 setTimeout(() => document.getElementById('modal-success-content').classList.replace('scale-0', 'scale-100'), 10);
             } catch (err) { showToast("Failed to process.", true);
-            } finally { btn.disabled = false; btn.innerHTML = originalBtnHtml; lucide.createIcons(); }
+            } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Submit Win`; lucide.createIcons(); }
         };
 
+        window.executeTieSubmission = async function() {
+            const opponent = document.getElementById('report-opponent').value, date = document.getElementById('match-date').value;
+            if (!opponent) return showToast("Select an opponent to log a tie.", true);
+
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
+            const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
+            if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
+
+            const btn = document.getElementById('tie-btn');
+            btn.disabled = true; btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Processing...`; lucide.createIcons();
+
+            try {
+                const scheduledMatch = existingMatches.find(m => m.status === 'scheduled');
+                const matchId = scheduledMatch ? scheduledMatch.id : ([currentUser, opponent].sort().join('_').replace(/\s+/g, '') + '_' + Date.now());
+
+                const photoUrl = await uploadPhotoIfPresent(document.getElementById('match-photo'), matchId);
+
+                const matchData = { status: 'completed', winner: 'Tie', loser: 'Tie', player1: currentUser, player2: opponent, score: `All Square`, date: date, groupId: currentGroup, timestamp: new Date().toISOString() };
+                if (photoUrl) matchData.photoUrl = photoUrl;
+
+                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId), matchData);
+
+                let waText = `🤝 *BATTLETAG TIE*\n${currentUser.toUpperCase()} and ${opponent.toUpperCase()} battled to a tie! Tags remain in their possession. 🛡️`;
+                if(photoUrl) waText += `\n\n📸 Evidence uploaded! Open the app Gallery to see the handshake.`;
+                
+                document.getElementById('wa-share-btn').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+                document.getElementById('modal-success-title').innerText = "Match Tied!";
+                document.getElementById('modal-success-subtitle').innerText = "The tie has been synced.";
+
+                document.getElementById('report-opponent').value = ""; document.getElementById('holes-up').value = ""; document.getElementById('holes-remaining').value = ""; document.getElementById('match-photo').value = ""; 
+                const modal = document.getElementById('modal-success'); modal.classList.remove('hidden');
+                setTimeout(() => document.getElementById('modal-success-content').classList.replace('scale-0', 'scale-100'), 10);
+            } catch (err) { showToast("Failed to process tie.", true);
+            } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="handshake" class="w-5 h-5"></i> Log Tie`; lucide.createIcons(); }
+        }
+
+        // --- RENDER DOM UPDATES ---
         function updateDropdowns() {
             const oppSelect = document.getElementById('report-opponent'), scheduleSelect = document.getElementById('schedule-opponent'), damageSelect = document.getElementById('damage-view-select');
             const groupPlayers = getGroupPlayers();
@@ -921,33 +940,29 @@
 
             const statsMap = {}; groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0 }; });
             groupMatches.forEach(m => {
-                if (m.isTie && m.status === 'completed') {
-                    if (statsMap[m.player1]) { statsMap[m.player1].tied++; statsMap[m.player1].played++; }
-                    if (statsMap[m.player2]) { statsMap[m.player2].tied++; statsMap[m.player2].played++; }
-                } else if (m.winner) {
-                    if (statsMap[m.winner]) { statsMap[m.winner].won++; statsMap[m.winner].played++; }
-                    if (statsMap[m.loser]) { statsMap[m.loser].lost++; statsMap[m.loser].played++; }
+                if (m.status === 'completed' && m.winner) {
+                    if (m.winner === 'Tie') {
+                        if (statsMap[m.player1]) { statsMap[m.player1].tied++; statsMap[m.player1].played++; }
+                        if (statsMap[m.player2]) { statsMap[m.player2].tied++; statsMap[m.player2].played++; }
+                    } else {
+                        if (statsMap[m.winner]) { statsMap[m.winner].won++; statsMap[m.winner].played++; }
+                        if (statsMap[m.loser]) { statsMap[m.loser].lost++; statsMap[m.loser].played++; }
+                    }
                 }
             });
 
             const sorted = Object.values(statsMap).sort((a, b) => {
                 let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
                 if (currentSort.column === 'name') result = currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                else {
-                    result = currentSort.direction === 'asc' ? valA - valB : valB - valA;
-                    if (result === 0 && currentSort.column === 'won') {
-                        result = b.tied - a.tied; 
-                        if (result === 0) result = a.lost - b.lost; 
-                    }
-                }
+                else result = currentSort.direction === 'asc' ? valA - valB : valB - valA;
                 return result === 0 ? a.name.localeCompare(b.name) : result;
             });
 
             listEl.innerHTML = sorted.map((p, i) => `
-                <div class="grid grid-cols-12 gap-1 md:gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-4 flex items-center gap-2 md:gap-3 overflow-hidden">
+                <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
+                    <div class="col-span-4 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-[10px] md:text-sm">${p.name}</span>
+                        <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base">${p.name}</span>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.played}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
@@ -965,28 +980,46 @@
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
-            const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
-                const pairId = [viewingDamageFor, opp.name].sort().join('_').replace(/\s+/g, '');
-                const match = groupMatches.find(m => m.id === pairId);
-                
-                let status = 'unplayed';
-                if (match) {
-                    if (match.isTie && match.status === 'completed') status = 'tied';
-                    else if (match.winner === viewingDamageFor) status = 'won';
-                    else if (match.winner && match.winner !== viewingDamageFor) status = 'lost';
-                    else if (!match.winner && match.scheduledDate) status = 'scheduled';
+            groupMatches.forEach(m => {
+                if ([m.player1, m.player2].includes(viewingDamageFor) && m.status === 'completed') {
+                    playedCount++;
+                    if (m.winner === 'Tie') tiedCount++;
+                    else if (m.winner === viewingDamageFor) wonCount++;
+                    else lostCount++;
                 }
-                if (status === 'won') wonCount++; 
-                if (status === 'lost') lostCount++;
-                if (status === 'tied') tiedCount++;
+            });
+
+            const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
+                const matchesWithOpp = groupMatches.filter(m => [m.player1, m.player2].includes(viewingDamageFor) && [m.player1, m.player2].includes(opp.name));
+                
+                let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
+                let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
+                let scheduledMatch = matchesWithOpp.find(m => m.status === 'scheduled');
+
+                let status = 'unplayed';
+                let match = null;
+                let tieCountText = tieMatches.length > 1 ? ` (${tieMatches.length}x)` : '';
+
+                if (decisiveMatch) {
+                    status = decisiveMatch.winner === viewingDamageFor ? 'won' : 'lost';
+                    match = decisiveMatch;
+                } else if (tieMatches.length > 0) {
+                    status = 'tied';
+                    match = tieMatches[tieMatches.length - 1]; // Latest tie
+                } else if (scheduledMatch) {
+                    status = 'scheduled';
+                    match = scheduledMatch;
+                }
 
                 const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : status === 'tied' ? 'bg-slate-100 border-slate-300 shadow-sm' : status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-slate-100 opacity-70';
-                const statusText = status === 'unplayed' ? 'Not Played' : status === 'tied' ? 'Tied (AS)' : status === 'won' ? `Captured (${match.score})` : status === 'lost' ? `Lost (${match.score})` : 'Scheduled Battle';
-                const photoIconHtml = (match && match.photoUrl) ? `<a href="${match.photoUrl}" target="_blank" class="text-emerald-500 hover:text-emerald-700 bg-emerald-100 p-1 rounded inline-flex transition-colors" title="View Evidence Photo"><i data-lucide="camera" class="w-3 h-3"></i></a>` : '';
+                const statusText = status === 'unplayed' ? 'Not Played' : status === 'won' ? `Captured (${match.score})` : status === 'lost' ? `Lost (${match.score})` : status === 'tied' ? `Tied (AS)${tieCountText}` : 'Scheduled Battle';
+                const photoIconHtml = (match && match.photoUrl) ? `<a href="${match.photoUrl}" target="_blank" class="${status === 'tied' ? 'text-slate-500 hover:text-slate-700 bg-slate-200' : 'text-emerald-500 hover:text-emerald-700 bg-emerald-100'} p-1 rounded inline-flex transition-colors" title="View Evidence Photo"><i data-lucide="camera" class="w-3 h-3"></i></a>` : '';
+                
                 let dateHtml = '';
                 if (status === 'scheduled') dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-amber-600 uppercase"><i data-lucide="calendar-clock" class="w-3 h-3"></i> Set for ${match.scheduledDate}</div>`;
                 else if (match && match.date) dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date} ${photoIconHtml}</div>`;
-                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : status === 'tied' ? `<span class="text-2xl drop-shadow-sm opacity-60" title="Tied">🤝</span>` : status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+                
+                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : status === 'tied' ? `<span class="text-2xl drop-shadow-sm" title="Tied">🤝</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
 
                 return `
                     <div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${styleClass}">
@@ -1000,22 +1033,22 @@
                 `;
             }).join('');
 
-            playedCount = wonCount + lostCount + tiedCount;
             statsContainer.innerHTML = `
                 <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">⚔️</span> ${playedCount} Played</div>
                 <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">🏷️</span> ${wonCount} Won</div>
                 <div class="flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">💀</span> ${lostCount} Lost</div>
-                <div class="flex items-center gap-2 bg-slate-200 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm opacity-60">🤝</span> ${tiedCount} Tied</div>
+                <div class="flex items-center gap-2 bg-slate-200 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">🤝</span> ${tiedCount} Tied</div>
             `;
             grid.innerHTML = html; lucide.createIcons();
         }
 
         function renderGallery() {
             const grid = document.getElementById('gallery-grid'); if (!grid) return;
-            const photos = getGroupMatches().filter(m => m.photoUrl && m.status === 'completed').sort((a, b) => new Date(b.date) - new Date(a.date));
+            const photos = getGroupMatches().filter(m => m.photoUrl && m.winner).sort((a, b) => new Date(b.date) - new Date(a.date));
             if (photos.length === 0) return grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No evidence uploaded yet.</div>`;
             grid.innerHTML = photos.map(m => {
-                const headerText = m.isTie ? `${m.player1} <span class="text-slate-400 font-bold">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 font-bold">def.</span> ${m.loser}`;
+                const isTie = m.winner === 'Tie';
+                const headerText = isTie ? `${m.player1} <span class="text-slate-400 text-xs font-bold lowercase mx-0.5">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 font-bold">def.</span> ${m.loser}`;
                 return `
                 <div class="bg-white rounded-3xl p-3 shadow-md border border-slate-100 flex flex-col gap-3 transition-transform hover:scale-[1.02]">
                     <a href="${m.photoUrl}" target="_blank" class="block relative aspect-square rounded-2xl overflow-hidden bg-slate-100"><img src="${m.photoUrl}" alt="Match Photo" class="w-full h-full object-cover" loading="lazy"></a>
@@ -1054,6 +1087,7 @@
             }).join(''); lucide.createIcons();
         }
 
+        // --- PULSE DASHBOARD RENDERING ---
         function renderPulse() {
             const groupPlayers = getGroupPlayers(); const groupMatches = getGroupMatches();
             if (groupPlayers.length === 0 && groupMatches.length === 0) return;
@@ -1069,6 +1103,7 @@
             const futureMatches = groupMatches.filter(m => m.status === 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.scheduledDate >= currentWeek.start && m.scheduledDate <= currentWeek.end))).sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
             const insightMatches = futureMatches;
 
+            // Busiest Day
             const dayCounts = {}; insightMatches.forEach(m => { dayCounts[m.scheduledDate] = (dayCounts[m.scheduledDate] || 0) + 1; });
             const sortedDays = Object.entries(dayCounts).sort((a,b) => b[1] - a[1]);
             const busiestDay = sortedDays.length > 0 ? sortedDays[0] : null;
@@ -1081,6 +1116,7 @@
                 `;
             } else { document.getElementById('pulse-insight-busiest-day').innerHTML = `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest">No matches booked</span>`; }
 
+            // Top Bookers & MIA
             const playerCounts = {}; groupPlayers.forEach(p => playerCounts[p.name] = 0);
             insightMatches.forEach(m => { if (playerCounts[m.player1] !== undefined) playerCounts[m.player1]++; if (playerCounts[m.player2] !== undefined) playerCounts[m.player2]++; });
             const sortedBookers = Object.entries(playerCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -1098,30 +1134,34 @@
                 <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md uppercase tracking-wider">${name}</span>
             `).join('') : `<span class="text-emerald-500 text-xs font-bold uppercase tracking-widest block text-center w-full mt-4">Everyone is playing!</span>`;
 
-            document.getElementById('pulse-stat-swapped').innerText = pastMatches.length;
+            // Stats
+            document.getElementById('pulse-stat-swapped').innerText = pastMatches.filter(m => m.winner !== 'Tie').length;
             document.getElementById('pulse-stat-upcoming').innerText = futureMatches.length;
 
+            // Past Lists
             const pastContainer = document.getElementById('pulse-past-container');
-            if (pastMatches.length === 0) pastContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No tags captured in this timeframe.</p></div>`;
+            if (pastMatches.length === 0) pastContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No activity in this timeframe.</p></div>`;
             else pastContainer.innerHTML = pastMatches.map(m => {
-                const photoHtml = m.photoUrl ? `<div class="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-emerald-200 shadow-sm"><img src="${m.photoUrl}" alt="Evidence" class="w-full h-full object-cover"></div>` : `<div class="w-16 h-16 shrink-0 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200"><i data-lucide="camera-off" class="w-5 h-5 text-slate-400"></i></div>`;
-                const isTie = m.isTie;
-                const resultText = isTie ? `${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 text-sm font-bold lowercase mx-1">def.</span> ${m.loser}`;
-                const badgeColor = isTie ? 'text-slate-600 bg-slate-100 border-slate-200' : 'text-emerald-700 bg-emerald-50 border-emerald-100';
+                const isTie = m.winner === 'Tie';
+                const headerText = isTie ? `${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 text-sm font-bold lowercase mx-1">def.</span> ${m.loser}`;
+                const barColor = isTie ? 'bg-slate-400' : 'bg-emerald-500';
+                
+                const photoHtml = m.photoUrl ? `<div class="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-emerald-200 shadow-sm"><img src="${m.photoUrl}" alt="Evidence" class="w-full h-full object-cover"></div>` : `<div class="w-16 h-16 shrink-0 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200"><i data-lucide="${isTie ? 'handshake' : 'camera-off'}" class="w-5 h-5 text-slate-400"></i></div>`;
                 return `
-                    <div class="bg-white p-5 rounded-[2rem] flex items-center gap-5 relative overflow-hidden group hover:border-${isTie ? 'slate' : 'emerald'}-300 border border-slate-200 shadow-sm transition-colors">
-                        <div class="absolute top-0 bottom-0 left-0 w-1 ${isTie ? 'bg-slate-400' : 'bg-emerald-500'}"></div>
+                    <div class="bg-white p-5 rounded-[2rem] flex items-center gap-5 relative overflow-hidden group hover:border-emerald-300 border border-slate-200 shadow-sm transition-colors">
+                        <div class="absolute top-0 bottom-0 left-0 w-1 ${barColor}"></div>
                         ${photoHtml}
                         <div class="flex-1">
                             <div class="flex justify-between items-start mb-1">
-                                <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${badgeColor}"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>
+                                <span class="text-[9px] font-black ${isTie ? 'text-slate-500 bg-slate-100 border-slate-200' : 'text-emerald-700 bg-emerald-50 border-emerald-100'} uppercase tracking-widest px-2 py-0.5 rounded-md border"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>
                                 <span class="text-[10px] font-black ${isTie ? 'text-slate-500' : 'text-emerald-600'} tracking-wider">${m.score}</span>
                             </div>
-                            <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${resultText}</h3>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${headerText}</h3>
                         </div>
                     </div>
                 `}).join('');
 
+            // Future Lists
             const futureContainer = document.getElementById('pulse-future-container');
             if (futureMatches.length === 0) futureContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No battles scheduled for this timeframe.</p></div>`;
             else {
@@ -1147,6 +1187,7 @@
                     `}).join('');
             }
 
+            // Tracker
             const trackerContainer = document.getElementById('pulse-tracker-container');
             if (groupPlayers.length === 0) trackerContainer.innerHTML = `<div class="p-8 col-span-full text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white">No players found in database.</div>`;
             else trackerContainer.innerHTML = groupPlayers.map(p => {
