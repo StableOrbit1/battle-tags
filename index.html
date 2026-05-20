@@ -773,10 +773,7 @@
             const opponent = document.getElementById('schedule-opponent').value, date = document.getElementById('schedule-date').value, btn = document.getElementById('schedule-btn');
             if (!opponent) return;
 
-            const existingMatches = getGroupMatches().filter(m => {
-                const pList = [m.player1, m.player2, m.winner, m.loser];
-                return pList.includes(currentUser) && pList.includes(opponent);
-            });
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
 
@@ -836,10 +833,7 @@
             const holesUp = document.getElementById('holes-up').value, holesRem = document.getElementById('holes-remaining').value;
             if (!opponent || !holesUp || !holesRem) return showToast("Missing score fields", true);
 
-            const existingMatches = getGroupMatches().filter(m => {
-                const pList = [m.player1, m.player2, m.winner, m.loser];
-                return pList.includes(currentUser) && pList.includes(opponent);
-            });
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) { window.cancelPhotoSkip(); return showToast("You already have a decisive match logged with this opponent!", true); }
 
@@ -875,10 +869,7 @@
             const opponent = document.getElementById('report-opponent').value, date = document.getElementById('match-date').value;
             if (!opponent) return showToast("Select an opponent to log a tie.", true);
 
-            const existingMatches = getGroupMatches().filter(m => {
-                const pList = [m.player1, m.player2, m.winner, m.loser];
-                return pList.includes(currentUser) && pList.includes(opponent);
-            });
+            const existingMatches = getGroupMatches().filter(m => [m.player1, m.player2].includes(currentUser) && [m.player1, m.player2].includes(opponent));
             const hasDecisive = existingMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
             if (hasDecisive) return showToast("You already have a decisive match logged with this opponent!", true);
 
@@ -987,22 +978,26 @@
             const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
+            // Helper to check if a match involves both a specific user and an opponent
+            const matchesBetween = (m, u, o) => {
+                const participants = [m.player1, m.player2, m.winner, m.loser].filter(Boolean);
+                return participants.includes(u) && participants.includes(o);
+            };
+
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
+            
+            // Aggregation logic
             groupMatches.forEach(m => {
-                const involvesViewingPlayer = [m.player1, m.player2, m.winner, m.loser].includes(viewingDamageFor);
-                if (involvesViewingPlayer && m.status === 'completed') {
+                if (m.status === 'completed' && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
                     playedCount++;
                     if (m.winner === 'Tie') tiedCount++;
                     else if (m.winner === viewingDamageFor) wonCount++;
-                    else lostCount++;
+                    else if (m.loser === viewingDamageFor) lostCount++;
                 }
             });
 
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
-                const matchesWithOpp = groupMatches.filter(m => {
-                    const pList = [m.player1, m.player2, m.winner, m.loser];
-                    return pList.includes(viewingDamageFor) && pList.includes(opp.name);
-                });
+                const matchesWithOpp = groupMatches.filter(m => matchesBetween(m, viewingDamageFor, opp.name));
                 
                 let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
                 let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
@@ -1017,21 +1012,32 @@
                     match = decisiveMatch;
                 } else if (tieMatches.length > 0) {
                     status = 'tied';
-                    match = tieMatches[tieMatches.length - 1]; // Latest tie
+                    match = tieMatches[tieMatches.length - 1]; 
                 } else if (scheduledMatch) {
                     status = 'scheduled';
                     match = scheduledMatch;
                 }
 
-                const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : status === 'tied' ? 'bg-slate-100 border-slate-300 shadow-sm' : status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-slate-100 opacity-70';
-                const statusText = status === 'unplayed' ? 'Not Played' : status === 'won' ? `Captured (${match.score})` : status === 'lost' ? `Lost (${match.score})` : status === 'tied' ? `Tied (AS)${tieCountText}` : 'Scheduled Battle';
+                const styleClass = status === 'won' ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 
+                                   status === 'lost' ? 'bg-rose-50 border-rose-200 shadow-sm' : 
+                                   status === 'tied' ? 'bg-slate-100 border-slate-300 shadow-sm' : 
+                                   status === 'scheduled' ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-white border-slate-100 opacity-70';
+                                   
+                const statusText = status === 'unplayed' ? 'Not Played' : 
+                                   status === 'won' ? `Captured (${match.score})` : 
+                                   status === 'lost' ? `Lost (${match.score})` : 
+                                   status === 'tied' ? `Tied (AS)${tieCountText}` : 'Scheduled Battle';
+                                   
                 const photoIconHtml = (match && match.photoUrl) ? `<a href="${match.photoUrl}" target="_blank" class="${status === 'tied' ? 'text-slate-500 hover:text-slate-700 bg-slate-200' : 'text-emerald-500 hover:text-emerald-700 bg-emerald-100'} p-1 rounded inline-flex transition-colors" title="View Evidence Photo"><i data-lucide="camera" class="w-3 h-3"></i></a>` : '';
                 
                 let dateHtml = '';
                 if (status === 'scheduled') dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-amber-600 uppercase"><i data-lucide="calendar-clock" class="w-3 h-3"></i> Set for ${match.scheduledDate}</div>`;
                 else if (match && match.date) dateHtml = `<div class="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-slate-400 uppercase"><i data-lucide="calendar" class="w-3 h-3"></i> ${match.date} ${photoIconHtml}</div>`;
                 
-                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : status === 'tied' ? `<span class="text-2xl drop-shadow-sm" title="Tied">🤝</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
+                const icon = status === 'unplayed' ? `<i data-lucide="minus-circle" class="w-6 h-6 text-slate-300"></i>` : 
+                             status === 'scheduled' ? `<i data-lucide="calendar-clock" class="w-6 h-6 text-amber-500"></i>` : 
+                             status === 'won' ? `<span class="text-2xl drop-shadow-sm" title="Tag Captured">🏷️</span>` : 
+                             status === 'tied' ? `<span class="text-2xl drop-shadow-sm" title="Tied">🤝</span>` : `<span class="text-2xl drop-shadow-sm" title="Defeated">💀</span>`;
 
                 return `
                     <div class="p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${styleClass}">
@@ -1051,7 +1057,8 @@
                 <div class="flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">💀</span> ${lostCount} Lost</div>
                 <div class="flex items-center gap-2 bg-slate-200 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"><span class="text-sm">🤝</span> ${tiedCount} Tied</div>
             `;
-            grid.innerHTML = html; lucide.createIcons();
+            grid.innerHTML = html; 
+            lucide.createIcons();
         }
 
         function renderGallery() {
