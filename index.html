@@ -978,22 +978,19 @@
             const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
-            // Corrected Aggregation: sum buckets to determine "Played"
-            let wonCount = 0, lostCount = 0, tiedCount = 0;
-            
+            // Corrected Aggregation: sum buckets
+            let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
             groupMatches.forEach(m => {
-                const isParticipant = (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor);
-                if (m.status === 'completed' && isParticipant) {
+                if ([m.player1, m.player2].includes(viewingDamageFor) && m.status === 'completed') {
+                    playedCount++;
                     if (m.winner === 'Tie') tiedCount++;
                     else if (m.winner === viewingDamageFor) wonCount++;
-                    else if (m.loser === viewingDamageFor || (m.winner && m.winner !== viewingDamageFor && m.winner !== 'Tie')) lostCount++;
+                    else lostCount++;
                 }
             });
 
-            const playedCount = wonCount + lostCount + tiedCount;
-
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
-                const matchesWithOpp = groupMatches.filter(m => (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor) && (m.player1 === opp.name || m.player2 === opp.name));
+                const matchesWithOpp = groupMatches.filter(m => [m.player1, m.player2].includes(viewingDamageFor) && [m.player1, m.player2].includes(opp.name));
                 
                 let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
                 let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
@@ -1004,7 +1001,7 @@
                 let tieCountText = tieMatches.length > 1 ? ` (${tieMatches.length}x)` : '';
 
                 if (decisiveMatch) {
-                    status = decisiveMatch.winner === viewingDamageFor ? 'won' : 'lost';
+                    status = (decisiveMatch.winner.trim().toLowerCase() === viewingDamageFor.trim().toLowerCase()) ? 'won' : 'lost';
                     match = decisiveMatch;
                 } else if (tieMatches.length > 0) {
                     status = 'tied';
