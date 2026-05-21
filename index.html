@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -939,7 +940,8 @@
 
             const statsMap = {}; groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0 }; });
             groupMatches.forEach(m => {
-                if (m.status === 'completed' && m.winner) {
+                const isCompleted = m.winner && m.status !== 'scheduled';
+                if (isCompleted) {
                     if (m.winner === 'Tie') {
                         if (statsMap[m.player1]) { statsMap[m.player1].tied++; statsMap[m.player1].played++; }
                         if (statsMap[m.player2]) { statsMap[m.player2].tied++; statsMap[m.player2].played++; }
@@ -986,21 +988,28 @@
 
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
             
-            // Aggregation logic
+            // Aggregation logic - Strictly deriving PlayedCount from the win/loss buckets
             groupMatches.forEach(m => {
-                if (m.status === 'completed' && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
-                    playedCount++;
-                    if (m.winner === 'Tie') tiedCount++;
-                    else if (m.winner === viewingDamageFor) wonCount++;
-                    else if (m.loser === viewingDamageFor) lostCount++;
+                const isCompleted = m.winner && m.status !== 'scheduled';
+                if (isCompleted && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
+                    if (m.winner === 'Tie') {
+                        tiedCount++;
+                        playedCount++;
+                    } else if (m.winner === viewingDamageFor) {
+                        wonCount++;
+                        playedCount++;
+                    } else if (m.loser === viewingDamageFor) {
+                        lostCount++;
+                        playedCount++;
+                    }
                 }
             });
 
             const html = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
                 const matchesWithOpp = groupMatches.filter(m => matchesBetween(m, viewingDamageFor, opp.name));
                 
-                let decisiveMatch = matchesWithOpp.find(m => m.status === 'completed' && m.winner && m.winner !== 'Tie');
-                let tieMatches = matchesWithOpp.filter(m => m.status === 'completed' && m.winner === 'Tie');
+                let decisiveMatch = matchesWithOpp.find(m => m.winner && m.winner !== 'Tie' && m.status !== 'scheduled');
+                let tieMatches = matchesWithOpp.filter(m => m.winner === 'Tie' && m.status !== 'scheduled');
                 let scheduledMatch = matchesWithOpp.find(m => m.status === 'scheduled');
 
                 let status = 'unplayed';
@@ -1063,7 +1072,7 @@
 
         function renderGallery() {
             const grid = document.getElementById('gallery-grid'); if (!grid) return;
-            const photos = getGroupMatches().filter(m => m.photoUrl && m.winner).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const photos = getGroupMatches().filter(m => m.photoUrl && m.winner && m.status !== 'scheduled').sort((a, b) => new Date(b.date) - new Date(a.date));
             if (photos.length === 0) return grid.innerHTML = `<div class="col-span-full p-16 text-center text-slate-400 font-bold uppercase tracking-widest border-2 border-dashed border-slate-200 rounded-3xl">No evidence uploaded yet.</div>`;
             grid.innerHTML = photos.map(m => {
                 const isTie = m.winner === 'Tie';
@@ -1118,7 +1127,7 @@
             document.getElementById('pulse-date-range').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Season Booking Snapshot" : `Timeframe: ${dStart.toLocaleDateString('en-US', displayFormat)} — ${dEnd.toLocaleDateString('en-US', displayFormat)}`;
             document.getElementById('pulse-insights-subtitle').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Launch Hype Data" : `Stats for ${currentWeek.label.split(':')[0]}`;
 
-            const pastMatches = groupMatches.filter(m => m.status === 'completed' && (pulseSelectedWeekIndex === 0 || (m.date >= currentWeek.start && m.date <= currentWeek.end))).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const pastMatches = groupMatches.filter(m => m.winner && m.status !== 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.date >= currentWeek.start && m.date <= currentWeek.end))).sort((a, b) => new Date(b.date) - new Date(a.date));
             const futureMatches = groupMatches.filter(m => m.status === 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.scheduledDate >= currentWeek.start && m.scheduledDate <= currentWeek.end))).sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
             const insightMatches = futureMatches;
 
