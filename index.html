@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.5 (The Hitlist Update)</title>
+    <title>Battle Tags v6.6 (Win % Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -412,7 +412,7 @@
                 <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
                     <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
                         <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
-                        <div onclick="sortLeaderboard('played')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Matches Played"><span class="text-sm md:text-base">⚔️</span><span class="hidden md:inline">Ply</span> <span id="sort-played" class="text-emerald-500"></span></div>
+                        <div onclick="sortLeaderboard('winPct')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Win Percentage"><span class="text-sm md:text-base">📊</span><span class="hidden md:inline">Win%</span> <span id="sort-winPct" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
                         <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('tied')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tied"><span class="text-sm md:text-base text-slate-500">T</span><span class="hidden md:inline">ie</span> <span id="sort-tied" class="text-emerald-500"></span></div>
@@ -962,7 +962,7 @@
 
             let totalLeagueMatches = 0;
             const statsMap = {}; 
-            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0 }; });
+            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, winPct: 0 }; });
             
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
@@ -976,6 +976,11 @@
                         if (statsMap[m.loser]) { statsMap[m.loser].lost++; statsMap[m.loser].played++; }
                     }
                 }
+            });
+
+            // Calculate Win Percentage safely
+            Object.values(statsMap).forEach(p => {
+                p.winPct = p.played > 0 ? Math.round((p.won / p.played) * 100) : 0;
             });
 
             const totalEl = document.getElementById('total-league-matches');
@@ -994,14 +999,14 @@
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left w-full">${p.name}</button>
                     </div>
-                    <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.played}</div>
+                    <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.winPct}%</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.tied}</div>
                 </div>
             `).join('');
 
-            ['name', 'played', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
+            ['name', 'winPct', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
         }
 
         function renderDamageReport() {
