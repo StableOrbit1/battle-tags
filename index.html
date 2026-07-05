@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.6 (Win % Update)</title>
+    <title>Battle Tags v6.7 (Photo Patcher)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -39,6 +39,7 @@
         <img src="IMG_2087.png" alt="BattleTags" class="w-[96rem] md:w-[120rem] lg:w-[144rem] max-w-[98vw] h-auto splash-animate" onerror="this.outerHTML='<h1 class=\'text-4xl font-black text-emerald-600\'>BATTLETAGS</h1><p class=\'text-slate-400 mt-2\'>Logo Not Found</p>'">
     </div>
 
+    <!-- Success Modal -->
     <div id="modal-success" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-success-content">
             <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -59,6 +60,7 @@
         </div>
     </div>
 
+    <!-- Confirm No Photo Modal -->
     <div id="modal-confirm-photo" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl scale-0 transition-transform duration-300" id="modal-confirm-photo-content">
             <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -78,6 +80,47 @@
             </div>
         </div>
     </div>
+
+    <!-- Patcher Modal -->
+    <div id="modal-patcher" class="fixed inset-0 z-[500] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden p-6 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-lg w-full space-y-6 shadow-2xl scale-0 transition-transform duration-300 text-left" id="modal-patcher-content">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shadow-inner shrink-0">
+                        <i data-lucide="wrench" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black tracking-tight text-slate-800">Photo Patcher</h2>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Admin Database Utility</p>
+                    </div>
+                </div>
+                <button onclick="closePatcherModal()" class="text-slate-400 hover:text-rose-500 transition-colors p-2 bg-slate-50 rounded-xl"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <form id="patch-form" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Completed Match</label>
+                    <select id="patch-match-selector" required class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-emerald-500 cursor-pointer text-sm">
+                        <option value="">Loading matches...</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">
+                        <i data-lucide="camera" class="w-3 h-3"></i> New Photo to Upload
+                    </label>
+                    <input type="file" id="patch-new-photo" required accept="image/*" class="w-full p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-sm text-slate-500 outline-none cursor-pointer">
+                </div>
+
+                <button type="submit" id="patch-submit-btn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="upload-cloud" class="w-5 h-5"></i> Patch Photo
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
 
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
@@ -500,7 +543,11 @@
                             </div>
                         </div>
                         <div class="flex gap-4 items-start">
-                            <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center shrink-0 mt-1"><i data-lucide="camera" class="w-6 h-6"></i></div>
+                            <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center shrink-0 mt-1 group">
+                                <a href="#" onclick="openPatcherModal(); return false;" class="block hover:text-emerald-500 transition-colors" title="Admin Photo Patcher">
+                                    <i data-lucide="camera" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                                </a>
+                            </div>
                             <div>
                                 <h3 class="text-xl font-black text-slate-800 tracking-tight">Pics or it Didn't Happen</h3>
                                 <p class="text-slate-600 leading-relaxed mt-2 font-medium">When submitting a match, uploading photographic evidence of the post-match handshake (or the loser handing over the tag) is highly encouraged.</p>
@@ -615,10 +662,13 @@
             }, 500);
         };
 
+        // --- TOAST AND MODAL HELPERS ---
         window.showToast = function(msg, isError = false) {
+            const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl z-[500] transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
-            t.innerHTML = msg; document.body.appendChild(t);
+            t.className = `px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-2xl transition-all duration-300 ${isError ? 'bg-rose-600' : 'bg-slate-900'}`;
+            t.innerHTML = msg; 
+            container.appendChild(t);
             setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
         }
 
@@ -633,6 +683,83 @@
             setTimeout(() => document.getElementById('modal-confirm-photo').classList.add('hidden'), 300);
         };
         window.confirmPhotoSkip = function() { window.cancelPhotoSkip(); executeMatchSubmission(); };
+
+        // --- ADMIN PHOTO PATCHER MODAL ---
+        window.openPatcherModal = function() {
+            const selector = document.getElementById('patch-match-selector');
+            selector.innerHTML = '<option value="">Select a match to patch...</option>';
+            
+            const completedMatches = getGroupMatches()
+                .filter(m => m.status === 'completed' && m.winner)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            completedMatches.forEach(m => {
+                const isTie = m.winner === 'Tie';
+                const label = isTie 
+                    ? `${m.date} | ${m.player1} Tied ${m.player2}` 
+                    : `${m.date} | ${m.winner} Defeated ${m.loser}`;
+                
+                const hasPhotoIndicator = m.photoUrl ? ' (Has Photo)' : ' (No Photo)';
+                selector.add(new Option(label + hasPhotoIndicator, m.id));
+            });
+
+            const modal = document.getElementById('modal-patcher');
+            modal.classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-patcher-content').classList.replace('scale-0', 'scale-100'), 10);
+        };
+
+        window.closePatcherModal = function() {
+            const modal = document.getElementById('modal-patcher');
+            const content = document.getElementById('modal-patcher-content');
+            content.classList.replace('scale-100', 'scale-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            document.getElementById('patch-form').reset();
+        };
+
+        document.getElementById('patch-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const matchId = document.getElementById('patch-match-selector').value;
+            const photoInput = document.getElementById('patch-new-photo');
+            const btn = document.getElementById('patch-submit-btn');
+
+            if (!matchId) return showToast("Please select a match.", true);
+            if (photoInput.files.length === 0) return showToast("Please select an image.", true);
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Processing...`;
+            lucide.createIcons();
+
+            try {
+                const file = photoInput.files[0];
+                const compressedBlob = await compressImage(file, 1200, 1200, 0.7);
+                
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Uploading...`;
+                lucide.createIcons();
+                
+                const safeFileName = file.name.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
+                const storageRef = ref(storage, `match_photos/${activeAppId}/${matchId}_PATCH_${Date.now()}_${safeFileName}`);
+                await uploadBytes(storageRef, compressedBlob);
+                const photoUrl = await getDownloadURL(storageRef);
+
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Patching DB...`;
+                lucide.createIcons();
+                
+                await updateDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'matches', matchId), {
+                    photoUrl: photoUrl
+                });
+
+                showToast("Photo patched successfully!");
+                closePatcherModal();
+
+            } catch (error) {
+                console.error("Patch error:", error);
+                showToast("Failed to patch photo.", true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="upload-cloud" class="w-5 h-5"></i> Patch Photo`;
+                lucide.createIcons();
+            }
+        };
 
         const compressImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
             return new Promise((resolve, reject) => {
