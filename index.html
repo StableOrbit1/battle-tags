@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.7 (Photo Patcher)</title>
+    <title>Battle Tags v6.8 (Chicken Dinner)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -197,6 +196,9 @@
                     </button>
                     <button onclick="switchView('standings')" id="nav-standings" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap">
                         Standings
+                    </button>
+                    <button onclick="switchView('chicken')" id="nav-chicken" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
+                        <i data-lucide="drumstick" class="w-3 h-3 hidden md:inline"></i> Odds
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         Damage
@@ -455,13 +457,42 @@
                 <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
                     <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
                         <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
-                        <div onclick="sortLeaderboard('winPct')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Win Percentage"><span class="text-sm md:text-base">📊</span><span class="hidden md:inline">Win%</span> <span id="sort-winPct" class="text-emerald-500"></span></div>
+                        <div onclick="sortLeaderboard('mpp')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Maximum Points Possible"><span class="text-sm md:text-base">🎯</span><span class="hidden md:inline">MPP</span> <span id="sort-mpp" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
                         <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('tied')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tied"><span class="text-sm md:text-base text-slate-500">T</span><span class="hidden md:inline">ie</span> <span id="sort-tied" class="text-emerald-500"></span></div>
                     </div>
                     <div id="leaderboard-list" class="divide-y divide-slate-50">
                         <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-chicken" class="hidden space-y-8 text-left">
+                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner">
+                            <i data-lucide="drumstick" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-800 tracking-tight">Chicken Dinner</h2>
+                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Live Vegas Odds</p>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl">
+                        Our algorithm predicts your chances of taking the crown based on historical win rates, the difficulty of your remaining unplayed opponents, your maximum points possible (MPP), and overall activity.
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
+                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest">
+                        <div class="col-span-5 md:col-span-4">Contender</div>
+                        <div class="col-span-3 text-center" title="Projected Final Wins">Proj. W</div>
+                        <div class="col-span-2 text-center text-amber-600">To Win</div>
+                        <div class="col-span-2 md:col-span-3 text-center">Top 3</div>
+                    </div>
+                    <div id="chicken-list" class="divide-y divide-slate-50">
+                        <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Crunching numbers...</div>
                     </div>
                 </div>
             </section>
@@ -846,7 +877,7 @@
 
                 if (myProfile) {
                     currentUser = myProfile.name; currentGroup = myProfile.groupId || 'BattleTagGroup1'; viewingDamageFor = currentUser;
-                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderDamageReport(); renderPulse();
+                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderChickenDinner(); renderDamageReport(); renderPulse();
                     showScreen('app');
                 } else {
                     renderIdentityClaimList(rawPlayers.filter(p => !p.phone || p.phone === ""));
@@ -858,7 +889,7 @@
             onSnapshot(qM, (snapshot) => {
                 rawMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (currentUser && currentGroup) {
-                    renderLeaderboard(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
+                    renderLeaderboard(); renderChickenDinner(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
                 }
             }, (error) => console.error(error));
         }
@@ -891,7 +922,7 @@
         }
 
         window.switchView = function(viewName) {
-            const sections = ['battle', 'submit', 'pulse', 'standings', 'damage', 'gallery', 'scheduled', 'rules'];
+            const sections = ['battle', 'submit', 'pulse', 'standings', 'chicken', 'damage', 'gallery', 'scheduled', 'rules'];
             sections.forEach(sec => { document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec); });
             sections.forEach(sec => {
                 const navEl = document.getElementById(`nav-${sec}`);
@@ -1089,7 +1120,7 @@
 
             let totalLeagueMatches = 0;
             const statsMap = {}; 
-            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, winPct: 0 }; });
+            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 27 }; });
             
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
@@ -1105,9 +1136,11 @@
                 }
             });
 
-            // Calculate Win Percentage safely
+            // Calculate Maximum Points Possible (MPP)
             Object.values(statsMap).forEach(p => {
-                p.winPct = p.played > 0 ? Math.round((p.won / p.played) * 100) : 0;
+                // Formula: 27 minus your wins and losses. 
+                // Mathematically: Current Wins + Remaining Decisive Matches
+                p.mpp = p.won + (27 - p.won - p.lost); 
             });
 
             const totalEl = document.getElementById('total-league-matches');
@@ -1126,14 +1159,129 @@
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left w-full">${p.name}</button>
                     </div>
-                    <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.winPct}%</div>
+                    <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.tied}</div>
                 </div>
             `).join('');
 
-            ['name', 'winPct', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
+            ['name', 'mpp', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
+        }
+
+        function renderChickenDinner() {
+            const listEl = document.getElementById('chicken-list');
+            const groupPlayers = getGroupPlayers();
+            const groupMatches = getGroupMatches();
+            
+            if (groupPlayers.length === 0) return;
+
+            const TOTAL_SEASON_MATCHES = 26; // The absolute maximum matches they can log decisively
+
+            let stats = {};
+            let maxPlayed = 0;
+            let highestWins = 0;
+
+            groupPlayers.forEach(p => {
+                stats[p.name] = { name: p.name, won: 0, lost: 0, tied: 0, played: 0, unplayed: [] };
+            });
+
+            groupMatches.forEach(m => {
+                if (m.status === 'completed' && m.winner && m.winner !== 'Tie') {
+                    if (stats[m.winner]) { stats[m.winner].won++; stats[m.winner].played++; }
+                    if (stats[m.loser]) { stats[m.loser].lost++; stats[m.loser].played++; }
+                }
+            });
+
+            Object.values(stats).forEach(s => {
+                s.wr = (s.won + 1) / (s.played + 2); // Bayesian smoothing to prevent 100% or 0% absolutes
+                s.mpp = s.won + (TOTAL_SEASON_MATCHES - s.won - s.lost);
+                if (s.played > maxPlayed) maxPlayed = s.played;
+                if (s.won > highestWins) highestWins = s.won;
+            });
+
+            // Find unplayed opponents
+            Object.values(stats).forEach(s => {
+                groupPlayers.forEach(opp => {
+                    if (s.name !== opp.name) {
+                        const playedOpp = groupMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie' && [m.player1, m.player2].includes(s.name) && [m.player1, m.player2].includes(opp.name));
+                        if (!playedOpp) s.unplayed.push(opp.name);
+                    }
+                });
+            });
+
+            const defaultWR = 0.5;
+            let totalPower = 0;
+
+            // Algorithm to calculate "Power Score"
+            Object.values(stats).forEach(s => {
+                let expectedRemainingWins = 0;
+                
+                s.unplayed.forEach(oppName => {
+                    let oppWR = stats[oppName] ? stats[oppName].wr : defaultWR;
+                    // Fractional probability of beating this specific opponent based on historical smoothing
+                    expectedRemainingWins += s.wr / (s.wr + oppWR);
+                });
+
+                // Penalize inactivity. If someone hasn't played, they get a tiny fraction of their ERW.
+                let activityPenalty = maxPlayed === 0 ? 1 : Math.log(s.played + 2) / Math.log(maxPlayed + 2);
+                if (s.played === 0) activityPenalty *= 0.1;
+
+                let projectedWins = s.won + (expectedRemainingWins * activityPenalty);
+                
+                // Hardcap at MPP
+                projectedWins = Math.min(projectedWins, s.mpp);
+
+                // Eliminate mathematically dead players
+                if (s.mpp < highestWins) projectedWins = 0;
+
+                s.projectedWins = projectedWins;
+                
+                // Cube it to create betting separation between the top dogs and the pack
+                s.powerScore = Math.pow(Math.max(0, projectedWins), 3);
+                totalPower += s.powerScore;
+            });
+
+            const formatOdds = (prob) => {
+                if (prob <= 0.005) return "N/A";
+                if (prob >= 0.99) return "LOCK";
+                let decimal = 1 / prob;
+                if (decimal >= 2) {
+                    let val = Math.round((decimal - 1) * 100);
+                    return "+" + (Math.round(val / 10) * 10);
+                } else {
+                    let val = Math.round(100 / (decimal - 1));
+                    return "-" + (Math.round(val / 10) * 10);
+                }
+            };
+
+            const results = Object.values(stats).map(s => {
+                let winProb = totalPower > 0 ? s.powerScore / totalPower : 0;
+                let placeProb = Math.min(0.99, winProb * 2.8); // Heuristic proxy for Top 3
+                if (s.mpp < highestWins) { winProb = 0; placeProb = 0; }
+                
+                return {
+                    name: s.name,
+                    winProb: winProb,
+                    winOdds: formatOdds(winProb),
+                    placeOdds: formatOdds(placeProb),
+                    projected: Math.round(s.projectedWins)
+                };
+            }).sort((a, b) => b.winProb - a.winProb || a.name.localeCompare(b.name));
+
+            listEl.innerHTML = results.map((p, i) => `
+                <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
+                    <div class="col-span-5 md:col-span-4 flex items-center gap-3 overflow-hidden">
+                        <span class="w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}">${i === 0 ? '<i data-lucide="flame" class="w-3 h-3"></i>' : i + 1}</span>
+                        <span class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-sm">${p.name}</span>
+                    </div>
+                    <div class="col-span-3 text-center font-black text-slate-600 text-sm">${p.projected}</div>
+                    <div class="col-span-2 text-center font-black text-emerald-600 text-xs md:text-sm">${p.winOdds}</div>
+                    <div class="col-span-2 md:col-span-3 text-center font-bold text-slate-500 text-xs md:text-sm">${p.placeOdds}</div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
         }
 
         function renderDamageReport() {
