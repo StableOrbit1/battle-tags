@@ -484,7 +484,7 @@
                         </div>
                     </div>
                     <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Place your bets for Win (1st), Place (2nd), and Show (3rd). Odds dynamically shift based on historical performance and future schedule predicted difficulty.
+                        Place your bets for your Podium Trio. Choose any 3 golfers you think will finish in the Top 3 on the final Leaderboard.
                     </p>
                     <div class="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
                         <i data-lucide="clock" class="w-3 h-3"></i> <span id="bet-lock-text">Calculating...</span>
@@ -507,6 +507,23 @@
                         </button>
                     </div>
                 </form>
+
+                <!-- THE LEDGER RECAP SECTION -->
+                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200 mt-8">
+                    <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-inner">
+                            <i data-lucide="scroll-text" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Ledger</h2>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Bet Tracking</p>
+                        </div>
+                    </div>
+                    <div id="bet-recap-list" class="space-y-3">
+                        <div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Loading Ledger...</div>
+                    </div>
+                </div>
+
             </section>
 
             <section id="view-damage" class="hidden space-y-8 text-left">
@@ -652,7 +669,7 @@
         const pulseWeeks = [];
 
         // BETTING DEADLINE CONFIGURATION
-        const BET_DEADLINE = new Date('2026-08-07T00:01:00-04:00'); // Friday, August 7, 2026 at 12:01 AM EST
+        const BET_DEADLINE = new Date('2026-08-07T00:01:00-04:00'); // Friday Aug 7, 2026 at 12:01 AM EST
 
         // --- COUNTDOWN LOGIC ---
         function updateCountdown() {
@@ -1377,6 +1394,32 @@
                 }
             }
 
+            // ----------------------------------------------------
+            // RENDER THE LEDGER RECAP
+            // ----------------------------------------------------
+            const recapEl = document.getElementById('bet-recap-list');
+            
+            if (!rawBets || rawBets.length === 0) {
+                recapEl.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">No bets placed yet.</div>';
+            } else {
+                recapEl.innerHTML = rawBets.map(bet => {
+                    const picks = bet.picks || [];
+                    
+                    const picksHtml = picks.length > 0 
+                        ? picks.map(p => `<span class="bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-sm">${p}</span>`).join('')
+                        : `<span class="text-slate-400 text-xs italic">No valid picks</span>`;
+                        
+                    return `
+                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-5 bg-white border-2 border-slate-100 hover:border-amber-200 rounded-2xl transition-all shadow-sm gap-3">
+                            <span class="font-black text-slate-700 uppercase tracking-tight flex items-center gap-2 text-xs md:text-sm">
+                                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${bet.id}
+                            </span>
+                            <div class="flex flex-wrap gap-2">${picksHtml}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
             lucide.createIcons();
         }
 
@@ -1675,4 +1718,3 @@
 </body>
 
 </html>
-
