@@ -510,13 +510,20 @@
 
                 <!-- THE LEDGER RECAP SECTION -->
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200 mt-8">
-                    <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-inner">
-                            <i data-lucide="scroll-text" class="w-5 h-5"></i>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-inner">
+                                <i data-lucide="scroll-text" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Action</h2>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Anonymous Pick Distribution</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Ledger</h2>
-                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Bet Tracking</p>
+                        
+                        <!-- Prize Pool Display (Hidden by default, shown when bets exist) -->
+                        <div id="prize-pool-display" class="hidden flex gap-2 w-full md:w-auto">
+                            <!-- Injected via JS -->
                         </div>
                     </div>
                     <div id="bet-recap-list" class="space-y-3">
@@ -1395,26 +1402,62 @@
             }
 
             // ----------------------------------------------------
-            // RENDER THE LEDGER RECAP
+            // RENDER THE LEDGER RECAP (ANONYMIZED & AGGREGATED)
             // ----------------------------------------------------
             const recapEl = document.getElementById('bet-recap-list');
+            const prizePoolEl = document.getElementById('prize-pool-display');
             
             if (!rawBets || rawBets.length === 0) {
+                prizePoolEl.classList.add('hidden');
                 recapEl.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">No bets placed yet.</div>';
             } else {
-                recapEl.innerHTML = rawBets.map(bet => {
-                    const picks = bet.picks || [];
-                    
-                    const picksHtml = picks.length > 0 
-                        ? picks.map(p => `<span class="bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-sm">${p}</span>`).join('')
-                        : `<span class="text-slate-400 text-xs italic">No valid picks</span>`;
-                        
+                // Calculate Prize Pool
+                const entryFee = 25;
+                const totalPool = rawBets.length * entryFee;
+                const winnerPrize = totalPool * 0.70;
+                const runnerUpPrize = totalPool * 0.30;
+
+                // Render Prize Pool
+                prizePoolEl.innerHTML = `
+                    <div class="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
+                        <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Total Pot</p>
+                        <p class="text-xl font-black text-emerald-700 leading-none mt-0.5">$${totalPool}</p>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
+                        <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest">1st (70%)</p>
+                        <p class="text-xl font-black text-amber-700 leading-none mt-0.5">$${winnerPrize.toFixed(2).replace(/\.00$/, '')}</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">2nd (30%)</p>
+                        <p class="text-xl font-black text-slate-700 leading-none mt-0.5">$${runnerUpPrize.toFixed(2).replace(/\.00$/, '')}</p>
+                    </div>
+                `;
+                prizePoolEl.classList.remove('hidden');
+
+                // Aggregate picks for Anonymity
+                const pickCounts = {};
+                rawBets.forEach(bet => {
+                    if (bet.picks && Array.isArray(bet.picks)) {
+                        bet.picks.forEach(pick => {
+                            pickCounts[pick] = (pickCounts[pick] || 0) + 1;
+                        });
+                    }
+                });
+
+                const sortedPicks = Object.entries(pickCounts)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+                recapEl.innerHTML = sortedPicks.map((pick, index) => {
                     return `
-                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-5 bg-white border-2 border-slate-100 hover:border-amber-200 rounded-2xl transition-all shadow-sm gap-3">
-                            <span class="font-black text-slate-700 uppercase tracking-tight flex items-center gap-2 text-xs md:text-sm">
-                                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${bet.id}
+                        <div class="flex items-center justify-between p-4 bg-white border-2 border-slate-100 hover:border-amber-200 rounded-2xl transition-all shadow-sm">
+                            <span class="font-black text-slate-700 uppercase tracking-tight text-sm flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-md bg-slate-100 text-slate-400 flex items-center justify-center text-[10px]">${index + 1}</span>
+                                ${pick.name}
                             </span>
-                            <div class="flex flex-wrap gap-2">${picksHtml}</div>
+                            <span class="bg-amber-50 text-amber-600 border border-amber-100 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm">
+                                ${pick.count} ${pick.count === 1 ? 'Bet' : 'Bets'}
+                            </span>
                         </div>
                     `;
                 }).join('');
@@ -1718,3 +1761,4 @@
 </body>
 
 </html>
+
