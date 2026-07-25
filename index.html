@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.8 (Chicken Dinner Bets)</title>
+    <title>Battle Tags v6.9 (Payouts Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .hidden { display: none !important; }
-        /* Fix: Don't hide checkboxes, radio buttons or file inputs */
-        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select { -webkit-appearance: none; }
-        input[type="checkbox"], input[type="radio"] { -webkit-appearance: auto; appearance: auto; }
-        
+        input, select { -webkit-appearance: none; }
         .active-scale:active { transform: scale(0.96); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -471,7 +468,6 @@
                 </div>
             </section>
 
-            <!-- CHICKEN DINNER SECTION - UPDATED FOR PODIUM TRIO -->
             <section id="view-chicken" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex items-center gap-4 mb-4">
@@ -484,18 +480,25 @@
                         </div>
                     </div>
                     <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Place your bets for your Podium Trio. Choose any 3 golfers you think will finish in the Top 3 on the final Leaderboard.
+                        Place your bets for Win (1st), Place (2nd), and Show (3rd). Odds dynamically shift based on historical performance, schedule difficulty, and MPP.
                     </p>
-                    <div class="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
-                        <i data-lucide="clock" class="w-3 h-3"></i> <span id="bet-lock-text">Calculating...</span>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                            <i data-lucide="coins" class="w-3 h-3"></i> Payout: 60% - 30% - 10%
+                        </div>
+                        <div class="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
+                            <i data-lucide="lock-keyhole" class="w-3 h-3"></i> Bets lock Sept 1, 2026
+                        </div>
                     </div>
                 </div>
                 
                 <form id="bet-form" onsubmit="submitBets(event)" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left relative">
-                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest">
-                        <div class="col-span-5">Contender</div>
-                        <div class="col-span-3 text-center text-amber-600">Odds</div>
-                        <div class="col-span-4 text-center">Podium Selection (Pick 3)</div>
+                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest items-center">
+                        <div class="col-span-4">Contender</div>
+                        <div class="col-span-2 text-center text-amber-600">Odds</div>
+                        <div class="col-span-2 text-center leading-tight" title="1st Place (60%)">Win<span class="block text-[8px] text-emerald-500 mt-0.5">60%</span></div>
+                        <div class="col-span-2 text-center leading-tight" title="2nd Place (30%)">Place<span class="block text-[8px] text-emerald-500 mt-0.5">30%</span></div>
+                        <div class="col-span-2 text-center leading-tight" title="3rd Place (10%)">Show<span class="block text-[8px] text-emerald-500 mt-0.5">10%</span></div>
                     </div>
                     <div id="chicken-list" class="divide-y divide-slate-50 bg-white">
                         <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Crunching numbers...</div>
@@ -507,30 +510,6 @@
                         </button>
                     </div>
                 </form>
-
-                <!-- THE LEDGER RECAP SECTION -->
-                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200 mt-8">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-inner">
-                                <i data-lucide="scroll-text" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-black text-slate-800 tracking-tight">The Action</h2>
-                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Anonymous Pick Distribution</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Prize Pool Display (Hidden by default, shown when bets exist) -->
-                        <div id="prize-pool-display" class="hidden flex gap-2 w-full md:w-auto">
-                            <!-- Injected via JS -->
-                        </div>
-                    </div>
-                    <div id="bet-recap-list" class="space-y-3">
-                        <div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Loading Ledger...</div>
-                    </div>
-                </div>
-
             </section>
 
             <section id="view-damage" class="hidden space-y-8 text-left">
@@ -674,31 +653,6 @@
 
         let pulseSelectedWeekIndex = 0;
         const pulseWeeks = [];
-
-        // BETTING DEADLINE CONFIGURATION
-        const BET_DEADLINE = new Date('2026-08-07T00:01:00-04:00'); // Friday Aug 7, 2026 at 12:01 AM EST
-
-        // --- COUNTDOWN LOGIC ---
-        function updateCountdown() {
-            const textEl = document.getElementById('bet-lock-text');
-            if (!textEl) return;
-            const now = new Date();
-            const diff = BET_DEADLINE - now;
-
-            if (diff <= 0) {
-                textEl.innerText = "Bets are Locked";
-                return;
-            }
-
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            textEl.innerText = `Bets lock in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
-        }
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
 
         // --- PULSE WEEK GENERATION ---
         function generatePulseWeeks() {
@@ -1150,28 +1104,28 @@
             } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="handshake" class="w-5 h-5"></i> Log Tie`; lucide.createIcons(); }
         }
 
-        // --- SUBMIT BETS - REDESIGNED FOR PODIUM TRIO ---
         window.submitBets = async function(e) {
             e.preventDefault();
-            if (new Date() > BET_DEADLINE) return showToast("Bets are locked!", true);
+            const deadline = new Date('2026-09-01T23:59:59-04:00');
+            if (new Date() > deadline) return showToast("Bets are locked!", true);
 
-            // Fetch checked checkboxes
-            const checkedBoxes = Array.from(document.querySelectorAll('input[name="podium_pick"]:checked'));
-            const picks = checkedBoxes.map(cb => cb.value);
+            const win = document.querySelector('input[name="bet_win"]:checked')?.value;
+            const place = document.querySelector('input[name="bet_place"]:checked')?.value;
+            const show = document.querySelector('input[name="bet_show"]:checked')?.value;
 
-            if (picks.length !== 3) {
-                return showToast("You must select exactly 3 golfers for your Podium Trio!", true);
-            }
+            if (!win || !place || !show) return showToast("Select a Win, Place, and Show!", true);
+            
+            const picks = new Set([win, place, show]);
+            if (picks.size !== 3) return showToast("You must select 3 different players!", true);
 
             const btn = document.getElementById('bet-submit-btn');
             btn.disabled = true; 
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Saving...`; 
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Locking...`; 
             lucide.createIcons();
 
             try {
                 await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'bets', currentUser), {
-                    picks: picks,
-                    timestamp: new Date().toISOString()
+                    win, place, show, timestamp: new Date().toISOString()
                 });
                 showToast("Bets locked in successfully!");
             } catch (err) {
@@ -1180,15 +1134,6 @@
                 btn.disabled = false; 
                 btn.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> Update Bets`; 
                 lucide.createIcons();
-            }
-        };
-
-        // Checkbox Limiter JS Helper
-        window.handleCheckboxLimit = function(checkbox) {
-            const checkedCount = document.querySelectorAll('input[name="podium_pick"]:checked').length;
-            if (checkedCount > 3) {
-                checkbox.checked = false;
-                showToast("You can only select exactly 3 golfers!", true);
             }
         };
 
@@ -1250,6 +1195,8 @@
 
             // Calculate Maximum Points Possible (MPP)
             Object.values(statsMap).forEach(p => {
+                // Formula: 27 minus your wins and losses. 
+                // Mathematically: Current Wins + Remaining Decisive Matches
                 p.mpp = p.won + (27 - p.won - p.lost); 
             });
 
@@ -1279,7 +1226,6 @@
             ['name', 'mpp', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
         }
 
-        // --- RENDER CHICKEN DINNER - UPDATED FOR PODIUM TRIO SELECTION ---
         function renderChickenDinner() {
             const listEl = document.getElementById('chicken-list');
             const groupPlayers = getGroupPlayers();
@@ -1287,7 +1233,7 @@
             
             if (groupPlayers.length === 0) return;
 
-            const TOTAL_SEASON_MATCHES = 26; 
+            const TOTAL_SEASON_MATCHES = 26; // The absolute maximum matches they can log decisively
 
             let stats = {};
             let maxPlayed = 0;
@@ -1305,12 +1251,13 @@
             });
 
             Object.values(stats).forEach(s => {
-                s.wr = (s.won + 1) / (s.played + 2); 
+                s.wr = (s.won + 1) / (s.played + 2); // Bayesian smoothing to prevent 100% or 0% absolutes
                 s.mpp = s.won + (TOTAL_SEASON_MATCHES - s.won - s.lost);
                 if (s.played > maxPlayed) maxPlayed = s.played;
                 if (s.won > highestWins) highestWins = s.won;
             });
 
+            // Find unplayed opponents
             Object.values(stats).forEach(s => {
                 groupPlayers.forEach(opp => {
                     if (s.name !== opp.name) {
@@ -1323,22 +1270,31 @@
             const defaultWR = 0.5;
             let totalPower = 0;
 
+            // Algorithm to calculate "Power Score"
             Object.values(stats).forEach(s => {
                 let expectedRemainingWins = 0;
+                
                 s.unplayed.forEach(oppName => {
                     let oppWR = stats[oppName] ? stats[oppName].wr : defaultWR;
+                    // Fractional probability of beating this specific opponent based on historical smoothing
                     expectedRemainingWins += s.wr / (s.wr + oppWR);
                 });
 
+                // Penalize inactivity. If someone hasn't played, they get a tiny fraction of their ERW.
                 let activityPenalty = maxPlayed === 0 ? 1 : Math.log(s.played + 2) / Math.log(maxPlayed + 2);
                 if (s.played === 0) activityPenalty *= 0.1;
 
                 let projectedWins = s.won + (expectedRemainingWins * activityPenalty);
+                
+                // Hardcap at MPP
                 projectedWins = Math.min(projectedWins, s.mpp);
 
+                // Eliminate mathematically dead players
                 if (s.mpp < highestWins) projectedWins = 0;
 
                 s.projectedWins = projectedWins;
+                
+                // Cube it to create betting separation between the top dogs and the pack
                 s.powerScore = Math.pow(Math.max(0, projectedWins), 3);
                 totalPower += s.powerScore;
             });
@@ -1368,23 +1324,21 @@
             }).sort((a, b) => b.winProb - a.winProb || a.name.localeCompare(b.name));
 
             const myBet = rawBets.find(b => b.id === currentUser);
-            const isLocked = new Date() > BET_DEADLINE;
+            const deadline = new Date('2026-09-01T23:59:59-04:00');
+            const isLocked = new Date() > deadline;
 
-            // Render list with Checkboxes instead of Radio buttons
-            listEl.innerHTML = results.map((p, i) => {
-                const isChecked = myBet?.picks && myBet.picks.includes(p.name);
-                return `
+            listEl.innerHTML = results.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-3 md:p-4 hover:bg-slate-50 transition-colors border-b border-slate-50">
-                    <div class="col-span-5 flex items-center gap-2 overflow-hidden">
+                    <div class="col-span-4 flex items-center gap-2 overflow-hidden">
                         <span class="w-5 h-5 md:w-6 md:h-6 rounded-md flex items-center justify-center font-black text-[9px] md:text-[10px] shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}">${i === 0 ? '<i data-lucide="flame" class="w-3 h-3"></i>' : i + 1}</span>
                         <span class="font-bold text-slate-800 uppercase tracking-tight whitespace-normal break-words leading-tight text-[10px] md:text-xs">${p.name}</span>
                     </div>
-                    <div class="col-span-3 text-center font-black text-amber-600 text-xs md:text-sm">${p.winOdds}</div>
-                    <div class="col-span-4 flex justify-center">
-                        <input type="checkbox" name="podium_pick" value="${p.name}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="handleCheckboxLimit(this)" class="w-5 h-5 cursor-pointer accent-amber-500 rounded border-slate-300">
-                    </div>
+                    <div class="col-span-2 text-center font-black text-amber-600 text-xs md:text-sm">${p.winOdds}</div>
+                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_win" value="${p.name}" ${myBet?.win === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
+                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_place" value="${p.name}" ${myBet?.place === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
+                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_show" value="${p.name}" ${myBet?.show === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
                 </div>
-            `}).join('');
+            `).join('');
 
             const actionContainer = document.getElementById('bet-action-container');
             const betForm = document.getElementById('bet-form');
@@ -1401,68 +1355,6 @@
                 }
             }
 
-            // ----------------------------------------------------
-            // RENDER THE LEDGER RECAP (ANONYMIZED & AGGREGATED)
-            // ----------------------------------------------------
-            const recapEl = document.getElementById('bet-recap-list');
-            const prizePoolEl = document.getElementById('prize-pool-display');
-            
-            if (!rawBets || rawBets.length === 0) {
-                prizePoolEl.classList.add('hidden');
-                recapEl.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">No bets placed yet.</div>';
-            } else {
-                // Calculate Prize Pool
-                const entryFee = 25;
-                const totalPool = rawBets.length * entryFee;
-                const winnerPrize = totalPool * 0.70;
-                const runnerUpPrize = totalPool * 0.30;
-
-                // Render Prize Pool
-                prizePoolEl.innerHTML = `
-                    <div class="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
-                        <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Total Pot</p>
-                        <p class="text-xl font-black text-emerald-700 leading-none mt-0.5">$${totalPool}</p>
-                    </div>
-                    <div class="bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
-                        <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest">1st (70%)</p>
-                        <p class="text-xl font-black text-amber-700 leading-none mt-0.5">$${winnerPrize.toFixed(2).replace(/\.00$/, '')}</p>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center flex-1 md:flex-none">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">2nd (30%)</p>
-                        <p class="text-xl font-black text-slate-700 leading-none mt-0.5">$${runnerUpPrize.toFixed(2).replace(/\.00$/, '')}</p>
-                    </div>
-                `;
-                prizePoolEl.classList.remove('hidden');
-
-                // Aggregate picks for Anonymity
-                const pickCounts = {};
-                rawBets.forEach(bet => {
-                    if (bet.picks && Array.isArray(bet.picks)) {
-                        bet.picks.forEach(pick => {
-                            pickCounts[pick] = (pickCounts[pick] || 0) + 1;
-                        });
-                    }
-                });
-
-                const sortedPicks = Object.entries(pickCounts)
-                    .map(([name, count]) => ({ name, count }))
-                    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-
-                recapEl.innerHTML = sortedPicks.map((pick, index) => {
-                    return `
-                        <div class="flex items-center justify-between p-4 bg-white border-2 border-slate-100 hover:border-amber-200 rounded-2xl transition-all shadow-sm">
-                            <span class="font-black text-slate-700 uppercase tracking-tight text-sm flex items-center gap-3">
-                                <span class="w-6 h-6 rounded-md bg-slate-100 text-slate-400 flex items-center justify-center text-[10px]">${index + 1}</span>
-                                ${pick.name}
-                            </span>
-                            <span class="bg-amber-50 text-amber-600 border border-amber-100 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm">
-                                ${pick.count} ${pick.count === 1 ? 'Bet' : 'Bets'}
-                            </span>
-                        </div>
-                    `;
-                }).join('');
-            }
-
             lucide.createIcons();
         }
 
@@ -1471,6 +1363,7 @@
             const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
+            // Helper to check if a match involves both a specific user and an opponent
             const matchesBetween = (m, u, o) => {
                 const participants = [m.player1, m.player2, m.winner, m.loser].filter(Boolean);
                 return participants.includes(u) && participants.includes(o);
@@ -1478,6 +1371,7 @@
 
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
             
+            // Aggregation logic - Strictly deriving PlayedCount from the win/loss buckets
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
                 if (isCompleted && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
@@ -1494,6 +1388,7 @@
                 }
             });
 
+            // Map all opponent cards into data objects first for sorting
             const opponentData = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
                 const matchesWithOpp = groupMatches.filter(m => matchesBetween(m, viewingDamageFor, opp.name));
                 
@@ -1551,6 +1446,7 @@
                 return { name: opp.name, status: status, html: cardHtml };
             });
 
+            // Filtering and Sorting logic
             const playedOrder = { 'won': 1, 'lost': 2, 'tied': 3 };
             const playedCards = opponentData
                 .filter(d => ['won', 'lost', 'tied'].includes(d.status))
@@ -1759,6 +1655,4 @@
         window.showScreen = showScreen;
     </script>
 </body>
-
 </html>
-
