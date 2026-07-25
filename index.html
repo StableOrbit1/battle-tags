@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tags v6.9 (Payouts Update)</title>
+    <title>Battle Tags v6.9.1 (Odds UI Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .hidden { display: none !important; }
-        input, select { -webkit-appearance: none; }
+        input:not([type="radio"]), select { -webkit-appearance: none; }
+        input[type="radio"] { 
+            -webkit-appearance: radio; 
+            appearance: radio; 
+            accent-color: #f59e0b; 
+            cursor: pointer;
+        }
         .active-scale:active { transform: scale(0.96); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
