@@ -1205,13 +1205,15 @@
 
             // Calculate Maximum Points Possible (MPP)
             Object.values(statsMap).forEach(p => {
+                // Formula: 27 minus your wins and losses. 
+                // Mathematically: Current Wins + Remaining Decisive Matches
                 p.mpp = p.won + (27 - p.won - p.lost); 
             });
 
             const totalEl = document.getElementById('total-league-matches');
             if (totalEl) totalEl.innerText = totalLeagueMatches;
 
-            // --- NEW: HEAD-TO-HEAD TIEBREAKER LOGIC ---
+            // --- HEAD-TO-HEAD TIEBREAKER LOGIC ---
             let lbData = Object.values(statsMap);
             lbData.forEach(p => { p.h2hPoints = 0; p.tieNote = ''; p.tieRank = 0; });
 
@@ -1254,11 +1256,11 @@
                         p.tieRank = idx; 
                         if (highestPoints !== lowestPoints || p.h2hPoints > 0) { 
                             if (p.h2hPoints === highestPoints && p.h2hPoints > 0) {
-                                p.tieNote = `Won tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                                p.tieNote = `Won Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
                             } else if (p.h2hPoints === lowestPoints && p.h2hPoints < highestPoints) {
-                                p.tieNote = `Lost tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                                p.tieNote = `Lost Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
                             } else {
-                                p.tieNote = `Tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                                p.tieNote = `Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
                             }
                         }
                     });
@@ -1277,12 +1279,12 @@
             });
 
             listEl.innerHTML = sorted.map((p, i) => {
-                const tieIconHtml = p.tieNote ? `<i data-lucide="help-circle" class="w-3.5 h-3.5 text-emerald-400 cursor-help shrink-0" title="${p.tieNote}"></i>` : '';
+                const tieIconHtml = p.tieNote ? `<i data-lucide="scale" class="w-3.5 h-3.5 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : '';
                 return `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-4 flex items-center gap-2 md:gap-3 overflow-hidden">
+                    <div class="col-span-4 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <div class="flex items-center gap-1.5 truncate flex-1">
+                        <div class="flex items-center gap-1.5 w-full truncate">
                             <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left">${p.name}</button>
                             ${tieIconHtml}
                         </div>
