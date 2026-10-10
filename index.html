@@ -1,3 +1,10 @@
+Here is the complete, finalized code for Battle Tags.
+I have fully removed the betting system, replaced it with the Forecast Tab, and integrated your requested mathematical formula: Current Wins + (Remaining Matches * Historical Win Rate) = Projected Wins. The app uses that projection to dynamically calculate each player's statistical Win Probability (%) and Vegas Odds (+/-).
+I have also updated the Leaderboard:
+ * Removed the "Tied" column.
+ * Word-wrapped the names so they never get cut off on mobile.
+ * Implemented the Head-to-Head Tiebreaker: If players tie, the app checks who beat who, sorts them accordingly, and adds a ⚖️ (scale) icon. If you hover over or tap the scale, it tells you exactly how the tiebreaker was resolved (e.g., "Won H2H tiebreaker vs John (2-1)").
+Copy this entire block and overwrite your index.html file!
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -203,8 +210,8 @@
                     <button onclick="switchView('standings')" id="nav-standings" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap">
                         Standings
                     </button>
-                    <button onclick="switchView('chicken')" id="nav-chicken" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="drumstick" class="w-3 h-3 hidden md:inline"></i> Odds
+                    <button onclick="switchView('forecast')" id="nav-forecast" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
+                        <i data-lucide="trending-up" class="w-3 h-3 hidden md:inline"></i> Forecast
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         Damage
@@ -473,51 +480,32 @@
                 </div>
             </section>
 
-            <section id="view-chicken" class="hidden space-y-8 text-left">
+            <section id="view-forecast" class="hidden space-y-8 text-left">
                 <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner">
-                            <i data-lucide="drumstick" class="w-6 h-6"></i>
+                            <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h2 class="text-3xl font-black text-slate-800 tracking-tight">Chicken Dinner</h2>
-                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Live Vegas Odds & Action</p>
+                            <h2 class="text-3xl font-black text-slate-800 tracking-tight">The Forecast</h2>
+                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Live Vegas Odds & Projections</p>
                         </div>
                     </div>
                     <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Place your bets for Win (1st), Place (2nd), and Show (3rd). Odds dynamically shift based on historical performance, schedule difficulty, and MPP.
+                        Live statistical forecast of each contender's chances to take the crown based on current wins, total possible wins left (MPP), and historical win rate.
                     </p>
-                    <div class="flex flex-wrap gap-2">
-                        <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">
-                            <i data-lucide="coins" class="w-3 h-3"></i> Payout: 60% - 30% - 10%
-                        </div>
-                        <div class="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
-                            <i data-lucide="lock-keyhole" class="w-3 h-3"></i> Bets lock Aug 9, 2026
-                        </div>
-                    </div>
                 </div>
                 
-                <form id="bet-form" onsubmit="submitBets(event)" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left relative">
+                <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left relative">
                     <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest items-center">
-                        <div class="col-span-4">Contender</div>
-                        <div class="col-span-2 text-center text-amber-600">Odds</div>
-                        <div class="col-span-2 text-center leading-tight" title="1st Place (60%)">Win<span class="block text-[8px] text-emerald-500 mt-0.5">60%</span></div>
-                        <div class="col-span-2 text-center leading-tight" title="2nd Place (30%)">Place<span class="block text-[8px] text-emerald-500 mt-0.5">30%</span></div>
-                        <div class="col-span-2 text-center leading-tight" title="3rd Place (10%)">Show<span class="block text-[8px] text-emerald-500 mt-0.5">10%</span></div>
+                        <div class="col-span-5">Contender</div>
+                        <div class="col-span-3 text-center" title="Projected Final Wins">Proj. Wins</div>
+                        <div class="col-span-2 text-center text-emerald-600" title="Win Probability">Win %</div>
+                        <div class="col-span-2 text-center text-amber-600" title="Vegas Odds">Odds</div>
                     </div>
-                    <div id="chicken-list" class="divide-y divide-slate-50 bg-white">
+                    <div id="forecast-list" class="divide-y divide-slate-50 bg-white">
                         <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Crunching numbers...</div>
                     </div>
-                    
-                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-slate-100 flex justify-center md:justify-end hidden" id="bet-action-container">
-                        <button type="submit" id="bet-submit-btn" class="w-full md:w-auto bg-amber-500 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-amber-600 transition-all shadow-xl active-scale flex items-center justify-center gap-2">
-                            <i data-lucide="lock" class="w-5 h-5"></i> Lock In Bets
-                        </button>
-                    </div>
-                </form>
-
-                <div id="chicken-summary" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Action summary gets rendered here via JS -->
                 </div>
             </section>
 
@@ -657,7 +645,6 @@
         
         let rawPlayers = [];
         let rawMatches = [];
-        let rawBets = [];
         let currentSort = { column: 'won', direction: 'desc' };
 
         let pulseSelectedWeekIndex = 0;
@@ -902,7 +889,7 @@
 
                 if (myProfile) {
                     currentUser = myProfile.name; currentGroup = myProfile.groupId || 'BattleTagGroup1'; viewingDamageFor = currentUser;
-                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderChickenDinner(); renderDamageReport(); renderPulse();
+                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderForecast(); renderDamageReport(); renderPulse();
                     showScreen('app');
                 } else {
                     renderIdentityClaimList(rawPlayers.filter(p => !p.phone || p.phone === ""));
@@ -914,15 +901,7 @@
             onSnapshot(qM, (snapshot) => {
                 rawMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (currentUser && currentGroup) {
-                    renderLeaderboard(); renderChickenDinner(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
-                }
-            }, (error) => console.error(error));
-
-            const qB = collection(db, 'artifacts', activeAppId, 'public', 'data', 'bets');
-            onSnapshot(qB, (snapshot) => {
-                rawBets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (currentUser && currentGroup) {
-                    renderChickenDinner();
+                    renderLeaderboard(); renderForecast(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
                 }
             }, (error) => console.error(error));
         }
@@ -955,7 +934,7 @@
         }
 
         window.switchView = function(viewName) {
-            const sections = ['battle', 'submit', 'pulse', 'standings', 'chicken', 'damage', 'gallery', 'scheduled', 'rules'];
+            const sections = ['battle', 'submit', 'pulse', 'standings', 'forecast', 'damage', 'gallery', 'scheduled', 'rules'];
             sections.forEach(sec => { document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec); });
             sections.forEach(sec => {
                 const navEl = document.getElementById(`nav-${sec}`);
@@ -1113,39 +1092,6 @@
             } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="handshake" class="w-5 h-5"></i> Log Tie`; lucide.createIcons(); }
         }
 
-        window.submitBets = async function(e) {
-            e.preventDefault();
-            const deadline = new Date('2026-08-09T23:59:59-04:00');
-            if (new Date() > deadline) return showToast("Bets are locked!", true);
-
-            const win = document.querySelector('input[name="bet_win"]:checked')?.value;
-            const place = document.querySelector('input[name="bet_place"]:checked')?.value;
-            const show = document.querySelector('input[name="bet_show"]:checked')?.value;
-
-            if (!win || !place || !show) return showToast("Select a Win, Place, and Show!", true);
-            
-            const picks = new Set([win, place, show]);
-            if (picks.size !== 3) return showToast("You must select 3 different players!", true);
-
-            const btn = document.getElementById('bet-submit-btn');
-            btn.disabled = true; 
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Locking...`; 
-            lucide.createIcons();
-
-            try {
-                await setDoc(doc(db, 'artifacts', activeAppId, 'public', 'data', 'bets', currentUser), {
-                    win, place, show, timestamp: new Date().toISOString()
-                });
-                showToast("Bets locked in successfully!");
-            } catch (err) {
-                showToast("Failed to save bets.", true);
-            } finally {
-                btn.disabled = false; 
-                btn.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> Update Bets`; 
-                lucide.createIcons();
-            }
-        };
-
         // --- RENDER DOM UPDATES ---
         function updateDropdowns() {
             const oppSelect = document.getElementById('report-opponent'), scheduleSelect = document.getElementById('schedule-opponent'), damageSelect = document.getElementById('damage-view-select');
@@ -1210,109 +1156,74 @@
             const totalEl = document.getElementById('total-league-matches');
             if (totalEl) totalEl.innerText = totalLeagueMatches;
 
-            // --- HEAD-TO-HEAD TIEBREAKER LOGIC ---
-            let lbData = Object.values(statsMap);
-            lbData.forEach(p => { p.h2hPoints = 0; p.tieNote = ''; p.tieRank = 0; });
-
-            const tieGroups = {};
-            lbData.forEach(p => {
-                const val = p[currentSort.column];
-                if (!tieGroups[val]) tieGroups[val] = [];
-                tieGroups[val].push(p);
-            });
-
-            Object.values(tieGroups).forEach(group => {
-                if (group.length > 1 && currentSort.column !== 'name') { 
-                    group.forEach(p => p.h2hPoints = 0);
-                    
-                    for (let i = 0; i < group.length; i++) {
-                        for (let j = i + 1; j < group.length; j++) {
-                            const p1 = group[i];
-                            const p2 = group[j];
-                            let p1Wins = 0, p2Wins = 0;
-
-                            groupMatches.forEach(m => {
-                                if (m.status === 'completed' && m.winner !== 'Tie') {
-                                    if (m.winner === p1.name && m.loser === p2.name) p1Wins++;
-                                    if (m.winner === p2.name && m.loser === p1.name) p2Wins++;
-                                }
-                            });
-
-                            if (p1Wins > p2Wins) { p1.h2hPoints += 1; }
-                            else if (p2Wins > p1Wins) { p2.h2hPoints += 1; }
-                            else { p1.h2hPoints += 0.5; p2.h2hPoints += 0.5; }
-                        }
-                    }
-
-                    group.sort((a, b) => b.h2hPoints - a.h2hPoints || a.name.localeCompare(b.name));
-                    
-                    const highestPoints = group[0].h2hPoints;
-                    const lowestPoints = group[group.length - 1].h2hPoints;
-                    
-                    group.forEach((p, idx) => {
-                        p.tieRank = idx; 
-                        if (highestPoints !== lowestPoints || p.h2hPoints > 0) { 
-                            if (p.h2hPoints === highestPoints && p.h2hPoints > 0) {
-                                p.tieNote = `Won Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
-                            } else if (p.h2hPoints === lowestPoints && p.h2hPoints < highestPoints) {
-                                p.tieNote = `Lost Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
-                            } else {
-                                p.tieNote = `Tiebreaker (Head-to-Head: ${p.h2hPoints} pts)`;
-                            }
-                        }
-                    });
-                }
-            });
-
-            const sorted = lbData.sort((a, b) => {
+            // Sorting logic WITH Head-to-Head tiebreakers
+            const sorted = Object.values(statsMap).sort((a, b) => {
                 let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
+                
                 if (currentSort.column === 'name') result = currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
                 else result = currentSort.direction === 'asc' ? valA - valB : valB - valA;
-                
-                if (result === 0 && currentSort.column !== 'name') {
-                    result = currentSort.direction === 'asc' ? b.tieRank - a.tieRank : a.tieRank - b.tieRank;
+
+                // TIEBREAKER RESOLUTION
+                if (result === 0) {
+                    let aWins = 0, bWins = 0;
+                    groupMatches.forEach(m => {
+                        if (m.status === 'completed' && m.winner && m.winner !== 'Tie') {
+                            if (m.winner === a.name && m.loser === b.name) aWins++;
+                            if (m.winner === b.name && m.loser === a.name) bWins++;
+                        }
+                    });
+
+                    if (aWins !== bWins) {
+                        let noteA = aWins > bWins ? `Won H2H tiebreaker vs ${b.name} (${aWins}-${bWins})` : `Lost H2H tiebreaker vs ${b.name} (${aWins}-${bWins})`;
+                        let noteB = bWins > aWins ? `Won H2H tiebreaker vs ${a.name} (${bWins}-${aWins})` : `Lost H2H tiebreaker vs ${a.name} (${bWins}-${aWins})`;
+                        
+                        a.tieNote = noteA;
+                        b.tieNote = noteB;
+                        
+                        return currentSort.direction === 'desc' ? (bWins - aWins) : (aWins - bWins); 
+                    }
+                    return a.name.localeCompare(b.name);
                 }
-                return result === 0 ? a.name.localeCompare(b.name) : result;
+                
+                return result;
             });
 
-            listEl.innerHTML = sorted.map((p, i) => {
-                const tieIconHtml = p.tieNote ? `<i data-lucide="scale" class="w-3.5 h-3.5 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : '';
-                return `
+            listEl.innerHTML = sorted.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-6 flex items-start md:items-center gap-3">
+                    <div class="col-span-6 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <div class="flex items-center gap-1.5 w-full">
-                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left w-full whitespace-normal leading-tight">${p.name}</button>
-                            ${tieIconHtml}
+                        <div class="flex flex-col w-full">
+                            <div class="flex items-center gap-2">
+                                <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight">${p.name}</button>
+                                ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                 </div>
-            `}).join('');
+            `).join('');
 
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
-            
-            setTimeout(() => lucide.createIcons(), 10);
+            lucide.createIcons();
         }
 
-        function renderChickenDinner() {
-            const listEl = document.getElementById('chicken-list');
+        // --- NEW FORECAST LOGIC ---
+        function renderForecast() {
+            const listEl = document.getElementById('forecast-list');
             const groupPlayers = getGroupPlayers();
             const groupMatches = getGroupMatches();
-            const summaryEl = document.getElementById('chicken-summary');
             
             if (groupPlayers.length === 0) return;
 
-            const TOTAL_SEASON_MATCHES = 26; // The absolute maximum matches they can log decisively
-
+            const TOTAL_SEASON_MATCHES = 26;
             let stats = {};
             let maxPlayed = 0;
             let highestWins = 0;
 
             groupPlayers.forEach(p => {
-                stats[p.name] = { name: p.name, won: 0, lost: 0, tied: 0, played: 0, unplayed: [] };
+                stats[p.name] = { name: p.name, won: 0, lost: 0, tied: 0, played: 0 };
             });
 
             groupMatches.forEach(m => {
@@ -1323,51 +1234,31 @@
             });
 
             Object.values(stats).forEach(s => {
-                s.wr = (s.won + 1) / (s.played + 2); // Bayesian smoothing to prevent 100% or 0% absolutes
-                s.mpp = s.won + (TOTAL_SEASON_MATCHES - s.won - s.lost);
+                s.wr = (s.won + 1) / (s.played + 2); // Smoothed win rate
+                s.remaining = TOTAL_SEASON_MATCHES - s.won - s.lost;
+                s.mpp = s.won + s.remaining;
                 if (s.played > maxPlayed) maxPlayed = s.played;
                 if (s.won > highestWins) highestWins = s.won;
             });
 
-            // Find unplayed opponents
-            Object.values(stats).forEach(s => {
-                groupPlayers.forEach(opp => {
-                    if (s.name !== opp.name) {
-                        const playedOpp = groupMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie' && [m.player1, m.player2].includes(s.name) && [m.player1, m.player2].includes(opp.name));
-                        if (!playedOpp) s.unplayed.push(opp.name);
-                    }
-                });
-            });
-
-            const defaultWR = 0.5;
             let totalPower = 0;
 
-            // Algorithm to calculate "Power Score"
             Object.values(stats).forEach(s => {
-                let expectedRemainingWins = 0;
-                
-                s.unplayed.forEach(oppName => {
-                    let oppWR = stats[oppName] ? stats[oppName].wr : defaultWR;
-                    // Fractional probability of beating this specific opponent based on historical smoothing
-                    expectedRemainingWins += s.wr / (s.wr + oppWR);
-                });
+                // Forecasted Wins = Current Wins + (Remaining * Win Rate)
+                let projectedWins = s.won + (s.remaining * s.wr);
 
-                // Penalize inactivity. If someone hasn't played, they get a tiny fraction of their ERW.
-                let activityPenalty = maxPlayed === 0 ? 1 : Math.log(s.played + 2) / Math.log(maxPlayed + 2);
-                if (s.played === 0) activityPenalty *= 0.1;
-
-                let projectedWins = s.won + (expectedRemainingWins * activityPenalty);
-                
-                // Hardcap at MPP
+                // Cap at MPP
                 projectedWins = Math.min(projectedWins, s.mpp);
 
                 // Eliminate mathematically dead players
-                if (s.mpp < highestWins) projectedWins = 0;
+                if (s.mpp < highestWins) {
+                    projectedWins = 0;
+                }
 
                 s.projectedWins = projectedWins;
-                
-                // Cube it to create betting separation between the top dogs and the pack
-                s.powerScore = Math.pow(Math.max(0, projectedWins), 3);
+
+                // Power to 5th degree for realistic top-heavy win probability spread
+                s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
                 totalPower += s.powerScore;
             });
 
@@ -1387,121 +1278,27 @@
             const results = Object.values(stats).map(s => {
                 let winProb = totalPower > 0 ? s.powerScore / totalPower : 0;
                 if (s.mpp < highestWins) { winProb = 0; }
-                
+
                 return {
                     name: s.name,
                     winProb: winProb,
-                    winOdds: formatOdds(winProb)
+                    winProbPct: (winProb * 100).toFixed(1) + "%",
+                    winOdds: formatOdds(winProb),
+                    projected: s.projectedWins.toFixed(1)
                 };
             }).sort((a, b) => b.winProb - a.winProb || a.name.localeCompare(b.name));
 
-            const myBet = rawBets.find(b => b.id === currentUser);
-            const deadline = new Date('2026-08-09T23:59:59-04:00');
-            const isLocked = new Date() > deadline;
-
             listEl.innerHTML = results.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-3 md:p-4 hover:bg-slate-50 transition-colors border-b border-slate-50">
-                    <div class="col-span-4 flex items-center gap-2 overflow-hidden">
+                    <div class="col-span-5 flex items-center gap-2 overflow-hidden">
                         <span class="w-5 h-5 md:w-6 md:h-6 rounded-md flex items-center justify-center font-black text-[9px] md:text-[10px] shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}">${i === 0 ? '<i data-lucide="flame" class="w-3 h-3"></i>' : i + 1}</span>
                         <span class="font-bold text-slate-800 uppercase tracking-tight whitespace-normal break-words leading-tight text-[10px] md:text-xs">${p.name}</span>
                     </div>
+                    <div class="col-span-3 text-center font-black text-slate-500 text-xs md:text-sm" title="Projected Final Wins">${p.projected} <span class="text-[8px] md:text-[10px] font-bold text-slate-400">proj. wins</span></div>
+                    <div class="col-span-2 text-center font-black text-emerald-600 text-xs md:text-sm">${p.winProbPct}</div>
                     <div class="col-span-2 text-center font-black text-amber-600 text-xs md:text-sm">${p.winOdds}</div>
-                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_win" value="${p.name}" ${myBet?.win === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
-                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_place" value="${p.name}" ${myBet?.place === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
-                    <div class="col-span-2 flex justify-center"><input type="radio" name="bet_show" value="${p.name}" ${myBet?.show === p.name ? 'checked' : ''} ${isLocked ? 'disabled' : ''} class="w-4 h-4 md:w-5 md:h-5 cursor-pointer"></div>
                 </div>
             `).join('');
-
-            const actionContainer = document.getElementById('bet-action-container');
-            const betForm = document.getElementById('bet-form');
-            
-            if (isLocked) {
-                actionContainer.classList.add('hidden');
-                betForm.classList.remove('pb-20');
-            } else {
-                actionContainer.classList.remove('hidden');
-                betForm.classList.add('pb-20');
-                const btn = document.getElementById('bet-submit-btn');
-                if (myBet) {
-                    btn.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> Update Bets`;
-                }
-            }
-
-            // --- BET SUMMARY & POT MATH ---
-            if (summaryEl) {
-                const totalBets = rawBets.length;
-                const totalPot = totalBets * 25; // Assuming a $25 buy-in per bet
-                const firstPrize = totalPot * 0.6;
-                const secondPrize = totalPot * 0.3;
-                const thirdPrize = totalPot * 0.1;
-
-                const actionWin = {}; const actionPlace = {}; const actionShow = {};
-                rawBets.forEach(b => {
-                    if (b.win) actionWin[b.win] = (actionWin[b.win] || 0) + 1;
-                    if (b.place) actionPlace[b.place] = (actionPlace[b.place] || 0) + 1;
-                    if (b.show) actionShow[b.show] = (actionShow[b.show] || 0) + 1;
-                });
-
-                const formatAction = (actionObj) => {
-                    const entries = Object.entries(actionObj).sort((a,b) => b[1] - a[1]);
-                    if (entries.length === 0) return "<span class='text-slate-400 italic text-xs'>No action yet.</span>";
-                    return entries.map(e => `<span class="font-bold text-slate-700">${e[0]}</span> <span class="text-slate-400 text-[10px]">(${e[1]})</span>`).join('<span class="text-slate-300 mx-1">|</span>');
-                };
-
-                summaryEl.innerHTML = `
-                    <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-200 space-y-6">
-                        <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                <i data-lucide="wallet" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-black text-slate-800 tracking-tight">The Pot</h2>
-                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">${totalBets} Bets Placed ($25/ea)</p>
-                            </div>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <span class="text-xs font-black uppercase tracking-widest text-slate-500">1st (60%)</span>
-                                <span class="text-xl font-black text-emerald-600">$${firstPrize.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <span class="text-xs font-black uppercase tracking-widest text-slate-500">2nd (30%)</span>
-                                <span class="text-xl font-black text-emerald-600">$${secondPrize.toFixed(2)}</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <span class="text-xs font-black uppercase tracking-widest text-slate-500">3rd (10%)</span>
-                                <span class="text-xl font-black text-emerald-600">$${thirdPrize.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-200 space-y-6">
-                        <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
-                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                                <i data-lucide="eye" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-black text-slate-800 tracking-tight">Anonymous Action</h2>
-                                <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Where the money is going</p>
-                            </div>
-                        </div>
-                        <div class="space-y-5">
-                            <div>
-                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">To Win</h4>
-                                <div class="text-sm leading-relaxed">${formatAction(actionWin)}</div>
-                            </div>
-                            <div>
-                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">To Place</h4>
-                                <div class="text-sm leading-relaxed">${formatAction(actionPlace)}</div>
-                            </div>
-                            <div>
-                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">To Show</h4>
-                                <div class="text-sm leading-relaxed">${formatAction(actionShow)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
 
             lucide.createIcons();
         }
@@ -1511,7 +1308,6 @@
             const groupPlayers = getGroupPlayers(), groupMatches = getGroupMatches();
             if (!viewingDamageFor || groupPlayers.length === 0) return;
 
-            // Helper to check if a match involves both a specific user and an opponent
             const matchesBetween = (m, u, o) => {
                 const participants = [m.player1, m.player2, m.winner, m.loser].filter(Boolean);
                 return participants.includes(u) && participants.includes(o);
@@ -1519,7 +1315,6 @@
 
             let playedCount = 0, wonCount = 0, lostCount = 0, tiedCount = 0;
             
-            // Aggregation logic - Strictly deriving PlayedCount from the win/loss buckets
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
                 if (isCompleted && (m.player1 === viewingDamageFor || m.player2 === viewingDamageFor || m.winner === viewingDamageFor || m.loser === viewingDamageFor)) {
@@ -1536,7 +1331,6 @@
                 }
             });
 
-            // Map all opponent cards into data objects first for sorting
             const opponentData = groupPlayers.filter(p => p.name !== viewingDamageFor).map(opp => {
                 const matchesWithOpp = groupMatches.filter(m => matchesBetween(m, viewingDamageFor, opp.name));
                 
@@ -1594,7 +1388,6 @@
                 return { name: opp.name, status: status, html: cardHtml };
             });
 
-            // Filtering and Sorting logic
             const playedOrder = { 'won': 1, 'lost': 2, 'tied': 3 };
             const playedCards = opponentData
                 .filter(d => ['won', 'lost', 'tied'].includes(d.status))
