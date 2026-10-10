@@ -1205,35 +1205,98 @@
 
             // Calculate Maximum Points Possible (MPP)
             Object.values(statsMap).forEach(p => {
-                // Formula: 27 minus your wins and losses. 
-                // Mathematically: Current Wins + Remaining Decisive Matches
                 p.mpp = p.won + (27 - p.won - p.lost); 
             });
 
             const totalEl = document.getElementById('total-league-matches');
             if (totalEl) totalEl.innerText = totalLeagueMatches;
 
-            const sorted = Object.values(statsMap).sort((a, b) => {
+            // --- NEW: HEAD-TO-HEAD TIEBREAKER LOGIC ---
+            let lbData = Object.values(statsMap);
+            lbData.forEach(p => { p.h2hPoints = 0; p.tieNote = ''; p.tieRank = 0; });
+
+            const tieGroups = {};
+            lbData.forEach(p => {
+                const val = p[currentSort.column];
+                if (!tieGroups[val]) tieGroups[val] = [];
+                tieGroups[val].push(p);
+            });
+
+            Object.values(tieGroups).forEach(group => {
+                if (group.length > 1 && currentSort.column !== 'name') { 
+                    group.forEach(p => p.h2hPoints = 0);
+                    
+                    for (let i = 0; i < group.length; i++) {
+                        for (let j = i + 1; j < group.length; j++) {
+                            const p1 = group[i];
+                            const p2 = group[j];
+                            let p1Wins = 0, p2Wins = 0;
+
+                            groupMatches.forEach(m => {
+                                if (m.status === 'completed' && m.winner !== 'Tie') {
+                                    if (m.winner === p1.name && m.loser === p2.name) p1Wins++;
+                                    if (m.winner === p2.name && m.loser === p1.name) p2Wins++;
+                                }
+                            });
+
+                            if (p1Wins > p2Wins) { p1.h2hPoints += 1; }
+                            else if (p2Wins > p1Wins) { p2.h2hPoints += 1; }
+                            else { p1.h2hPoints += 0.5; p2.h2hPoints += 0.5; }
+                        }
+                    }
+
+                    group.sort((a, b) => b.h2hPoints - a.h2hPoints || a.name.localeCompare(b.name));
+                    
+                    const highestPoints = group[0].h2hPoints;
+                    const lowestPoints = group[group.length - 1].h2hPoints;
+                    
+                    group.forEach((p, idx) => {
+                        p.tieRank = idx; 
+                        if (highestPoints !== lowestPoints || p.h2hPoints > 0) { 
+                            if (p.h2hPoints === highestPoints && p.h2hPoints > 0) {
+                                p.tieNote = `Won tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                            } else if (p.h2hPoints === lowestPoints && p.h2hPoints < highestPoints) {
+                                p.tieNote = `Lost tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                            } else {
+                                p.tieNote = `Tiebreaker (H2H vs tied group: ${p.h2hPoints} pts)`;
+                            }
+                        }
+                    });
+                }
+            });
+
+            const sorted = lbData.sort((a, b) => {
                 let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
                 if (currentSort.column === 'name') result = currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
                 else result = currentSort.direction === 'asc' ? valA - valB : valB - valA;
+                
+                if (result === 0 && currentSort.column !== 'name') {
+                    result = currentSort.direction === 'asc' ? b.tieRank - a.tieRank : a.tieRank - b.tieRank;
+                }
                 return result === 0 ? a.name.localeCompare(b.name) : result;
             });
 
-            listEl.innerHTML = sorted.map((p, i) => `
+            listEl.innerHTML = sorted.map((p, i) => {
+                const tieIconHtml = p.tieNote ? `<i data-lucide="help-circle" class="w-3.5 h-3.5 text-emerald-400 cursor-help shrink-0" title="${p.tieNote}"></i>` : '';
+                return `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-4 flex items-center gap-3 overflow-hidden">
+                    <div class="col-span-4 flex items-center gap-2 md:gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left w-full">${p.name}</button>
+                        <div class="flex items-center gap-1.5 truncate flex-1">
+                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight truncate text-xs md:text-base hover:text-emerald-600 hover:underline decoration-2 underline-offset-4 transition-all text-left">${p.name}</button>
+                            ${tieIconHtml}
+                        </div>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.tied}</div>
                 </div>
-            `).join('');
+            `}).join('');
 
             ['name', 'mpp', 'won', 'lost', 'tied'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
+            
+            setTimeout(() => lucide.createIcons(), 10);
         }
 
         function renderChickenDinner() {
