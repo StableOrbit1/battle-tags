@@ -22,6 +22,7 @@
         input[type="date"]::-webkit-calendar-picker-indicator {
             background-color: #f8fafc; padding: 5px; border-radius: 5px; cursor: pointer;
         }
+        
         @keyframes splashFadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -125,7 +126,7 @@
     </div>
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[1000] flex flex-col gap-2 pointer-events-none w-[90%] max-w-sm"></div>
 
     <div id="screen-loading" class="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center">
         <div class="font-black text-slate-400 uppercase tracking-widest flex items-center gap-3 animate-pulse">
@@ -485,7 +486,7 @@
                         </div>
                     </div>
                     <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Live statistical forecast of each contender's chances to take the crown based on current wins, total possible wins left (MPP), and historical win rate.
+                        Live statistical forecast of each contender's chances to take the crown based on current wins, historical win rate, <strong>velocity of play</strong>, and <strong>remaining schedule difficulty</strong> against unplayed opponents. Play officially ends on October 17th.
                     </p>
                 </div>
                 
@@ -1123,7 +1124,6 @@
             
             if (groupPlayers.length === 0) return listEl.innerHTML = '<div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>';
 
-            const TOTAL_SEASON_MATCHES = 27; // Max decisive matches per player
             let totalLeagueMatches = 0;
             const statsMap = {}; 
             groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 27 }; });
@@ -1142,17 +1142,24 @@
                 }
             });
 
-            // Calculate Maximum Points Possible (MPP) safely
+            // Calculate Maximum Points Possible (MPP) safely capped at minimum 0 remaining
             Object.values(statsMap).forEach(p => {
-                let decisivePlayed = p.won + p.lost;
-                let remaining = Math.max(0, TOTAL_SEASON_MATCHES - decisivePlayed);
+                let remaining = Math.max(0, 26 - p.played);
                 p.mpp = p.won + remaining; 
             });
 
             const totalEl = document.getElementById('total-league-matches');
             if (totalEl) totalEl.innerText = totalLeagueMatches;
 
-            // Sorting logic WITH Head-to-Head tiebreakers
+            // Group players by score to figure out who is tied
+            const tieGroups = {};
+            Object.values(statsMap).forEach(p => {
+                let scoreKey = p[currentSort.column];
+                if (!tieGroups[scoreKey]) tieGroups[scoreKey] = [];
+                tieGroups[scoreKey].push(p.name);
+            });
+
+            // Sorting logic WITH Head-to-Head tiebreakers inside tie groups
             const sorted = Object.values(statsMap).sort((a, b) => {
                 let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
                 
@@ -1161,17 +1168,20 @@
 
                 // TIEBREAKER RESOLUTION
                 if (result === 0) {
+                    const tiedPlayers = tieGroups[valA];
                     let aWins = 0, bWins = 0;
+                    
+                    // Look through match history to see who beat who IN THIS SPECIFIC TIE GROUP
                     groupMatches.forEach(m => {
                         if (m.status === 'completed' && m.winner && m.winner !== 'Tie') {
-                            if (m.winner === a.name && m.loser === b.name) aWins++;
-                            if (m.winner === b.name && m.loser === a.name) bWins++;
+                            if (m.winner === a.name && tiedPlayers.includes(m.loser)) aWins++;
+                            if (m.winner === b.name && tiedPlayers.includes(m.loser)) bWins++;
                         }
                     });
 
                     if (aWins !== bWins) {
-                        let noteA = aWins > bWins ? `Won H2H tiebreaker vs ${b.name} (${aWins}-${bWins})` : `Lost H2H tiebreaker vs ${b.name} (${aWins}-${bWins})`;
-                        let noteB = bWins > aWins ? `Won H2H tiebreaker vs ${a.name} (${bWins}-${aWins})` : `Lost H2H tiebreaker vs ${a.name} (${bWins}-${aWins})`;
+                        let noteA = aWins > bWins ? `Won tiebreaker vs group (${aWins} pts)` : `Lost tiebreaker vs group (${aWins} pts)`;
+                        let noteB = bWins > aWins ? `Won tiebreaker vs group (${bWins} pts)` : `Lost tiebreaker vs group (${bWins} pts)`;
                         
                         a.tieNote = noteA;
                         b.tieNote = noteB;
@@ -1184,28 +1194,30 @@
                 return result;
             });
 
-            listEl.innerHTML = sorted.map((p, i) => `
+            listEl.innerHTML = sorted.map((p, i) => {
+                const tieIconHtml = p.tieNote 
+                    ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` 
+                    : '';
+                
+                return `
                 <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
                     <div class="col-span-6 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <div class="flex flex-col w-full">
-                            <div class="flex items-center gap-2">
-                                <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight">${p.name}</button>
-                                ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
-                            </div>
+                        <div class="flex items-center gap-2 w-full overflow-hidden pr-2">
+                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
+                            ${tieIconHtml}
                         </div>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                 </div>
-            `).join('');
+            `}).join('');
 
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
             lucide.createIcons();
         }
 
-        // --- NEW PREDICT LOGIC ---
         function renderPredict() {
             const listEl = document.getElementById('predict-list');
             const groupPlayers = getGroupPlayers();
@@ -1213,12 +1225,21 @@
             
             if (groupPlayers.length === 0) return;
 
-            const TOTAL_SEASON_MATCHES = 27;
+            const TOTAL_SEASON_MATCHES = 26;
+            const seasonEnd = new Date('2026-10-18T00:00:00-04:00'); // Midnight after Oct 17
+            const seasonStart = new Date('2026-05-01T00:00:00-04:00'); // Official season launch
+            const now = new Date();
+            
+            // Time math for velocity and scheduling constraints
+            const daysLeft = Math.max(0, (seasonEnd - now) / (1000 * 60 * 60 * 24));
+            const weeksLeft = daysLeft / 7;
+            const weeksPlayed = Math.max(1, (Math.min(now, seasonEnd) - seasonStart) / (1000 * 60 * 60 * 24 * 7));
+
             let stats = {};
             let highestWins = 0;
 
             groupPlayers.forEach(p => {
-                stats[p.name] = { name: p.name, won: 0, lost: 0, tied: 0, played: 0 };
+                stats[p.name] = { name: p.name, won: 0, lost: 0, played: 0, unplayed: [] };
             });
 
             groupMatches.forEach(m => {
@@ -1228,33 +1249,55 @@
                 }
             });
 
+            // Find unplayed opponents & calculate base WR
             Object.values(stats).forEach(s => {
-                let decisivePlayed = s.won + s.lost;
-                s.wr = decisivePlayed > 0 ? (s.won / decisivePlayed) : 0; 
-                s.remaining = Math.max(0, TOTAL_SEASON_MATCHES - decisivePlayed);
-                s.mpp = s.won + s.remaining;
-                
+                s.wr = (s.won + 1) / (s.played + 2); // Smoothed historical win rate
                 if (s.won > highestWins) highestWins = s.won;
+                
+                groupPlayers.forEach(opp => {
+                    if (s.name !== opp.name) {
+                        const playedOpp = groupMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie' && [m.player1, m.player2].includes(s.name) && [m.player1, m.player2].includes(opp.name));
+                        if (!playedOpp) s.unplayed.push(opp.name);
+                    }
+                });
             });
 
             let totalPower = 0;
 
             Object.values(stats).forEach(s => {
-                // Forecasted Wins = Current Wins + (Remaining * Win Rate)
-                let projectedWins = s.won + (s.remaining * s.wr);
+                // Velocity: Matches per week
+                s.rateOfPlay = s.played / weeksPlayed;
+                
+                // Expected remaining matches based purely on time left and their usual velocity
+                let projectedMatchesLeft = s.rateOfPlay * weeksLeft;
+                
+                // Cannot play more matches than physical tags available
+                let physicalRemaining = Math.max(0, TOTAL_SEASON_MATCHES - s.played);
+                projectedMatchesLeft = Math.min(projectedMatchesLeft, physicalRemaining);
 
-                // Cap at MPP
-                projectedWins = Math.min(projectedWins, s.mpp);
+                // Schedule Difficulty against unplayed field
+                let expectedProbSum = 0;
+                s.unplayed.forEach(oppName => {
+                    let oppWR = stats[oppName] ? stats[oppName].wr : 0.5;
+                    expectedProbSum += s.wr / (s.wr + oppWR);
+                });
+                
+                let avgWinProb = s.unplayed.length > 0 ? (expectedProbSum / s.unplayed.length) : s.wr;
+
+                // Final Projected Wins
+                let projectedWins = s.won + (projectedMatchesLeft * avgWinProb);
+
+                s.mpp = s.won + physicalRemaining;
+
+                // Eliminate mathematically dead players
+                if (s.mpp < highestWins) {
+                    projectedWins = 0;
+                }
+
                 s.projectedWins = projectedWins;
 
-                // Eliminate mathematically dead players from the probability pool
-                if (s.mpp < highestWins) {
-                    s.powerScore = 0; 
-                } else {
-                    // Power to 3rd degree for realistic betting-style odds spread
-                    s.powerScore = Math.pow(Math.max(0, projectedWins), 3);
-                }
-                
+                // Power score for odds generation (exponential separation)
+                s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
                 totalPower += s.powerScore;
             });
 
@@ -1272,7 +1315,7 @@
             };
 
             const results = Object.values(stats).map(s => {
-                let winProb = totalPower > 0 ? (s.powerScore / totalPower) : (1 / Object.values(stats).length);
+                let winProb = totalPower > 0 ? s.powerScore / totalPower : 0;
                 if (s.mpp < highestWins) { winProb = 0; }
 
                 return {
