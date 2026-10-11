@@ -1207,8 +1207,7 @@
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
             lucide.createIcons();
         }
-
-        // --- NEW PREDICT LOGIC ---
+        // --- NEW FORECAST LOGIC ---
         function renderPredict() {
             const listEl = document.getElementById('predict-list');
             const groupPlayers = getGroupPlayers();
@@ -1259,15 +1258,16 @@
                 // Formula: Current Wins + (Expected Remaining Games * Win Rate)
                 let projectedWins = s.won + (realisticGamesRemaining * s.wr);
 
-                // Eliminate mathematically dead players
-                if (s.mpp < highestWins) {
-                    projectedWins = 0;
-                }
-
                 s.projectedWins = projectedWins;
                 
-                // Power score to create a realistic probability spread
-                s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
+                // Eliminate mathematically dead players from the PROBABILITY calculation, 
+                // but keep their projected wins intact!
+                if (s.mpp < highestWins) {
+                    s.powerScore = 0;
+                } else {
+                    // Power score to create a realistic probability spread
+                    s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
+                }
                 totalPower += s.powerScore;
             });
 
@@ -1286,16 +1286,16 @@
 
             const results = Object.values(stats).map(s => {
                 let winProb = totalPower > 0 ? s.powerScore / totalPower : 0;
-                if (s.mpp < highestWins) { winProb = 0; }
 
                 return {
                     name: s.name,
                     winProb: winProb,
                     winProbPct: (winProb * 100).toFixed(1) + "%",
                     winOdds: formatOdds(winProb),
+                    projectedRaw: s.projectedWins, // Use raw float for accurate sorting
                     projected: s.projectedWins.toFixed(1)
                 };
-            }).sort((a, b) => b.winProb - a.winProb || a.name.localeCompare(b.name));
+            }).sort((a, b) => b.projectedRaw - a.projectedRaw || a.name.localeCompare(b.name));
 
             listEl.innerHTML = results.map((p, i) => `
                 <div class="grid grid-cols-12 gap-2 items-center p-3 md:p-4 hover:bg-slate-50 transition-colors border-b border-slate-50">
