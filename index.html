@@ -462,8 +462,8 @@
                 </div>
                 
                 <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left">
-                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
-                        <div onclick="sortLeaderboard('name')" class="col-span-6 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
+                    <div class="grid grid-cols-10 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-xs text-slate-400 uppercase tracking-widest cursor-pointer select-none">
+                        <div onclick="sortLeaderboard('name')" class="col-span-4 hover:text-emerald-500 flex items-center gap-1 transition-colors">Player <span id="sort-name" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('mpp')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Maximum Points Possible"><span class="text-sm md:text-base">🎯</span><span class="hidden md:inline">MPP</span> <span id="sort-mpp" class="text-emerald-500"></span></div>
                         <div onclick="sortLeaderboard('won')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Won"><span class="text-sm md:text-base text-emerald-500">W</span><span class="hidden md:inline">on</span> <span id="sort-won" class="text-emerald-500">▼</span></div>
                         <div onclick="sortLeaderboard('lost')" class="col-span-2 text-center hover:text-emerald-500 flex justify-center items-center gap-1 transition-colors" title="Tags Lost"><span class="text-sm md:text-base text-rose-500">L</span><span class="hidden md:inline">st</span> <span id="sort-lost" class="text-emerald-500"></span></div>
@@ -486,7 +486,7 @@
                         </div>
                     </div>
                     <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Live statistical forecast of each contender's chances to take the crown based on current wins, historical win rate, <strong>velocity of play</strong>, and <strong>remaining schedule difficulty</strong> against unplayed opponents. Play officially ends on October 17th.
+                        Live statistical forecast of each contender's chances to take the crown based on <strong>current wins</strong>, <strong>historical win rate</strong>, <strong>velocity of play</strong> (games per week), and <strong>weeks remaining</strong> until October 17th.
                     </p>
                 </div>
                 
@@ -1126,7 +1126,7 @@
 
             let totalLeagueMatches = 0;
             const statsMap = {}; 
-            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 27 }; });
+            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 26 }; });
             
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
@@ -1142,10 +1142,10 @@
                 }
             });
 
-            // Calculate Maximum Points Possible (MPP) safely capped at minimum 0 remaining
+            // Calculate Maximum Points Possible (MPP) SAFELY
             Object.values(statsMap).forEach(p => {
-                let remaining = Math.max(0, 26 - p.played);
-                p.mpp = p.won + remaining; 
+                let safeRemaining = Math.max(0, 26 - p.played);
+                p.mpp = p.won + safeRemaining; 
             });
 
             const totalEl = document.getElementById('total-league-matches');
@@ -1159,7 +1159,7 @@
                 tieGroups[scoreKey].push(p.name);
             });
 
-            // Sorting logic WITH Head-to-Head tiebreakers inside tie groups
+            // Sorting logic WITH Head-to-Head tiebreakers
             const sorted = Object.values(statsMap).sort((a, b) => {
                 let valA = a[currentSort.column], valB = b[currentSort.column], result = 0;
                 
@@ -1171,7 +1171,6 @@
                     const tiedPlayers = tieGroups[valA];
                     let aWins = 0, bWins = 0;
                     
-                    // Look through match history to see who beat who IN THIS SPECIFIC TIE GROUP
                     groupMatches.forEach(m => {
                         if (m.status === 'completed' && m.winner && m.winner !== 'Tie') {
                             if (m.winner === a.name && tiedPlayers.includes(m.loser)) aWins++;
@@ -1180,12 +1179,8 @@
                     });
 
                     if (aWins !== bWins) {
-                        let noteA = aWins > bWins ? `Won tiebreaker vs group (${aWins} pts)` : `Lost tiebreaker vs group (${aWins} pts)`;
-                        let noteB = bWins > aWins ? `Won tiebreaker vs group (${bWins} pts)` : `Lost tiebreaker vs group (${bWins} pts)`;
-                        
-                        a.tieNote = noteA;
-                        b.tieNote = noteB;
-                        
+                        a.tieNote = aWins > bWins ? `Won Tiebreaker (H2H: ${aWins} pts)` : `Lost Tiebreaker (H2H: ${aWins} pts)`;
+                        b.tieNote = bWins > aWins ? `Won Tiebreaker (H2H: ${bWins} pts)` : `Lost Tiebreaker (H2H: ${bWins} pts)`;
                         return currentSort.direction === 'desc' ? (bWins - aWins) : (aWins - bWins); 
                     }
                     return a.name.localeCompare(b.name);
@@ -1194,30 +1189,26 @@
                 return result;
             });
 
-            listEl.innerHTML = sorted.map((p, i) => {
-                const tieIconHtml = p.tieNote 
-                    ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` 
-                    : '';
-                
-                return `
-                <div class="grid grid-cols-12 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
-                    <div class="col-span-6 flex items-center gap-3 overflow-hidden">
+            listEl.innerHTML = sorted.map((p, i) => `
+                <div class="grid grid-cols-10 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
+                    <div class="col-span-4 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <div class="flex items-center gap-2 w-full overflow-hidden pr-2">
-                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
-                            ${tieIconHtml}
+                        <div class="flex items-center gap-2 w-full pr-2">
+                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
+                            ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
                         </div>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
                     <div class="col-span-2 text-center font-black text-emerald-600 text-sm md:text-lg">${p.won}</div>
                     <div class="col-span-2 text-center font-bold text-rose-500 text-xs md:text-base">${p.lost}</div>
                 </div>
-            `}).join('');
+            `).join('');
 
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
             lucide.createIcons();
         }
 
+        // --- NEW PREDICT LOGIC ---
         function renderPredict() {
             const listEl = document.getElementById('predict-list');
             const groupPlayers = getGroupPlayers();
@@ -1227,10 +1218,9 @@
 
             const TOTAL_SEASON_MATCHES = 26;
             const seasonEnd = new Date('2026-10-18T00:00:00-04:00'); // Midnight after Oct 17
-            const seasonStart = new Date('2026-05-01T00:00:00-04:00'); // Official season launch
+            const seasonStart = new Date('2026-05-01T00:00:00-04:00');
             const now = new Date();
             
-            // Time math for velocity and scheduling constraints
             const daysLeft = Math.max(0, (seasonEnd - now) / (1000 * 60 * 60 * 24));
             const weeksLeft = daysLeft / 7;
             const weeksPlayed = Math.max(1, (Math.min(now, seasonEnd) - seasonStart) / (1000 * 60 * 60 * 24 * 7));
@@ -1239,7 +1229,7 @@
             let highestWins = 0;
 
             groupPlayers.forEach(p => {
-                stats[p.name] = { name: p.name, won: 0, lost: 0, played: 0, unplayed: [] };
+                stats[p.name] = { name: p.name, won: 0, lost: 0, played: 0 };
             });
 
             groupMatches.forEach(m => {
@@ -1249,45 +1239,25 @@
                 }
             });
 
-            // Find unplayed opponents & calculate base WR
             Object.values(stats).forEach(s => {
-                s.wr = (s.won + 1) / (s.played + 2); // Smoothed historical win rate
+                s.wr = s.played > 0 ? (s.won / s.played) : 0; // Historical win rate
+                s.remaining = Math.max(0, TOTAL_SEASON_MATCHES - s.played); // Safe clamp
+                s.mpp = s.won + s.remaining;
+                s.rateOfPlay = s.played / weeksPlayed; // Games played per week
                 if (s.won > highestWins) highestWins = s.won;
-                
-                groupPlayers.forEach(opp => {
-                    if (s.name !== opp.name) {
-                        const playedOpp = groupMatches.some(m => m.status === 'completed' && m.winner && m.winner !== 'Tie' && [m.player1, m.player2].includes(s.name) && [m.player1, m.player2].includes(opp.name));
-                        if (!playedOpp) s.unplayed.push(opp.name);
-                    }
-                });
             });
 
             let totalPower = 0;
 
             Object.values(stats).forEach(s => {
-                // Velocity: Matches per week
-                s.rateOfPlay = s.played / weeksPlayed;
+                // Expected actual matches they will play before time runs out
+                let expectedGamesToPlay = s.rateOfPlay * weeksLeft;
                 
-                // Expected remaining matches based purely on time left and their usual velocity
-                let projectedMatchesLeft = s.rateOfPlay * weeksLeft;
+                // Limit by their physical remaining tags
+                let realisticGamesRemaining = Math.min(s.remaining, expectedGamesToPlay);
                 
-                // Cannot play more matches than physical tags available
-                let physicalRemaining = Math.max(0, TOTAL_SEASON_MATCHES - s.played);
-                projectedMatchesLeft = Math.min(projectedMatchesLeft, physicalRemaining);
-
-                // Schedule Difficulty against unplayed field
-                let expectedProbSum = 0;
-                s.unplayed.forEach(oppName => {
-                    let oppWR = stats[oppName] ? stats[oppName].wr : 0.5;
-                    expectedProbSum += s.wr / (s.wr + oppWR);
-                });
-                
-                let avgWinProb = s.unplayed.length > 0 ? (expectedProbSum / s.unplayed.length) : s.wr;
-
-                // Final Projected Wins
-                let projectedWins = s.won + (projectedMatchesLeft * avgWinProb);
-
-                s.mpp = s.won + physicalRemaining;
+                // Formula: Current Wins + (Expected Remaining Games * Win Rate)
+                let projectedWins = s.won + (realisticGamesRemaining * s.wr);
 
                 // Eliminate mathematically dead players
                 if (s.mpp < highestWins) {
@@ -1295,8 +1265,8 @@
                 }
 
                 s.projectedWins = projectedWins;
-
-                // Power score for odds generation (exponential separation)
+                
+                // Power score to create a realistic probability spread
                 s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
                 totalPower += s.powerScore;
             });
