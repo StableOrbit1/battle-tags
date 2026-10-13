@@ -1112,8 +1112,7 @@
 
             // Calculate Maximum Points Possible (MPP) SAFELY
             Object.values(statsMap).forEach(p => {
-                let safeRemaining = Math.max(0, 26 - p.played);
-                p.mpp = p.won + safeRemaining; 
+                p.mpp = p.won + (27 - p.won - p.lost); 
             });
 
             const totalEl = document.getElementById('total-league-matches');
@@ -1161,9 +1160,11 @@
                 <div class="grid grid-cols-10 gap-2 items-center p-4 md:p-5 hover:bg-slate-50 transition-colors">
                     <div class="col-span-4 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
-                        <div class="flex items-center gap-2 w-full pr-2">
-                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
-                            ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
+                        <div class="flex flex-col w-full pr-2">
+                            <div class="flex items-center gap-2">
+                                <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
+                                ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="col-span-2 text-center font-bold text-slate-500 text-xs md:text-base">${p.mpp}</div>
@@ -1173,6 +1174,123 @@
             `).join('');
 
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
+            lucide.createIcons();
+        }
+
+        // --- PULSE DASHBOARD RENDERING ---
+        function renderPulse() {
+            const groupPlayers = getGroupPlayers(); const groupMatches = getGroupMatches();
+            if (groupPlayers.length === 0 && groupMatches.length === 0) return;
+
+            const currentWeek = pulseWeeks[pulseSelectedWeekIndex];
+            const dStart = new Date(currentWeek.start + "T12:00:00"), dEnd = new Date(currentWeek.end + "T12:00:00");
+            const displayFormat = { month: 'short', day: 'numeric', year: 'numeric' };
+            
+            document.getElementById('pulse-date-range').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Season Booking Snapshot" : `Timeframe: ${dStart.toLocaleDateString('en-US', displayFormat)} — ${dEnd.toLocaleDateString('en-US', displayFormat)}`;
+            document.getElementById('pulse-insights-subtitle').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Launch Hype Data" : `Stats for ${currentWeek.label.split(':')[0]}`;
+
+            const pastMatches = groupMatches.filter(m => m.winner && m.status !== 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.date >= currentWeek.start && m.date <= currentWeek.end))).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const futureMatches = groupMatches.filter(m => m.status === 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.scheduledDate >= currentWeek.start && m.scheduledDate <= currentWeek.end))).sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
+            const insightMatches = futureMatches;
+
+            // Busiest Day
+            const dayCounts = {}; insightMatches.forEach(m => { dayCounts[m.scheduledDate] = (dayCounts[m.scheduledDate] || 0) + 1; });
+            const sortedDays = Object.entries(dayCounts).sort((a,b) => b[1] - a[1]);
+            const busiestDay = sortedDays.length > 0 ? sortedDays[0] : null;
+
+            if (busiestDay) {
+                const bDate = new Date(busiestDay[0] + "T12:00:00").toLocaleDateString('en-US', {weekday: 'long', month: 'short', day: 'numeric'});
+                document.getElementById('pulse-insight-busiest-day').innerHTML = `
+                    <div class="text-3xl font-black text-rose-500 mb-1">${busiestDay[1]} <span class="text-sm text-slate-400 uppercase tracking-widest">Matches</span></div>
+                    <div class="text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-100 border border-slate-200 inline-block px-3 py-1 rounded-full">${bDate}</div>
+                `;
+            } else { document.getElementById('pulse-insight-busiest-day').innerHTML = `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest">No matches booked</span>`; }
+
+            // Top Bookers & MIA
+            const playerCounts = {}; groupPlayers.forEach(p => playerCounts[p.name] = 0);
+            insightMatches.forEach(m => { if (playerCounts[m.player1] !== undefined) playerCounts[m.player1]++; if (playerCounts[m.player2] !== undefined) playerCounts[m.player2]++; });
+            const sortedBookers = Object.entries(playerCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+            
+            const activeBookers = sortedBookers.filter(b => b[1] > 0);
+            document.getElementById('pulse-insight-top-bookers').innerHTML = activeBookers.length > 0 ? activeBookers.map((b, i) => `
+                <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                    <span class="text-xs font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-amber-500 font-black">${i === 0 ? '👑' : i+1+'.'}</span> ${b[0]}</span>
+                    <span class="text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-md">${b[1]} Booked</span>
+                </div>
+            `).join('') : `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest block text-center mt-4">No data yet</span>`;
+
+            const miaPlayers = sortedBookers.filter(b => b[1] === 0).map(b => b[0]);
+            document.getElementById('pulse-insight-mia').innerHTML = miaPlayers.length > 0 ? miaPlayers.map(name => `
+                <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md uppercase tracking-wider">${name}</span>
+            `).join('') : `<span class="text-emerald-500 text-xs font-bold uppercase tracking-widest block text-center w-full mt-4">Everyone is playing!</span>`;
+
+            // Stats
+            document.getElementById('pulse-stat-swapped').innerText = pastMatches.filter(m => m.winner !== 'Tie').length;
+            document.getElementById('pulse-stat-upcoming').innerText = futureMatches.length;
+
+            // Past Lists
+            const pastContainer = document.getElementById('pulse-past-container');
+            if (pastMatches.length === 0) pastContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No activity in this timeframe.</p></div>`;
+            else pastContainer.innerHTML = pastMatches.map(m => {
+                const isTie = m.winner === 'Tie';
+                const headerText = isTie ? `${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 text-sm font-bold lowercase mx-1">def.</span> ${m.loser}`;
+                const barColor = isTie ? 'bg-slate-400' : 'bg-emerald-500';
+                
+                const photoHtml = m.photoUrl ? `<div class="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-emerald-200 shadow-sm"><img src="${m.photoUrl}" alt="Evidence" class="w-full h-full object-cover"></div>` : `<div class="w-16 h-16 shrink-0 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200"><i data-lucide="${isTie ? 'handshake' : 'camera-off'}" class="w-5 h-5 text-slate-400"></i></div>`;
+                return `
+                    <div class="bg-white p-5 rounded-[2rem] flex items-center gap-5 relative overflow-hidden group hover:border-emerald-300 border border-slate-200 shadow-sm transition-colors">
+                        <div class="absolute top-0 bottom-0 left-0 w-1 ${barColor}"></div>
+                        ${photoHtml}
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-[9px] font-black ${isTie ? 'text-slate-500 bg-slate-100 border-slate-200' : 'text-emerald-700 bg-emerald-50 border-emerald-100'} uppercase tracking-widest px-2 py-0.5 rounded-md border"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>
+                                <span class="text-[10px] font-black ${isTie ? 'text-slate-500' : 'text-emerald-600'} tracking-wider">${m.score}</span>
+                            </div>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${headerText}</h3>
+                        </div>
+                    </div>
+                `}).join('');
+
+            // Future Lists
+            const futureContainer = document.getElementById('pulse-future-container');
+            if (futureMatches.length === 0) futureContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No battles scheduled for this timeframe.</p></div>`;
+            else {
+                const todayStr = new Date().toISOString().split('T')[0];
+                futureContainer.innerHTML = futureMatches.map(m => {
+                    const isToday = m.scheduledDate === todayStr;
+                    const dateBadgeClass = isToday ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-100';
+                    const dateIcon = isToday ? 'alert-circle' : 'calendar-clock';
+                    const dateText = isToday ? 'TODAY' : m.scheduledDate;
+                    return `
+                        <div class="bg-white p-5 rounded-[2rem] flex items-center justify-between relative overflow-hidden border border-slate-200 shadow-sm hover:border-amber-300 transition-colors">
+                            <div class="absolute top-0 bottom-0 left-0 w-1 bg-amber-500"></div>
+                            <div class="text-left">
+                                <div class="mb-2 inline-block">
+                                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${dateBadgeClass}"><i data-lucide="${dateIcon}" class="w-3 h-3 inline pb-0.5"></i> ${dateText}</span>
+                                </div>
+                                <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">vs</span> ${m.player2}</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 text-slate-500">
+                                <span class="text-lg drop-shadow-sm">⚔️</span>
+                            </div>
+                        </div>
+                    `}).join('');
+            }
+
+            // Tracker
+            const trackerContainer = document.getElementById('pulse-tracker-container');
+            if (groupPlayers.length === 0) trackerContainer.innerHTML = `<div class="p-8 col-span-full text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white">No players found in database.</div>`;
+            else trackerContainer.innerHTML = groupPlayers.map(p => {
+                const isPaid = p.paid === 'Y';
+                const statusClass = isPaid ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-rose-600 bg-rose-50 border-rose-100';
+                const statusText = isPaid ? 'PAID' : 'UNPAID'; const icon = isPaid ? 'check' : 'x';
+                return `
+                    <div class="bg-white p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-tight">${p.name}</span>
+                        <span class="flex items-center gap-1 ${statusClass} px-2 py-1 rounded border text-[9px] font-black uppercase tracking-widest"><i data-lucide="${icon}" class="w-3 h-3"></i> ${statusText}</span>
+                    </div>
+                `}).join('');
+
             lucide.createIcons();
         }
 
@@ -1347,123 +1465,6 @@
                     </div>
                 `;
             }).join(''); lucide.createIcons();
-        }
-
-        // --- PULSE DASHBOARD RENDERING ---
-        function renderPulse() {
-            const groupPlayers = getGroupPlayers(); const groupMatches = getGroupMatches();
-            if (groupPlayers.length === 0 && groupMatches.length === 0) return;
-
-            const currentWeek = pulseWeeks[pulseSelectedWeekIndex];
-            const dStart = new Date(currentWeek.start + "T12:00:00"), dEnd = new Date(currentWeek.end + "T12:00:00");
-            const displayFormat = { month: 'short', day: 'numeric', year: 'numeric' };
-            
-            document.getElementById('pulse-date-range').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Season Booking Snapshot" : `Timeframe: ${dStart.toLocaleDateString('en-US', displayFormat)} — ${dEnd.toLocaleDateString('en-US', displayFormat)}`;
-            document.getElementById('pulse-insights-subtitle').innerText = pulseSelectedWeekIndex === 0 ? "Pre-Launch Hype Data" : `Stats for ${currentWeek.label.split(':')[0]}`;
-
-            const pastMatches = groupMatches.filter(m => m.winner && m.status !== 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.date >= currentWeek.start && m.date <= currentWeek.end))).sort((a, b) => new Date(b.date) - new Date(a.date));
-            const futureMatches = groupMatches.filter(m => m.status === 'scheduled' && (pulseSelectedWeekIndex === 0 || (m.scheduledDate >= currentWeek.start && m.scheduledDate <= currentWeek.end))).sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
-            const insightMatches = futureMatches;
-
-            // Busiest Day
-            const dayCounts = {}; insightMatches.forEach(m => { dayCounts[m.scheduledDate] = (dayCounts[m.scheduledDate] || 0) + 1; });
-            const sortedDays = Object.entries(dayCounts).sort((a,b) => b[1] - a[1]);
-            const busiestDay = sortedDays.length > 0 ? sortedDays[0] : null;
-
-            if (busiestDay) {
-                const bDate = new Date(busiestDay[0] + "T12:00:00").toLocaleDateString('en-US', {weekday: 'long', month: 'short', day: 'numeric'});
-                document.getElementById('pulse-insight-busiest-day').innerHTML = `
-                    <div class="text-3xl font-black text-rose-500 mb-1">${busiestDay[1]} <span class="text-sm text-slate-400 uppercase tracking-widest">Matches</span></div>
-                    <div class="text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-100 border border-slate-200 inline-block px-3 py-1 rounded-full">${bDate}</div>
-                `;
-            } else { document.getElementById('pulse-insight-busiest-day').innerHTML = `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest">No matches booked</span>`; }
-
-            // Top Bookers & MIA
-            const playerCounts = {}; groupPlayers.forEach(p => playerCounts[p.name] = 0);
-            insightMatches.forEach(m => { if (playerCounts[m.player1] !== undefined) playerCounts[m.player1]++; if (playerCounts[m.player2] !== undefined) playerCounts[m.player2]++; });
-            const sortedBookers = Object.entries(playerCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-            
-            const activeBookers = sortedBookers.filter(b => b[1] > 0);
-            document.getElementById('pulse-insight-top-bookers').innerHTML = activeBookers.length > 0 ? activeBookers.map((b, i) => `
-                <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
-                    <span class="text-xs font-bold text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-amber-500 font-black">${i === 0 ? '👑' : i+1+'.'}</span> ${b[0]}</span>
-                    <span class="text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-md">${b[1]} Booked</span>
-                </div>
-            `).join('') : `<span class="text-slate-400 text-xs font-bold uppercase tracking-widest block text-center mt-4">No data yet</span>`;
-
-            const miaPlayers = sortedBookers.filter(b => b[1] === 0).map(b => b[0]);
-            document.getElementById('pulse-insight-mia').innerHTML = miaPlayers.length > 0 ? miaPlayers.map(name => `
-                <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md uppercase tracking-wider">${name}</span>
-            `).join('') : `<span class="text-emerald-500 text-xs font-bold uppercase tracking-widest block text-center w-full mt-4">Everyone is playing!</span>`;
-
-            // Stats
-            document.getElementById('pulse-stat-swapped').innerText = pastMatches.filter(m => m.winner !== 'Tie').length;
-            document.getElementById('pulse-stat-upcoming').innerText = futureMatches.length;
-
-            // Past Lists
-            const pastContainer = document.getElementById('pulse-past-container');
-            if (pastMatches.length === 0) pastContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No activity in this timeframe.</p></div>`;
-            else pastContainer.innerHTML = pastMatches.map(m => {
-                const isTie = m.winner === 'Tie';
-                const headerText = isTie ? `${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">tied</span> ${m.player2}` : `${m.winner} <span class="text-emerald-500 text-sm font-bold lowercase mx-1">def.</span> ${m.loser}`;
-                const barColor = isTie ? 'bg-slate-400' : 'bg-emerald-500';
-                
-                const photoHtml = m.photoUrl ? `<div class="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-emerald-200 shadow-sm"><img src="${m.photoUrl}" alt="Evidence" class="w-full h-full object-cover"></div>` : `<div class="w-16 h-16 shrink-0 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200"><i data-lucide="${isTie ? 'handshake' : 'camera-off'}" class="w-5 h-5 text-slate-400"></i></div>`;
-                return `
-                    <div class="bg-white p-5 rounded-[2rem] flex items-center gap-5 relative overflow-hidden group hover:border-emerald-300 border border-slate-200 shadow-sm transition-colors">
-                        <div class="absolute top-0 bottom-0 left-0 w-1 ${barColor}"></div>
-                        ${photoHtml}
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="text-[9px] font-black ${isTie ? 'text-slate-500 bg-slate-100 border-slate-200' : 'text-emerald-700 bg-emerald-50 border-emerald-100'} uppercase tracking-widest px-2 py-0.5 rounded-md border"><i data-lucide="calendar" class="w-3 h-3 inline pb-0.5"></i> ${m.date}</span>
-                                <span class="text-[10px] font-black ${isTie ? 'text-slate-500' : 'text-emerald-600'} tracking-wider">${m.score}</span>
-                            </div>
-                            <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${headerText}</h3>
-                        </div>
-                    </div>
-                `}).join('');
-
-            // Future Lists
-            const futureContainer = document.getElementById('pulse-future-container');
-            if (futureMatches.length === 0) futureContainer.innerHTML = `<div class="bg-slate-50 p-8 rounded-3xl text-center border border-dashed border-slate-200"><p class="text-slate-400 font-bold uppercase tracking-widest text-xs">No battles scheduled for this timeframe.</p></div>`;
-            else {
-                const todayStr = new Date().toISOString().split('T')[0];
-                futureContainer.innerHTML = futureMatches.map(m => {
-                    const isToday = m.scheduledDate === todayStr;
-                    const dateBadgeClass = isToday ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-100';
-                    const dateIcon = isToday ? 'alert-circle' : 'calendar-clock';
-                    const dateText = isToday ? 'TODAY' : m.scheduledDate;
-                    return `
-                        <div class="bg-white p-5 rounded-[2rem] flex items-center justify-between relative overflow-hidden border border-slate-200 shadow-sm hover:border-amber-300 transition-colors">
-                            <div class="absolute top-0 bottom-0 left-0 w-1 bg-amber-500"></div>
-                            <div class="text-left">
-                                <div class="mb-2 inline-block">
-                                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${dateBadgeClass}"><i data-lucide="${dateIcon}" class="w-3 h-3 inline pb-0.5"></i> ${dateText}</span>
-                                </div>
-                                <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">${m.player1} <span class="text-slate-400 text-sm font-bold lowercase mx-1">vs</span> ${m.player2}</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 text-slate-500">
-                                <span class="text-lg drop-shadow-sm">⚔️</span>
-                            </div>
-                        </div>
-                    `}).join('');
-            }
-
-            // Tracker
-            const trackerContainer = document.getElementById('pulse-tracker-container');
-            if (groupPlayers.length === 0) trackerContainer.innerHTML = `<div class="p-8 col-span-full text-center text-slate-400 font-bold uppercase tracking-widest text-xs bg-white">No players found in database.</div>`;
-            else trackerContainer.innerHTML = groupPlayers.map(p => {
-                const isPaid = p.paid === 'Y';
-                const statusClass = isPaid ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-rose-600 bg-rose-50 border-rose-100';
-                const statusText = isPaid ? 'PAID' : 'UNPAID'; const icon = isPaid ? 'check' : 'x';
-                return `
-                    <div class="bg-white p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                        <span class="text-xs font-bold text-slate-700 uppercase tracking-tight">${p.name}</span>
-                        <span class="flex items-center gap-1 ${statusClass} px-2 py-1 rounded border text-[9px] font-black uppercase tracking-widest"><i data-lucide="${icon}" class="w-3 h-3"></i> ${statusText}</span>
-                    </div>
-                `}).join('');
-
-            lucide.createIcons();
         }
 
         window.showScreen = showScreen;
