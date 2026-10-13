@@ -179,7 +179,7 @@
                 <p class="text-slate-500 text-xs mt-2 font-medium leading-relaxed">This is your first time logging in. Select your name to permanently lock your phone number to your BattleTag identity.</p>
             </div>
             <div id="identity-list" class="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -203,9 +203,6 @@
                     </button>
                     <button onclick="switchView('standings')" id="nav-standings" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all bg-white text-emerald-900 shadow-sm flex items-center gap-2 justify-center whitespace-nowrap">
                         Standings
-                    </button>
-                    <button onclick="switchView('predict')" id="nav-predict" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
-                        <i data-lucide="trending-up" class="w-3 h-3 hidden md:inline"></i> Predict
                     </button>
                     <button onclick="switchView('damage')" id="nav-damage" class="flex-1 py-3 px-4 rounded-xl font-black text-[10px] md:text-xs uppercase transition-all text-emerald-100 opacity-60 flex items-center gap-2 justify-center whitespace-nowrap">
                         Damage
@@ -470,35 +467,6 @@
                     </div>
                     <div id="leaderboard-list" class="divide-y divide-slate-50">
                         <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Syncing Database...</div>
-                    </div>
-                </div>
-            </section>
-            <section id="view-forecast" class="hidden space-y-8 text-left">
-                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-slate-200">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner">
-                            <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-3xl font-black text-slate-800 tracking-tight">The Forecast</h2>
-                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Live Vegas Odds & Projections</p>
-                        </div>
-                    </div>
-                    <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-2xl mb-4">
-                        Live statistical forecast of each contender's chances to take the crown based on current wins, total possible wins left (MPP), and historical win rate.
-                    </p>
-                </div>
-                
-                <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden text-left relative">
-                    <div class="grid grid-cols-12 gap-2 p-4 md:p-5 border-b border-slate-100 bg-slate-50/50 font-black text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest items-center">
-                        <div class="col-span-4">Contender</div>
-                        <div class="col-span-2 text-center" title="Historical Match Win Rate">Win Rate</div>
-                        <div class="col-span-2 text-center" title="Projected Final Wins">Proj. Wins</div>
-                        <div class="col-span-2 text-center text-emerald-600" title="Championship Win Probability">Crown %</div>
-                        <div class="col-span-2 text-center text-amber-600" title="Vegas Odds">Odds</div>
-                    </div>
-                    <div id="forecast-list" class="divide-y divide-slate-50 bg-white">
-                        <div class="p-16 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Crunching numbers...</div>
                     </div>
                 </div>
             </section>
@@ -883,7 +851,7 @@
 
                 if (myProfile) {
                     currentUser = myProfile.name; currentGroup = myProfile.groupId || 'BattleTagGroup1'; viewingDamageFor = currentUser;
-                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderPredict(); renderDamageReport(); renderPulse();
+                    updateDropdowns(); updateUserStatusDisplay(); renderLeaderboard(); renderDamageReport(); renderPulse();
                     showScreen('app');
                 } else {
                     renderIdentityClaimList(rawPlayers.filter(p => !p.phone || p.phone === ""));
@@ -895,7 +863,7 @@
             onSnapshot(qM, (snapshot) => {
                 rawMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (currentUser && currentGroup) {
-                    renderLeaderboard(); renderPredict(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
+                    renderLeaderboard(); renderDamageReport(); renderGallery(); renderScheduledMatches(); renderPulse();
                 }
             }, (error) => console.error(error));
         }
@@ -928,7 +896,7 @@
         }
 
         window.switchView = function(viewName) {
-            const sections = ['battle', 'submit', 'pulse', 'standings', 'predict', 'damage', 'gallery', 'scheduled', 'rules'];
+            const sections = ['battle', 'submit', 'pulse', 'standings', 'damage', 'gallery', 'scheduled', 'rules'];
             sections.forEach(sec => { document.getElementById(`view-${sec}`).classList.toggle('hidden', viewName !== sec); });
             sections.forEach(sec => {
                 const navEl = document.getElementById(`nav-${sec}`);
@@ -1205,113 +1173,6 @@
             `).join('');
 
             ['name', 'mpp', 'won', 'lost'].forEach(col => { const el = document.getElementById(`sort-${col}`); if (el) el.innerText = currentSort.column === col ? (currentSort.direction === 'asc' ? '▲' : '▼') : ''; });
-            lucide.createIcons();
-        }
-        // --- NEW FORECAST LOGIC ---
-        function renderPredict() {
-            const listEl = document.getElementById('predict-list');
-            const groupPlayers = getGroupPlayers();
-            const groupMatches = getGroupMatches();
-            
-            if (groupPlayers.length === 0) return;
-
-            const TOTAL_SEASON_MATCHES = 26;
-            const seasonEnd = new Date('2026-10-18T00:00:00-04:00'); // Midnight after Oct 17
-            const seasonStart = new Date('2026-05-01T00:00:00-04:00');
-            const now = new Date();
-            
-            const daysLeft = Math.max(0, (seasonEnd - now) / (1000 * 60 * 60 * 24));
-            const weeksLeft = daysLeft / 7;
-            const weeksPlayed = Math.max(1, (Math.min(now, seasonEnd) - seasonStart) / (1000 * 60 * 60 * 24 * 7));
-
-            let stats = {};
-            let highestWins = 0;
-
-            groupPlayers.forEach(p => {
-                stats[p.name] = { name: p.name, won: 0, lost: 0, played: 0 };
-            });
-
-            groupMatches.forEach(m => {
-                if (m.status === 'completed' && m.winner && m.winner !== 'Tie') {
-                    if (stats[m.winner]) { stats[m.winner].won++; stats[m.winner].played++; }
-                    if (stats[m.loser]) { stats[m.loser].lost++; stats[m.loser].played++; }
-                }
-            });
-
-            Object.values(stats).forEach(s => {
-                s.wr = s.played > 0 ? (s.won / s.played) : 0; // Historical win rate
-                s.remaining = Math.max(0, TOTAL_SEASON_MATCHES - s.played); // Safe clamp
-                s.mpp = s.won + s.remaining;
-                s.rateOfPlay = s.played / weeksPlayed; // Games played per week
-                if (s.won > highestWins) highestWins = s.won;
-            });
-
-            let totalPower = 0;
-
-            Object.values(stats).forEach(s => {
-                // Expected actual matches they will play before time runs out
-                let expectedGamesToPlay = s.rateOfPlay * weeksLeft;
-                
-                // Limit by their physical remaining tags
-                let realisticGamesRemaining = Math.min(s.remaining, expectedGamesToPlay);
-                
-                // Formula: Current Wins + (Expected Remaining Games * Win Rate)
-                let projectedWins = s.won + (realisticGamesRemaining * s.wr);
-
-                s.projectedWins = projectedWins;
-                
-                // Eliminate mathematically dead players from the PROBABILITY calculation, 
-                // but keep their projected wins intact!
-                if (s.mpp < highestWins) {
-                    s.powerScore = 0;
-                } else {
-                    // Power score to create a realistic probability spread
-                    s.powerScore = Math.pow(Math.max(0, projectedWins), 5);
-                }
-                totalPower += s.powerScore;
-            });
-
-            const formatOdds = (prob) => {
-                if (prob <= 0.005) return "N/A";
-                if (prob >= 0.99) return "LOCK";
-                let decimal = 1 / prob;
-                if (decimal >= 2) {
-                    let val = Math.round((decimal - 1) * 100);
-                    return "+" + (Math.round(val / 10) * 10);
-                } else {
-                    let val = Math.round(100 / (decimal - 1));
-                    return "-" + (Math.round(val / 10) * 10);
-                }
-            };
-
-            const results = Object.values(stats).map(s => {
-                let winProb = totalPower > 0 ? s.powerScore / totalPower : 0;
-                if (s.mpp < highestWins) { winProb = 0; }
-
-                return {
-                    name: s.name,
-                    matchWinRate: s.played > 0 ? (s.wr * 100).toFixed(0) + "%" : "0%",
-                    winProb: winProb,
-                    winProbPct: (winProb * 100).toFixed(1) + "%",
-                    winOdds: formatOdds(winProb),
-                    projectedRaw: s.projectedWins,
-                    projected: s.projectedWins.toFixed(1)
-                };
-            }).sort((a, b) => b.projectedRaw - a.projectedRaw || a.name.localeCompare(b.name));
-
-            listEl.innerHTML = results.map((p, i) => `
-                <div class="grid grid-cols-12 gap-2 items-center p-3 md:p-4 hover:bg-slate-50 transition-colors border-b border-slate-50">
-                    <div class="col-span-4 flex items-center gap-2 overflow-hidden">
-                        <span class="w-5 h-5 md:w-6 md:h-6 rounded-md flex items-center justify-center font-black text-[9px] md:text-[10px] shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}">${i === 0 ? '<i data-lucide="flame" class="w-3 h-3"></i>' : i + 1}</span>
-                        <span class="font-bold text-slate-800 uppercase tracking-tight whitespace-normal break-words leading-tight text-[10px] md:text-xs">${p.name}</span>
-                    </div>
-                    <div class="col-span-2 text-center font-bold text-slate-400 text-xs md:text-sm" title="Historical Win Rate">${p.matchWinRate}</div>
-                    <div class="col-span-2 text-center font-black text-slate-500 text-xs md:text-sm" title="Projected Final Wins">${p.projected} <span class="text-[8px] md:text-[10px] font-bold text-slate-400">proj</span></div>
-                    <div class="col-span-2 text-center font-black text-emerald-600 text-xs md:text-sm">${p.winProbPct}</div>
-                    <div class="col-span-2 text-center font-black text-amber-600 text-xs md:text-sm">${p.winOdds}</div>
-                </div>
-            `).join('');
-
             lucide.createIcons();
         }
 
