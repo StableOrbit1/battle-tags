@@ -1094,7 +1094,7 @@
 
             let totalLeagueMatches = 0;
             const statsMap = {}; 
-            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 26 }; });
+            groupPlayers.forEach(p => { statsMap[p.name] = { name: p.name, played: 0, won: 0, lost: 0, tied: 0, mpp: 27 }; });
             
             groupMatches.forEach(m => {
                 const isCompleted = m.winner && m.status !== 'scheduled';
@@ -1162,7 +1162,7 @@
                     <div class="col-span-4 flex items-center gap-3 overflow-hidden">
                         <span class="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs shrink-0 ${i < 3 && currentSort.column === 'won' && currentSort.direction === 'desc' ? 'bg-amber-400 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${i + 1}</span>
                         <div class="flex items-center gap-2 w-full pr-2">
-                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
+                            <button onclick="goToDamageReport('${p.name}')" class="font-bold text-slate-800 uppercase tracking-tight text-xs md:text-base hover:text-emerald-600 transition-all text-left whitespace-normal break-words leading-tight hover:underline decoration-2 underline-offset-4">${p.name}</button>
                             ${p.tieNote ? `<i data-lucide="scale" class="w-4 h-4 text-amber-500 cursor-help shrink-0" title="${p.tieNote}"></i>` : ''}
                         </div>
                     </div>
